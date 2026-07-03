@@ -141,8 +141,10 @@ void WearableObjectImplementation::applyAttachment(CreatureObject* player, Attac
 	}
 
 	// Select the next mod in the SEA, sorted high-to-low. If that skill mod is already on the
-	// wearable, with higher or equal value, don't apply and continue. Break once one mod
-	// is applied.
+	// wearable, with higher or equal value, don't apply and continue.
+	// pre9 local: stock broke after applying ONE mod per attachment; we
+	// apply every mod the attachment carries (still one socket, still
+	// bounded by the size() > 5 wearable guard above).
 	for (int i = 0; i < sortedMods.size(); i++) {
 		String modName = sortedMods.elementAt(i).getKey();
 		int modValue = sortedMods.elementAt(i).getValue();
@@ -155,7 +157,6 @@ void WearableObjectImplementation::applyAttachment(CreatureObject* player, Attac
 
 		if (modValue > existingValue) {
 			wearableSkillMods.put(modName, modValue);
-			break;
 		}
 	}
 

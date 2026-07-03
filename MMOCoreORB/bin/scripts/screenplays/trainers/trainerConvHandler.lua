@@ -161,7 +161,7 @@ function trainerConvHandler:handleLearnScreen(pConvTemplate, pPlayer, pNpc, sele
 	local skillStringId = getStringId("@skl_n:" .. skillName)
 	local skillObject = LuaSkill(pSkill)
 
-	local moneyRequired = skillObject:getMoneyRequired()
+	local moneyRequired = math.floor(skillObject:getMoneyRequired() * 0.25) -- pre9 local: 25% training costs
 	local persuasion = CreatureObject(pPlayer):getSkillMod("force_persuade")
 
 	if (persuasion > 0) then
@@ -207,7 +207,7 @@ function trainerConvHandler:handleConfirmLearnScreen(pConvTemplate, pPlayer, pNp
 	local skillStringId = getStringId("@skl_n:" .. skillName)
 	local skillObject = LuaSkill(pSkill)
 
-	local moneyRequired = skillObject:getMoneyRequired()
+	local moneyRequired = math.floor(skillObject:getMoneyRequired() * 0.25) -- pre9 local: 25% training costs
 	local persuasion = CreatureObject(pPlayer):getSkillMod("force_persuade")
 
 	if (persuasion > 0) then

@@ -427,6 +427,37 @@ String ResourceManagerImplementation::addParentNodeToListBox(SuiListBox* sui, co
 	return resourceSpawner->addParentNodeToListBox(sui, currentNode);
 }
 
+/// Perfect Resource Methods (character builder)
+String ResourceManagerImplementation::preparePerfectResource(const String& className) {
+	Locker _locker(_this.getReferenceUnsafeStaticCast());
+
+	ResourceSpawn* spawn = resourceSpawner->getPerfectVersion(className);
+
+	if (spawn == nullptr)
+		return "";
+
+	return spawn->getName();
+}
+
+void ResourceManagerImplementation::givePerfectResource(CreatureObject* playerCreature, const String& classNameOrType, const int quantity) {
+	String spawnName = preparePerfectResource(classNameOrType);
+
+	if (spawnName.isEmpty()) {
+		playerCreature->sendSystemMessage("Selected resource class cannot be perfected.");
+		return;
+	}
+
+	givePlayerResource(playerCreature, spawnName, quantity);
+}
+
+void ResourceManagerImplementation::addPerfectNodeToListBox(SuiListBox* sui, const String& nodeName) {
+	resourceSpawner->addPerfectNodeToListBox(sui, nodeName);
+}
+
+String ResourceManagerImplementation::addPerfectParentNodeToListBox(SuiListBox* sui, const String& currentNode) {
+	return resourceSpawner->addPerfectParentNodeToListBox(sui, currentNode);
+}
+
 void ResourceManagerImplementation::listResourcesForPlanetOnScreen(CreatureObject* creature, const String& planet) {
 	Locker locker(_this.getReferenceUnsafeStaticCast());
 

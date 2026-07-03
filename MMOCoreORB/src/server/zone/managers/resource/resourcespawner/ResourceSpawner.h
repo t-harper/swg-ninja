@@ -109,6 +109,10 @@ public:
 
 	ResourceSpawn* getRecycledVersion(const ResourceSpawn* resource) const;
 
+	ResourceSpawn* createPerfectResourceSpawn(const ResourceTreeEntry* entry) const;
+
+	ResourceSpawn* getPerfectVersion(const String& token) const;
+
 	bool isRecycledResource(const ResourceSpawn* resource) const;
 
 	int sendResourceRecycleType(const ResourceSpawn* resource) const;
@@ -130,6 +134,10 @@ public:
 	void addPlanetsToListBox(SuiListBox* sui) const;
 
 	String addParentNodeToListBox(SuiListBox* sui, const String& currentNode) const;
+
+	void addPerfectNodeToListBox(SuiListBox* sui, const String& nodeName) const;
+
+	String addPerfectParentNodeToListBox(SuiListBox* sui, const String& currentNode) const;
 
 	inline ResourceMap* getResourceMap() {
 		return resourceMap;

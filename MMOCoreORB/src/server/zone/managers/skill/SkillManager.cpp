@@ -935,6 +935,16 @@ bool SkillManager::fulfillsSkillPrerequisites(const String& skillName, CreatureO
 		}
 	}
 
+	//Check preclusion skills (mutually exclusive trees, e.g. light side vs
+	//dark side jedi). Deliberately checked before the privileged bypass so
+	//character-builder grants by staff characters are bound as well.
+	auto preclusionSkills = skill->getPreclusionSkills();
+	for (int i = 0; i < preclusionSkills->size(); ++i) {
+		if (creature->hasSkill(preclusionSkills->get(i))) {
+			return false;
+		}
+	}
+
 	PlayerObject* ghost = creature->getPlayerObject();
 	if (ghost == nullptr || ghost->getJediState() < skill->getJediStateRequired()) {
 		return false;

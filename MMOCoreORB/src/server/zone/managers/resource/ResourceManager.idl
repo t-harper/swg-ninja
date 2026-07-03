@@ -31,6 +31,8 @@ class ResourceManager extends Observer implements Logger {
 	private transient int shiftInterval;
 	
 	public static final int RESOURCE_DEED_QUANTITY = 30000;
+
+	public static final int PERFECT_RESOURCE_QUANTITY = 10000000; // one full crate (tracks ResourceContainer.MAXSIZE)
 	
 	public ResourceManager(ZoneServer server, ZoneProcessServer impl) {
 
@@ -90,6 +92,12 @@ class ResourceManager extends Observer implements Logger {
 	/// Resource Deed Methods
 	public native void addNodeToListBox(SuiListBox sui, final string nodeName);
 	public native string addParentNodeToListBox(SuiListBox sui, final string currentNode);
+
+	/// Perfect Resource Methods (character builder)
+	public native void givePerfectResource(CreatureObject playerCreature, final string classNameOrType, final int quantity);
+	public native string preparePerfectResource(final string className);
+	public native void addPerfectNodeToListBox(SuiListBox sui, final string nodeName);
+	public native string addPerfectParentNodeToListBox(SuiListBox sui, final string currentNode);
 
 	public native void listResourcesForPlanetOnScreen(CreatureObject creature, final string planet);
 

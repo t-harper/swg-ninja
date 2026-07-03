@@ -151,6 +151,38 @@ lootableArmorAttachmentStatMods = {
 	"warcry"
 }
 
+-- pre9 local: extra mods offered by the character-builder SEA tool ONLY
+-- (kept out of the lootable tables so random looted SEAs stay stock).
+-- All names verified consumed by the engine; note the per-type saber
+-- toughness mods (onehand/twohand/polearmlightsaber_toughness) are NOT
+-- here because no weapon references them (engine-inert).
+seaBuilderExtraMods = {
+	"jedi_saber_assembly",
+	"jedi_saber_experimentation",
+	"jedi_customization",
+	"saber_block",
+	"onehandlightsaber_speed",
+	"twohandlightsaber_speed",
+	"polearmlightsaber_speed",
+	"onehandlightsaber_accuracy",
+	"twohandlightsaber_accuracy",
+	"polearmlightsaber_accuracy",
+	"forceknockdown_accuracy",
+	"forcelightning_accuracy",
+	"forcethrow_accuracy",
+	"forceweaken_accuracy",
+	"mindblast_accuracy",
+	"force_choke",
+	"jedi_force_power_max",
+	"jedi_force_power_regen",
+	"jedi_toughness",
+	"lightsaber_toughness",
+	"onehandmelee_toughness",
+	"twohandmelee_toughness",
+	"polearm_toughness",
+	"unarmed_toughness",
+}
+
 lootableClothingAttachmentStatMods = {
 	"aim",
 	"alert",

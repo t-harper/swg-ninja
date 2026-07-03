@@ -314,7 +314,14 @@ int StructureManager::placeStructureFromDeed(CreatureObject* creature, Structure
 		return 1;
 	}
 
-	if (!planetManager->isBuildingPermittedAt(x, y, creature)) {
+	// pre9 local: privileged (staff) characters may place structures in
+	// otherwise-protected locations (no-build zones, NPC city limits —
+	// e.g. mid-Theed). The player-structure footprint overlap checks
+	// further down still apply to everyone.
+	PlayerObject* placerGhost = creature->getPlayerObject();
+	bool privilegedPlacement = (placerGhost != nullptr && placerGhost->isPrivileged());
+
+	if (!privilegedPlacement && !planetManager->isBuildingPermittedAt(x, y, creature)) {
 		creature->sendSystemMessage("@player_structure:not_permitted"); // Building is not permitted here.
 		return 1;
 	}
@@ -336,7 +343,7 @@ int StructureManager::placeStructureFromDeed(CreatureObject* creature, Structure
 			break;
 	}
 
-	if (city != nullptr && city->isClientRegion()) {
+	if (!privilegedPlacement && city != nullptr && city->isClientRegion()) {
 		creature->sendSystemMessage("@player_structure:not_permitted"); // Building is not permitted here.
 		return 1;
 	}
@@ -406,7 +413,8 @@ int StructureManager::placeStructureFromDeed(CreatureObject* creature, Structure
 	}
 
 	if (city != nullptr) {
-		if (city->isZoningEnabled() && !city->hasZoningRights(creature->getObjectID())) {
+		// pre9 local: privileged (staff) characters bypass zoning rights.
+		if (!privilegedPlacement && city->isZoningEnabled() && !city->hasZoningRights(creature->getObjectID())) {
 			creature->sendSystemMessage("@player_structure:no_rights"); // You don't have the right to place that structure in this city. The mayor or one of the city milita must grant you zoning rights first.
 			return 1;
 		}

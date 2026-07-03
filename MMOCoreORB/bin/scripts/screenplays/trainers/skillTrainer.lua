@@ -73,7 +73,7 @@ function SkillTrainer:sendSkillInfoSui(pPlayer, pNpc, skillName)
 	local skillObject = LuaSkill(pSkill)
 
 	local pointsReq = skillObject:getSkillPointsRequired()
-	local moneyRequired = skillObject:getMoneyRequired()
+	local moneyRequired = math.floor(skillObject:getMoneyRequired() * 0.25) -- pre9 local: 25% training costs
 	local persuasion = CreatureObject(pPlayer):getSkillMod("force_persuade")
 
 	if (persuasion > 0) then

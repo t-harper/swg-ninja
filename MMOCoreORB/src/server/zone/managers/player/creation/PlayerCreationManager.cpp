@@ -269,6 +269,11 @@ void PlayerCreationManager::loadLuaConfig() {
 	skillPoints = lua->getGlobalInt("skillPoints");
 	freeGodMode = lua->getGlobalByte("freeGodMode");
 
+	maximumLots = lua->getGlobalInt("maximumLots");
+
+	if (maximumLots <= 0 || maximumLots > 255)
+		maximumLots = 10;
+
 	loadLuaStartingItems(lua);
 
 	delete lua;
@@ -412,6 +417,7 @@ bool PlayerCreationManager::createCharacter(ClientCreateCharacterCallback* callb
 	if (ghost != nullptr) {
 		//Set skillpoints before adding any skills.
 		ghost->setSkillPoints(skillPoints);
+		ghost->setMaximumLots(maximumLots);
 		ghost->setStarterProfession(profession);
 	}
 

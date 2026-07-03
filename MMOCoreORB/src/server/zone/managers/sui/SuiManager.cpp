@@ -15,6 +15,10 @@
 #include "server/zone/objects/player/sui/listbox/SuiListBox.h"
 #include "server/zone/objects/player/sui/inputbox/SuiInputBox.h"
 #include "server/zone/objects/player/sui/messagebox/SuiMessageBox.h"
+#include "server/zone/objects/player/sui/callbacks/PerfectResourceSuiCallback.h"
+#include "server/zone/objects/player/sui/callbacks/SeaBuilderSuiCallback.h"
+#include "server/zone/objects/tangible/TangibleObject.h"
+#include "server/zone/objects/factorycrate/FactoryCrate.h"
 #include "server/zone/ZoneServer.h"
 #include "server/zone/managers/minigames/FishingManager.h"
 #include "server/zone/objects/player/sui/keypadbox/SuiKeypadBox.h"
@@ -274,7 +278,10 @@ void SuiManager::handleCharacterBuilderSelectItem(CreatureObject* player, SuiBox
 
 		String templatePath = node->getTemplatePath();
 
-		if (templatePath.indexOf(".iff") < 0) { // Non-item selections
+		// pre9 local: crate:<path> tokens embed an .iff path but are
+		// non-item tokens — without this they'd fall into the item
+		// branch and fail ("error creating the requested item").
+		if (templatePath.indexOf(".iff") < 0 || templatePath.beginsWith("crate:")) { // Non-item selections
 
 			if (templatePath == "unlearn_all_skills") {
 
@@ -421,10 +428,11 @@ void SuiManager::handleCharacterBuilderSelectItem(CreatureObject* player, SuiBox
 
 			} else if (templatePath == "credits") {
 				{
-					TransactionLog trx(TrxCode::CHARACTERBUILDER, player, 50000, true);
-					player->addCashCredits(50000, true);
+					// pre9 local: 100M per click (stock 50k)
+					TransactionLog trx(TrxCode::CHARACTERBUILDER, player, 100000000, true);
+					player->addCashCredits(100000000, true);
 				}
-				player->sendSystemMessage("You have received 50.000 Credits");
+				player->sendSystemMessage("You have received 100,000,000 Credits");
 
 			} else if (templatePath == "faction_rebel") {
 				ghost->increaseFactionStanding("rebel", 100000);
@@ -490,6 +498,130 @@ void SuiManager::handleCharacterBuilderSelectItem(CreatureObject* player, SuiBox
 
 			} else if (templatePath == "unlock_jedi_initiate") {
 				bluefrog->grantJediInitiate(player);
+
+			// Perfect Resources (all applicable stats 1000, never harvestable)
+			} else if (templatePath.beginsWith("perfect_resource")) {
+				int quantity = ResourceManager::PERFECT_RESOURCE_QUANTITY;
+
+				int sep = templatePath.indexOf(":");
+
+				if (sep != -1) {
+					try {
+						quantity = Integer::valueOf(templatePath.subString(sep + 1));
+					} catch (Exception& e) {
+						quantity = ResourceManager::PERFECT_RESOURCE_QUANTITY;
+					}
+
+					if (quantity < 1)
+						quantity = 1;
+					else if (quantity > ResourceManager::PERFECT_RESOURCE_QUANTITY)
+						quantity = ResourceManager::PERFECT_RESOURCE_QUANTITY;
+				}
+
+				if (ghost->hasSuiBoxWindowType(SuiWindowType::FREE_RESOURCE))
+					ghost->removeSuiBoxType(SuiWindowType::FREE_RESOURCE);
+
+				ManagedReference<ResourceManager*> resourceManager = zserv->getResourceManager();
+
+				if (resourceManager == nullptr)
+					return;
+
+				ManagedReference<SuiListBox*> box = new SuiListBox(player, SuiWindowType::FREE_RESOURCE);
+				box->setCallback(new PerfectResourceSuiCallback(zserv, "Resource", quantity));
+				box->setPromptTitle("Perfect Resources");
+				box->setPromptText("Choose a resource class. Every applicable stat will be 1000.");
+				box->setOtherButton(true, "@back");
+				box->setCancelButton(true, "@cancel");
+				box->setOkButton(true, "@ok");
+
+				resourceManager->addPerfectNodeToListBox(box, "resource");
+
+				ghost->addSuiBox(box);
+				player->sendMessage(box->generateMessage());
+
+				ghost->addSuiBox(cbSui);
+				return;
+
+			// Clothing attachment builder (SEAs at +25 per chosen mod)
+			} else if (templatePath == "sea_builder") {
+				ManagedReference<SuiListBox*> seaBox = new SuiListBox(player, SuiWindowType::FREE_RESOURCE);
+				Reference<SeaBuilderSuiCallback*> seaCallback = new SeaBuilderSuiCallback(zserv);
+				seaBox->setCallback(seaCallback.get());
+				seaBox->setCancelButton(true, "@cancel");
+				seaBox->setOkButton(true, "@ok");
+
+				SeaBuilderSuiCallback::populate(seaBox, *seaCallback->getAllMods(), *seaCallback->getChosenMods());
+
+				ghost->addSuiBox(seaBox);
+				player->sendMessage(seaBox->generateMessage());
+
+				ghost->addSuiBox(cbSui);
+				return;
+
+			// Factory crate generator (pre9): "crate:<label>:<server template
+			// path>" mints a full 1000-count factory crate of that item. The
+			// prototype gets a crafting serial + the label as its name so it
+			// behaves exactly like a factory-run component (ingredient slots
+			// and the crate display both depend on those).
+			} else if (templatePath.beginsWith("crate:")) {
+				String crateSpec = templatePath.subString(6);
+				int labelSep = crateSpec.indexOf(':');
+				String crateLabel = (labelSep > 0) ? crateSpec.subString(0, labelSep) : "";
+				String cratePath = (labelSep > 0) ? crateSpec.subString(labelSep + 1) : crateSpec;
+
+				ManagedReference<SceneObject*> crateInventory = player->getSlottedObject("inventory");
+
+				if (crateInventory == nullptr || crateInventory->isContainerFullRecursive()) {
+					player->sendSystemMessage("Your inventory is full.");
+				} else {
+					ManagedReference<SceneObject*> protoScene = zserv->createObject(cratePath.hashCode(), 2);
+
+					if (protoScene == nullptr || !protoScene->isTangibleObject()) {
+						if (protoScene != nullptr) {
+							Locker plocker(protoScene);
+							protoScene->destroyObjectFromDatabase(true);
+						}
+
+						player->sendSystemMessage("Failed to create the item for the crate.");
+					} else {
+						ManagedReference<TangibleObject*> prototype = cast<TangibleObject*>(protoScene.get());
+						ManagedReference<FactoryCrate*> crate = nullptr;
+
+						{
+							Locker plocker(prototype);
+
+							CraftingManager* craftingManager = zserv->getCraftingManager();
+
+							if (craftingManager != nullptr)
+								prototype->setSerialNumber(craftingManager->generateSerial());
+
+							if (!crateLabel.isEmpty())
+								prototype->setCustomObjectName(crateLabel, false);
+
+							String crateType = ""; // empty = auto-pick by gameObjectType
+							// insertSelf=true: the prototype itself goes into the
+							// crate (no factory-style clone, no orphaned original)
+							crate = prototype->createFactoryCrate(1000, crateType, true);
+						}
+
+						if (crate == nullptr) {
+							Locker plocker(prototype);
+							prototype->destroyObjectFromDatabase(true);
+							player->sendSystemMessage("Failed to create the factory crate.");
+						} else {
+							Locker clocker(crate);
+							crate->setUseCount(1000, false);
+
+							if (crateInventory->transferObject(crate, -1, true)) {
+								crateInventory->broadcastObject(crate, true);
+								player->sendSystemMessage("Factory crate created (1000 items).");
+							} else {
+								crate->destroyObjectFromDatabase(true);
+								player->sendSystemMessage("Failed to transfer the crate to your inventory.");
+							}
+						}
+					}
+				}
 
 			// Bio-Engineer Testing
 			} else if (templatePath.contains("dna_set:")) {

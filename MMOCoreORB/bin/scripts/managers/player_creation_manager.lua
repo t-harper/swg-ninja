@@ -8,6 +8,9 @@ startingBank = 1000
 --startingBank = 100000
 --How many skill points a new characters start with
 skillPoints = 250
+--Maximum lots per character (pre9 local change; stock 10). Existing
+--characters: use the /adjustlotcount admin command instead.
+maximumLots = 200
 
 professions = {
 	"combat_brawler",
@@ -57,4 +60,6 @@ professionSpecificItems = {
 	social_entertainer = { slitherhorn }
 }
 
-commonStartingItems = { marojMelon, survivalKnife, x31Speeder }
+characterBuilderFrog = "object/tangible/terminal/terminal_character_builder.iff"
+
+commonStartingItems = { marojMelon, survivalKnife, x31Speeder, characterBuilderFrog }

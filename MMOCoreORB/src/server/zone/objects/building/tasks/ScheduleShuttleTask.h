@@ -70,8 +70,21 @@ public:
 
 			PlanetTravelPoint* planetTravelPoint = new PlanetTravelPoint(zoneName, cityRegion->getCityRegionName(), arrivalVector, arrivalVector, strongShuttle, 6.f);
 
+			// pre9 local: player-city STARPORTS spawn a distinct shuttle
+			// template (starport_shuttle); their travel point allows
+			// interplanetary travel. JTL ship launch is handled by the
+			// building's terminal_space child independently.
+			bool isStarport = false;
+			auto shuttleTemplate = strongShuttle->getObjectTemplate();
+
+			if (shuttleTemplate != nullptr && shuttleTemplate->getFullTemplateString().contains("starport_shuttle"))
+				isStarport = true;
+
+			if (isStarport)
+				planetTravelPoint->setInterplanetary(true);
+
 			planetManager->addPlayerCityTravelPoint(planetTravelPoint);
-			planetManager->scheduleShuttle(strongShuttle, PlanetManager::SHUTTLEPORT);
+			planetManager->scheduleShuttle(strongShuttle, isStarport ? PlanetManager::STARPORT : PlanetManager::SHUTTLEPORT);
 		} else {
 			Reference<PlanetTravelPoint*> travelPoint = planetManager->getNearestPlanetTravelPoint(strongShuttle, 128.f);
 

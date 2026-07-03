@@ -108,7 +108,9 @@ void ResourceMap::addToSuiListBox(SuiListBox* suil, const String& name) {
 	for(int i = 0; i < typemap->size(); ++i) {
 		ManagedReference<ResourceSpawn*> spawn = typemap->get(i);
 
-		if(spawn == nullptr)
+		// Out-of-shift spawns (despawned, recycled, perfect) are hidden from
+		// every other player-facing surface; keep the deed browser consistent.
+		if(spawn == nullptr || !spawn->inShift())
 			continue;
 
 		spawns.put(spawn);

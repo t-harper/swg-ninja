@@ -5,6 +5,7 @@
 package server.zone.managers.loot;
 
 import system.util.SortedVector;
+include system.util.Vector;
 import engine.core.ManagedService;
 import system.thread.atomic.AtomicInteger;
 import server.zone.objects.scene.SceneObject;
@@ -80,6 +81,9 @@ class LootManager extends ManagedService implements Logger {
 	private transient SortedVector<string> lootableArmorAttachmentMods;
 	@dereferenced
 	private transient SortedVector<string> lootableClothingAttachmentMods;
+
+	@dereferenced
+	private transient SortedVector<string> seaBuilderExtraMods;
 	@dereferenced
 	private transient SortedVector<string> lootableArmorMods;
 	@dereferenced
@@ -123,6 +127,7 @@ class LootManager extends ManagedService implements Logger {
 
 		lootableArmorAttachmentMods.setNoDuplicateInsertPlan();
 		lootableClothingAttachmentMods.setNoDuplicateInsertPlan();
+		seaBuilderExtraMods.setNoDuplicateInsertPlan();
 		lootableArmorMods.setNoDuplicateInsertPlan();
 		lootableClothingMods.setNoDuplicateInsertPlan();
 		lootableOneHandedMeleeMods.setNoDuplicateInsertPlan();
@@ -208,6 +213,9 @@ class LootManager extends ManagedService implements Logger {
 
 	@local
 	public native string getRandomLootableMod( unsigned int sceneObjectType );
+
+	@local
+	public native void getLootableClothingAttachmentMods(@dereferenced Vector<string> mods);
 
 	public native int calculateLootCredits(int level);
 

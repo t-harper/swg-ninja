@@ -159,6 +159,12 @@ public:
 		return interplanetaryTravelAllowed;
 	}
 
+	// pre9 local: lets player-city STARPORT travel points be flagged
+	// interplanetary (see ScheduleShuttleTask).
+	inline void setInterplanetary(bool allowed) {
+		interplanetaryTravelAllowed = allowed;
+	}
+
 	/**
 	 * Returns true if this location allows incoming travel
 	 */

@@ -40,7 +40,12 @@ public:
 
 		ManagedReference<CityRegion*> city = creature->getCityRegion().get();
 
-		if (city != nullptr && city->isClientRegion()) {
+		// pre9 local: privileged (staff) characters may enter placement
+		// mode inside NPC city limits (matches the StructureManager bypass).
+		ManagedReference<PlayerObject*> placerGhost = creature->getPlayerObject();
+		bool privilegedPlacement = (placerGhost != nullptr && placerGhost->isPrivileged());
+
+		if (!privilegedPlacement && city != nullptr && city->isClientRegion()) {
 			creature->sendSystemMessage("@player_structure:not_permitted"); //Building is not permitted here.
 			return INVALIDPARAMETERS;
 		}

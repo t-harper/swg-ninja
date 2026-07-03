@@ -90,7 +90,13 @@ public:
 		try {
 			Locker locker(cityManager);
 
-			if (!cityManager->validateCityInRange(creature, zone, x, y) || !planetManager->validateClientCityInRange(creature, x, y)) {
+			// pre9 local: privileged (staff) founders bypass the range
+			// checks vs other player cities and NPC-city buffer zones
+			// (e.g. founding a city inside Theed for a starport).
+			ManagedReference<PlayerObject*> founderGhost = creature->getPlayerObject();
+			bool privilegedFounder = (founderGhost != nullptr && founderGhost->isPrivileged());
+
+			if (!privilegedFounder && (!cityManager->validateCityInRange(creature, zone, x, y) || !planetManager->validateClientCityInRange(creature, x, y))) {
 				return;
 			}
 

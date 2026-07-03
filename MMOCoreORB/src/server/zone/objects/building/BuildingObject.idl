@@ -60,7 +60,7 @@ class BuildingObject extends StructureObject {
 
 	public boolean publicStructure;
 
-	public static final int MAXPLAYERITEMS = 400;
+	public static final int MAXPLAYERITEMS = 25500000; // pre9 local: ceiling for 100000/lot x 255 lots (stock 400)
 
 	protected unicode signName;
 

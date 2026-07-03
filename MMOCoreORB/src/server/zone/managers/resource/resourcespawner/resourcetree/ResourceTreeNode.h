@@ -47,6 +47,22 @@ public:
 
 	const ResourceTreeEntry* getPlanetSpecificEntry(const String& planet) const;
 
+	inline int getChildNodeCount() const {
+		return nodes.size();
+	}
+
+	inline const ResourceTreeNode* getChildNodeAt(int index) const {
+		return nodes.get(index);
+	}
+
+	inline int getChildEntryCount() const {
+		return entries.size();
+	}
+
+	inline const ResourceTreeEntry* getChildEntryAt(int index) const {
+		return entries.get(index);
+	}
+
 	void addToSuiListBox(SuiListBox* suil) const;
 
 	//void updateEntries();

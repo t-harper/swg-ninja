@@ -416,6 +416,78 @@ ResourceSpawn* ResourceSpawner::createRecycledResourceSpawn(const ResourceTreeEn
 	return newSpawn;
 }
 
+ResourceSpawn* ResourceSpawner::createPerfectResourceSpawn(const ResourceTreeEntry* entry) const {
+	ResourceSpawn* newSpawn = dynamic_cast<ResourceSpawn*> (objectManager->createObject(0xb2825c5a, 1, "resourcespawns"));
+
+	if (newSpawn == nullptr) {
+		error("createPerfectResourceSpawn is trying to create a resourcespawn with the wrong type");
+		return nullptr;
+	}
+
+	Locker locker(newSpawn);
+
+	newSpawn->setType(entry->getType());
+	newSpawn->setName("Perfect " + entry->getFinalClass());
+
+	for (int i = 0; i < entry->getClassCount(); ++i) {
+		String resClass = entry->getClass(i);
+		newSpawn->addClass(resClass);
+	}
+
+	for (int i = 0; i < entry->getStfClassCount(); ++i) {
+		String resClass = entry->getStfClass(i);
+		newSpawn->addStfClass(resClass);
+	}
+
+	for (int i = 0; i < entry->getAttributeCount(); ++i) {
+		auto attrib = entry->getAttribute(i);
+		newSpawn->addAttribute(attrib->getName(), 1000);
+	}
+
+	newSpawn->setZoneRestriction(entry->getZoneRestriction());
+
+	newSpawn->setSurveyToolType(entry->getSurveyToolType());
+
+	newSpawn->setContainerCRC(entry->getContainerCRC());
+
+	if (newSpawn->isType("energy") || newSpawn->isType("radioactive"))
+		newSpawn->setIsEnergy(true);
+
+	// Deliberately no createSpawnMaps and no setDespawned: with no zone
+	// maps and despawned == 0 (never in shift) the spawn is invisible to
+	// survey, sampling and harvesters, and no pool ever adopts it.
+	resourceMap->add(newSpawn->getName(), newSpawn);
+
+	return newSpawn;
+}
+
+ResourceSpawn* ResourceSpawner::getPerfectVersion(const String& token) const {
+	String classToken = token;
+
+	if (classToken.beginsWith("Perfect "))
+		classToken = classToken.subString(8);
+
+	const ResourceTreeEntry* entry = resourceTree->getBaseNode()->find(classToken);
+
+	if (entry == nullptr || entry->hasChildren() || entry->isRecycled() || entry->getAttributeCount() == 0)
+		return nullptr;
+
+	String perfectName = "Perfect " + entry->getFinalClass();
+
+	if (resourceMap->containsSpawn(perfectName)) {
+		ManagedReference<ResourceSpawn*> existing = resourceMap->get(perfectName.toLowerCase());
+
+		if (existing != nullptr && existing->getType() == entry->getType())
+			return existing;
+
+		// The name is held by something that is not our singleton; refuse
+		// rather than hand out a mislabeled resource.
+		return nullptr;
+	}
+
+	return createPerfectResourceSpawn(entry);
+}
+
 ResourceSpawn* ResourceSpawner::manualCreateResourceSpawn(CreatureObject* player, const UnicodeString& args) {
 	StringTokenizer tokenizer(args.toString());
 	tokenizer.setDelimeter(" ");
@@ -1262,6 +1334,63 @@ String ResourceSpawner::addParentNodeToListBox(SuiListBox* sui, const String& cu
 		node = parentNode;
 
 	node->addToSuiListBox(sui);
+
+	return node->getName();
+}
+
+void ResourceSpawner::addPerfectNodeToListBox(SuiListBox* sui, const String& nodeName) const {
+	auto baseNode = resourceTree->getBaseNode();
+	auto node = baseNode->findNode(nodeName);
+
+	if (node == nullptr)
+		node = baseNode;
+
+	sui->setPromptTitle("Perfect Resources");
+	sui->setPromptText("Choose a resource class. Every applicable stat will be 1000.");
+
+	for (int i = 0; i < node->getChildNodeCount(); ++i)
+		sui->addMenuItem(node->getChildNodeAt(i)->getName(), 0);
+
+	for (int i = 0; i < node->getChildEntryCount(); ++i) {
+		const ResourceTreeEntry* entry = node->getChildEntryAt(i);
+
+		if (!entry->hasChildren() && !entry->isRecycled() && entry->getAttributeCount() > 0)
+			sui->addMenuItem(entry->getFinalClass());
+	}
+}
+
+String ResourceSpawner::addPerfectParentNodeToListBox(SuiListBox* sui, const String& currentNode) const {
+	auto baseNode = resourceTree->getBaseNode();
+
+	String token = currentNode;
+
+	// Coming back from a stat preview: currentNode is the minted spawn's
+	// name ("Perfect <Class>") — return to the containing class page.
+	if (token.beginsWith("Perfect "))
+		token = token.subString(8);
+
+	auto entry = baseNode->find(token);
+
+	if (entry != nullptr) {
+		const ResourceTreeNode* node = entry->getMyNode();
+
+		if (node != nullptr) {
+			addPerfectNodeToListBox(sui, node->getName());
+			return node->getName();
+		}
+	}
+
+	auto node = baseNode->findNode(token);
+
+	if (node == nullptr)
+		node = baseNode;
+
+	auto parentNode = node->getParentNode();
+
+	if (parentNode != nullptr)
+		node = parentNode;
+
+	addPerfectNodeToListBox(sui, node->getName());
 
 	return node->getName();
 }

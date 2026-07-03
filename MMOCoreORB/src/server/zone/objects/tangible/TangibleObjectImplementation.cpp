@@ -1213,7 +1213,9 @@ Reference<FactoryCrate*> TangibleObjectImplementation::createFactoryCrate(int ma
 
 	Locker locker(crate);
 
-	crate->setMaxCapacity(maxSize);
+	// pre9 local: uniform 1000-capacity factory crates (stock uses the
+	// schematic's factoryCrateSize, typically 10-50)
+	crate->setMaxCapacity(1000);
 
 
 	if (insertSelf) {

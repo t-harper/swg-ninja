@@ -1,0 +1,7 @@
+includeFile("../custom_scripts/object/pre9_sabers.lua")
+includeFile("../custom_scripts/object/pre9_charbuilder.lua")
+includeFile("../custom_scripts/object/pre9_perfect_resources.lua")
+includeFile("../custom_scripts/object/pre9_city_deeds.lua")
+includeFile("../custom_scripts/object/pre9_frog_extras.lua")
+includeFile("../custom_scripts/object/pre9_factory_crates.lua")
+includeFile("../custom_scripts/object/pre9_starports.lua")

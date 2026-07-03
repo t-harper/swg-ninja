@@ -11,7 +11,7 @@ if _TEST then
 	ITEMTHEATERDATAPAD = 2
 end
 
-jediProgressionType = VILLAGEJEDIPROGRESSION
+jediProgressionType = NOJEDIPROGRESSION -- pre9-jedi: village/FS/knight retired; legacy jedi_* tree bypasses JediManager
 
 jediManagerName = "JediManager"
 

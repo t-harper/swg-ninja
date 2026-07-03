@@ -38,7 +38,13 @@ public:
 
 		ManagedReference<CityRegion*> city = creature->getCityRegion().get();
 
-		if (city != nullptr && city->isClientRegion()) {
+		// pre9 local: privileged (staff) characters bypass every
+		// location-permission gate in this command (client-city region,
+		// no-build areas, static no-build footprints).
+		ManagedReference<PlayerObject*> placerGhost = creature->getPlayerObject();
+		bool privilegedPlacement = (placerGhost != nullptr && placerGhost->isPrivileged());
+
+		if (!privilegedPlacement && city != nullptr && city->isClientRegion()) {
 			StringIdChatParameter param("player_structure", "city_too_close"); // You cannot place here. It is too close to %TO.
 			param.setTO(city->getCityRegionName());
 			creature->sendSystemMessage(param);
@@ -91,7 +97,7 @@ public:
 
 			zone->getInRangeActiveAreas(placementLoc.getX(), placementLoc.getZ(), placementLoc.getY(), &activeAreas, true);
 
-			for (int i = 0; i < activeAreas.size(); ++i) {
+			for (int i = 0; !privilegedPlacement && i < activeAreas.size(); ++i) {
 				ActiveArea* area = activeAreas.get(i);
 
 				if (area == nullptr)
@@ -108,7 +114,7 @@ public:
 			if (planetMan == nullptr)
 				return GENERALERROR;
 
-			auto conflict = planetMan->findObjectInNoBuildZone(placementLoc.getX(), placementLoc.getY(), 0.0f);
+			auto conflict = privilegedPlacement ? nullptr : planetMan->findObjectInNoBuildZone(placementLoc.getX(), placementLoc.getY(), 0.0f);
 
 			if (conflict != nullptr) {
 				StringIdChatParameter param("player_structure", "city_too_close"); // You cannot place here. It is too close to %TO.

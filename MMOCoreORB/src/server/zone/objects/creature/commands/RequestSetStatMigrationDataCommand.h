@@ -83,15 +83,19 @@ public:
 			return GENERALERROR;
 		}
 
-		// Player is in the tutorial zone and is allowed to migrate stats.
-		auto zone = creature->getZone();
+		// pre9 local change: stat migration is allowed for everyone,
+		// anywhere, as long as they are out of combat (stock restricted it
+		// to the tutorial zone or privileged staff). The attribute bounds
+		// and total-points checks above still apply.
+		if (creature->isInCombat()) {
+			creature->sendSystemMessage("You cannot migrate stats while in combat.");
+			return GENERALERROR;
+		}
 
-		if ((zone != nullptr && zone->getZoneName() == "tutorial") || privilegedPlayer) {
-			session->migrateStats();
+		session->migrateStats();
 
-			if (privilegedPlayer) {
-				creature->sendSystemMessage("Stat Migration Permitted due to Staff Privileges.");
-			}
+		if (privilegedPlayer) {
+			creature->sendSystemMessage("Stat Migration Permitted due to Staff Privileges.");
 		}
 
 		return SUCCESS;

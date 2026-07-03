@@ -155,6 +155,9 @@ bool LootManagerImplementation::loadConfigData() {
 	modsTable = lua->getGlobalObject("lootableClothingAttachmentStatMods");
 	loadLootableMods( &modsTable, &lootableClothingAttachmentMods );
 
+	modsTable = lua->getGlobalObject("seaBuilderExtraMods");
+	loadLootableMods( &modsTable, &seaBuilderExtraMods );
+
 	modsTable = lua->getGlobalObject("lootableArmorStatMods");
 	loadLootableMods( &modsTable, &lootableArmorMods );
 
@@ -651,6 +654,21 @@ String LootManagerImplementation::getRandomLootableMod(uint32 sceneObjectType) {
 	}
 
 	return "";
+}
+
+void LootManagerImplementation::getLootableClothingAttachmentMods(Vector<String>& mods) {
+	for (int i = 0; i < lootableClothingAttachmentMods.size(); ++i) {
+		mods.add(lootableClothingAttachmentMods.get(i));
+	}
+
+	// pre9 local: builder-only extras (jedi/saber/toughness mods) — kept
+	// out of the lootable table so random looted SEAs stay stock.
+	for (int i = 0; i < seaBuilderExtraMods.size(); ++i) {
+		const String& mod = seaBuilderExtraMods.get(i);
+
+		if (!mods.contains(mod))
+			mods.add(mod);
+	}
 }
 
 bool LootManagerImplementation::createLoot(TransactionLog& trx, SceneObject* container, AiAgent* creature) {

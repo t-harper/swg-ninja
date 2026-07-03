@@ -832,3 +832,5 @@ RunSlashCommandsFile("waypoint.lua")
 RunSlashCommandsFile("unstick.lua")
 RunSlashCommandsFile("launchIntoSpace.lua")
 RunSlashCommandsFile("createVendor.lua")
+
+RunSlashCommandsFile("../custom_scripts/commands/pre9_zero_force.lua")

@@ -556,6 +556,7 @@ void CommandConfigManager::registerCommands3() {
 	commandFactory.registerCommand<SetFirstNameCommand>(String("setFirstName").toLowerCase());
 	commandFactory.registerCommand<SetFormupCommand>(String("setFormup").toLowerCase());
 	commandFactory.registerCommand<SetGodModeCommand>(String("setGodMode").toLowerCase());
+	commandFactory.registerCommand<GmBuffCommand>(String("gmBuff").toLowerCase()); // pre9 local
 	commandFactory.registerCommand<SetHueCommand>(String("setHue").toLowerCase());
 	commandFactory.registerCommand<SetIntimidateCommand>(String("setIntimidate").toLowerCase());
 	commandFactory.registerCommand<SetLastNameCommand>(String("setLastName").toLowerCase());

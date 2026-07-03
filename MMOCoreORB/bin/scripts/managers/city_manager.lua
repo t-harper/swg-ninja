@@ -49,7 +49,8 @@ which carries forward this exception.
 	--------------------
 --]]
 --The amount of time in minutes before the city specialization may be changed again.
-CitySpecializationCooldown = 604800000
+-- pre9 local: 1 hour (ms) instead of stock 7 days — curated server.
+CitySpecializationCooldown = 3600000
 
 --The amount of time in minutes before another withdrawal from the city treasury may be made.
 TreasuryWithdrawalCooldown = 86400000
@@ -248,6 +249,23 @@ CitySpecializations = {
 	{--pre9 local: ALL specializations at once — intended for rank-7
 	-- Planetary Capitals (union of every spec above; one entry = all
 	-- mods apply, same mechanism sample_rich uses for its two).
+		name = "All Specializations",
+		cost = 700000,
+		skillMods = {
+			{"private_spec_samplesize", 20},
+			{"private_spec_samplerate", 10},
+			{"private_spec_assembly", 10},
+			{"private_medical_rating", 10},
+			{"private_spec_cloning", 20},
+			{"private_spec_experimentation", 15},
+			{"private_spec_missions", 15},
+			{"private_spec_entertainer", 10},
+			{"private_defense", 90}
+		}
+	},
+	{--pre9 local: DEPRECATED alias of the entry above — keeps cities that
+	-- stored the original name resolving their mods. Remove once no city
+	-- has it selected.
 		name = "All Specializations (Planetary Capital)",
 		cost = 700000,
 		skillMods = {

@@ -623,6 +623,7 @@
 #include "SetFirstNameCommand.h"
 #include "SetFormupCommand.h"
 #include "SetGodModeCommand.h"
+#include "GmBuffCommand.h"
 #include "SetHueCommand.h"
 #include "SetIntimidateCommand.h"
 #include "SetLastNameCommand.h"

@@ -578,6 +578,9 @@ class PlayerManager extends Observer implements Logger {
 	 */
 	public native void enhanceCharacter(CreatureObject player);
 
+	// pre9 local: /gmbuff — same enhancement set with every amount scaled
+	public native void enhanceCharacterScaled(CreatureObject player, float multiplier);
+
 	/**
 	 * Creates and adds buff to Player
 	 * @pre { player is locked }

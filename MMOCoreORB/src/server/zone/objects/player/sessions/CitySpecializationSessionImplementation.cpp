@@ -60,6 +60,13 @@ int CitySpecializationSessionImplementation::initializeSession() {
 		}
 	}
 
+	// pre9 local: privileged (staff) mayors can always select the
+	// all-specializations entry (lua CitySpecializations "All
+	// Specializations") regardless of politician city_spec_* abilities.
+	if (ghost->isPrivileged()) {
+		sui->addMenuItem("All Specializations");
+	}
+
 	if (!cityRegion->getCitySpecialization().isEmpty()) {
 		sui->addMenuItem("@city/city:null",-1);
 	}

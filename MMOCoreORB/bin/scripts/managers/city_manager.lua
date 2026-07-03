@@ -61,7 +61,9 @@ CityVotingCycles = 3
 CityVotingCyclesUntilLocked = 2
 
 --The amount of time in minutes before the city performs an update.
-CityUpdateInterval = 10080
+-- pre9 local: 1440 (daily) instead of stock 10080 (weekly) — solo-server
+-- pacing so rank-ups/elections don't take literal weeks.
+CityUpdateInterval = 1440
 
 --The amount of time in minutes a new city has to gain enough citizens to remain a city.
 NewCityGracePeriod = 1440

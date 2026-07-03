@@ -100,7 +100,11 @@ public:
 				return;
 			}
 
-			if (!planetManager->validateRegionName(cityName) || !cityManager->validateCityName(cityName)) {
+			// pre9 local: privileged founders also skip name validation —
+			// validateRegionName rejects any name matching an existing
+			// region INCLUDING client cities (so a player city named
+			// "Theed" overlapping NPC Theed is impossible without this).
+			if (!privilegedFounder && (!planetManager->validateRegionName(cityName) || !cityManager->validateCityName(cityName))) {
 				creature->sendSystemMessage("@player_structure:cityname_not_unique"); //Another city already has this name. Your city's name must be unique.
 				//Resend the sui.
 				return;

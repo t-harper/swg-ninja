@@ -1410,6 +1410,10 @@ void CraftingSessionImplementation::createPrototype(int clientCounter, bool crea
 }
 
 void CraftingSessionImplementation::startCreationTasks(int timer, bool practice) {
+	// pre9 local: no crafting tool timers — every craft finishes
+	// instantly regardless of complexity.
+	timer = 0;
+
 	ManagedReference<CraftingTool*> craftingTool = this->craftingTool.get();
 	ManagedReference<CreatureObject*> crafter = this->crafter.get();
 

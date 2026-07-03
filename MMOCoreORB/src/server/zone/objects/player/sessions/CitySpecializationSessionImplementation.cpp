@@ -110,6 +110,11 @@ int CitySpecializationSessionImplementation::sendConfirmationBox(const String& c
 	if (choice == "@city/city:null") {
 		confirm->setPromptText(choice + "_d");
 		specialization = "";
+	} else if (!choice.beginsWith("@")) {
+		// pre9 local: literal spec names (All Specializations) have no
+		// _d description stf key — build a readable confirm prompt.
+		confirm->setPromptText("Set the city specialization to: " + choice + "?");
+		specialization = choice;
 	} else {
 		confirm->setPromptText(choice + "_d\n\n@city/city:confirm_spec_d");
 		specialization = choice;

@@ -1694,7 +1694,7 @@ void PlayerManagerImplementation::sendActivateCloneRequest(CreatureObject* playe
 		if (cbot == nullptr)
 			continue;
 
-		if (cbot->getFacilityType() == CloningBuildingObjectTemplate::JEDI_ONLY && player->hasSkill("force_title_jedi_rank_01")) {
+		if (cbot->getFacilityType() == CloningBuildingObjectTemplate::JEDI_ONLY && (player->hasSkill("force_title_jedi_rank_01") || player->hasSkill("jedi_padawan_novice"))) { // pre9
 			String name = "Force Shrine (" + String::valueOf((int)loc->getWorldPositionX()) + ", " + String::valueOf((int)loc->getWorldPositionY()) + ")";
 			cloneMenu->addMenuItem(name, loc->getObjectID());
 		} else if ((cbot->getFacilityType() == CloningBuildingObjectTemplate::LIGHT_JEDI_ONLY && player->hasSkill("force_rank_light_novice")) ||

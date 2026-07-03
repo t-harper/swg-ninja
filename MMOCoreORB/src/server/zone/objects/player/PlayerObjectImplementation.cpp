@@ -9,6 +9,7 @@
 #include "server/zone/managers/skill/SkillManager.h"
 #include "server/zone/managers/planet/PlanetManager.h"
 #include "server/zone/managers/mission/MissionManager.h"
+#include "server/zone/objects/intangible/VehicleControlDevice.h"
 #include "server/zone/managers/combat/CombatManager.h"
 #include "server/zone/managers/structure/StructureManager.h"
 #include "server/zone/managers/vendor/VendorManager.h"
@@ -1840,6 +1841,34 @@ void PlayerObjectImplementation::notifyOnline() {
 	// jediState hook existed) so the state-keyed systems apply to them.
 	if (jediState < 2 && playerCreature->hasSkill("jedi_padawan_novice"))
 		setJediState(2);
+
+	// pre9 local: force-store vehicles left deployed across a restart —
+	// a stale world vehicle blocks mount/store/call until re-stored
+	// (logout normally stores them; server restarts skip that cleanup).
+	{
+		ManagedReference<SceneObject*> vehicleDatapad = playerCreature->getSlottedObject("datapad");
+
+		if (vehicleDatapad != nullptr) {
+			for (int i = 0; i < vehicleDatapad->getContainerObjectsSize(); ++i) {
+				ManagedReference<SceneObject*> dpObj = vehicleDatapad->getContainerObject(i);
+
+				if (dpObj == nullptr || !dpObj->isVehicleControlDevice())
+					continue;
+
+				VehicleControlDevice* vehicleDevice = cast<VehicleControlDevice*>(dpObj.get());
+
+				if (vehicleDevice == nullptr)
+					continue;
+
+				ManagedReference<TangibleObject*> vehicle = vehicleDevice->getControlledObject();
+
+				if (vehicle != nullptr && vehicle->getLocalZone() != nullptr) {
+					Locker vehicleDeviceLocker(vehicleDevice, playerCreature);
+					vehicleDevice->storeObject(playerCreature, true);
+				}
+			}
+		}
+	}
 
 	if (missionManager != nullptr && (playerCreature->hasSkill("force_title_jedi_rank_02") || jediState >= 2)) {
 		uint64 id = playerCreature->getObjectID();

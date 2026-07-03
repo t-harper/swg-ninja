@@ -331,12 +331,10 @@ public:
 	}
 
 	bool isWearingArmor(CreatureObject* creo) const {
-		for (int i = 0; i < creo->getSlottedObjectsSize(); ++i) {
-			SceneObject* item = creo->getSlottedObject(i);
-			if (item != nullptr && item->isArmorObject())
-				return true;
-		}
-
+		// pre9 local: armor never blocks abilities. Every armor-gated
+		// command (force powers, saber specials, CH animal commands)
+		// funnels through this one helper; the jedi-armor ban is a
+		// publish-9+ mechanic — pre-9 jedi in composite was iconic.
 		return false;
 	}
 

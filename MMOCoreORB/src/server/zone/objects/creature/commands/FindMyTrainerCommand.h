@@ -25,12 +25,34 @@ public:
 		if (ghost == nullptr)
 			return GENERALERROR;
 
-		if (ghost->getJediState() < 2 || !creature->hasSkill("force_title_jedi_rank_02"))
-			return GENERALERROR;
-
 		auto zoneServer = server->getZoneServer();
 
 		if (zoneServer == nullptr)
+			return GENERALERROR;
+
+		// pre9 local: fossil jedi's trainer is Vokara outside the Mos
+		// Eisley starport — waypoint straight to her (the stock village
+		// random-mentor flow below stays for legacy title holders).
+		if (creature->hasSkill("jedi_padawan_novice") || ghost->getJediState() >= 2) {
+			ManagedReference<WaypointObject*> vokaraWaypoint = (zoneServer->createObject(0xc456e788, 1)).castTo<WaypointObject*>();
+
+			if (vokaraWaypoint == nullptr)
+				return GENERALERROR;
+
+			Locker locker(vokaraWaypoint);
+
+			vokaraWaypoint->setPlanetCRC(String("tatooine").hashCode());
+			vokaraWaypoint->setPosition(3508, 0, -4806);
+			vokaraWaypoint->setCustomObjectName("Vokara - Jedi Trainer (Mos Eisley)", false);
+
+			ghost->addWaypoint(vokaraWaypoint, true, true);
+
+			creature->sendSystemMessage("@jedi_spam:waypoint_created_to_trainer");
+
+			return SUCCESS;
+		}
+
+		if (ghost->getJediState() < 2 || !creature->hasSkill("force_title_jedi_rank_02"))
 			return GENERALERROR;
 
 		String planet = ghost->getTrainerZoneName();

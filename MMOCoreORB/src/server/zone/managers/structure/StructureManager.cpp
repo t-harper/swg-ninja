@@ -373,10 +373,20 @@ int StructureManager::placeStructureFromDeed(CreatureObject* creature, Structure
 		if (!area->isRegion())
 			continue;
 
-		city = dynamic_cast<Region*>(area)->getCityRegion().get();
+		ManagedReference<CityRegion*> areaCity = dynamic_cast<Region*>(area)->getCityRegion().get();
 
-		if (city != nullptr)
+		if (areaCity == nullptr)
+			continue;
+
+		if (city == nullptr)
+			city = areaCity;
+
+		// pre9 local: when a PLAYER city overlaps an NPC city (public
+		// Theed), the player city governs zoning/rank/civic/unique rules.
+		if (!areaCity->isClientRegion()) {
+			city = areaCity;
 			break;
+		}
 	}
 
 	if (!privilegedPlacement && city != nullptr && city->isClientRegion()) {
@@ -464,7 +474,11 @@ int StructureManager::placeStructureFromDeed(CreatureObject* creature, Structure
 			return 1;
 		}
 
-		if (serverTemplate->isCivicStructure() && !city->isMayor(creature->getObjectID())) {
+		// pre9 local: trusted placers (staff / public-city mayors) skip the
+		// mayor check — required when FOUNDING a city hall inside an NPC
+		// city region (the resolved "city" is the client region, which
+		// nobody is mayor of).
+		if (!privilegedPlacement && serverTemplate->isCivicStructure() && !city->isMayor(creature->getObjectID())) {
 			creature->sendSystemMessage("@player_structure:cant_place_civic"); //"This structure must be placed within the borders of the city in which you are mayor."
 			return 1;
 		}

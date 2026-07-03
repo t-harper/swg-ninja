@@ -4,6 +4,9 @@
 --      and need no certification).
 --   2. "Clothing Attachment Builder" token (sea_builder — local C++
 --      SUI: pick up to 6 skill mods, +25 each, mints a clothing SEA).
+--   3. Mandalorian + Bone armor sets under Items > Armor (stock ships
+--      bone commented out; same per-piece pair shape, no wear certs in
+--      this era — encumbrances apply as normal).
 --
 -- Same mutate-in-place + re-register pattern as the other injectors.
 
@@ -34,6 +37,41 @@ else
 	items[#items + 1] = "Clothing Attachment Builder"
 	items[#items + 1] = "sea_builder"
 
+	local armor = findSub(items, "Armor")
+
+	if armor == nil then
+		print("pre9_frog_extras: FAILED to locate Items > Armor (stock layout changed?)")
+	else
+		local MANDO = "object/tangible/wearables/armor/mandalorian/armor_mandalorian_"
+		armor[#armor + 1] = "Mandalorian Armor"
+		armor[#armor + 1] = {
+			"Mandalorian Belt", MANDO .. "belt.iff",
+			"Mandalorian Left Bicep", MANDO .. "bicep_l.iff",
+			"Mandalorian Right Bicep", MANDO .. "bicep_r.iff",
+			"Mandalorian Left Bracer", MANDO .. "bracer_l.iff",
+			"Mandalorian Right Bracer", MANDO .. "bracer_r.iff",
+			"Mandalorian Chest Plate", MANDO .. "chest_plate.iff",
+			"Mandalorian Gloves", MANDO .. "gloves.iff",
+			"Mandalorian Helmet", MANDO .. "helmet.iff",
+			"Mandalorian Leggings", MANDO .. "leggings.iff",
+			"Mandalorian Shoes", MANDO .. "shoes.iff",
+		}
+
+		local BONE = "object/tangible/wearables/armor/bone/armor_bone_s01_"
+		armor[#armor + 1] = "Bone Armor"
+		armor[#armor + 1] = {
+			"Bone Left Bicep", BONE .. "bicep_l.iff",
+			"Bone Right Bicep", BONE .. "bicep_r.iff",
+			"Bone Boots", BONE .. "boots.iff",
+			"Bone Left Bracer", BONE .. "bracer_l.iff",
+			"Bone Right Bracer", BONE .. "bracer_r.iff",
+			"Bone Chest Plate", BONE .. "chest_plate.iff",
+			"Bone Gloves", BONE .. "gloves.iff",
+			"Bone Helmet", BONE .. "helmet.iff",
+			"Bone Leggings", BONE .. "leggings.iff",
+		}
+	end
+
 	ObjectTemplates:addTemplate(t, path)
-	print("pre9_frog_extras: added Jetpack deed and Clothing Attachment Builder to the character builder menu")
+	print("pre9_frog_extras: added Jetpack deed, Clothing Attachment Builder, Mandalorian + Bone armor to the character builder menu")
 end

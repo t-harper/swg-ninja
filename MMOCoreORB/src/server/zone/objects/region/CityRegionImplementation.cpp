@@ -227,11 +227,21 @@ void CityRegionImplementation::notifyEnter(SceneObject* object) {
 
 		UnicodeString strRank = StringIdManager::instance()->getStringId(String("@city/city:rank" + String::valueOf(cityRank)).hashCode());
 
+		// pre9 local: fall back to readable text when server-side string
+		// resolution misses (literal spec names; rank keys newer than the
+		// last strings.db import) instead of leaving %TO unfilled.
+		if (strRank.isEmpty())
+			strRank = "Rank " + String::valueOf(cityRank);
+
 		if (citySpecialization.isEmpty()) {
 			params.setTO(strRank);
 		}
 		else {
 			UnicodeString citySpec = StringIdManager::instance()->getStringId(citySpecialization.hashCode());
+
+			if (citySpec.isEmpty())
+				citySpec = citySpecialization;
+
 			params.setTO(strRank + ", " + citySpec);
 		}
 

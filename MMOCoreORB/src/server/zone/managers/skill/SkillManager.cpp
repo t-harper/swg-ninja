@@ -449,6 +449,14 @@ bool SkillManager::awardSkill(const String& skillName, CreatureObject* creature,
 		if (skill->getSkillName() == "force_title_jedi_rank_02") {
 			if (missionManager != nullptr)
 				missionManager->addPlayerToBountyList(creature->getObjectID(), ghost->calculateBhReward());
+		} else if (skill->getSkillName() == "jedi_padawan_novice") {
+			// pre9 local: fossil jedi become real Jedi (state 2) — enables
+			// visibility/BH hunting, jedi death penalty, jedi cloning.
+			if (ghost->getJediState() < 2)
+				ghost->setJediState(2);
+
+			if (missionManager != nullptr)
+				missionManager->addPlayerToBountyList(creature->getObjectID(), ghost->calculateBhReward());
 		} else if (skill->getSkillName().contains("force_discipline")) {
 			if (missionManager != nullptr)
 				missionManager->updatePlayerBountyReward(creature->getObjectID(), ghost->calculateBhReward());
@@ -651,6 +659,12 @@ bool SkillManager::surrenderSkill(const String& skillName, CreatureObject* creat
 		MissionManager* missionManager = creature->getZoneServer()->getMissionManager();
 
 		if (skill->getSkillName() == "force_title_jedi_rank_02") {
+			if (missionManager != nullptr)
+				missionManager->removePlayerFromBountyList(creature->getObjectID());
+		} else if (skill->getSkillName() == "jedi_padawan_novice") {
+			// pre9 local: losing the padawan box revokes jedi state + bounty
+			ghost->setJediState(0);
+
 			if (missionManager != nullptr)
 				missionManager->removePlayerFromBountyList(creature->getObjectID());
 		} else if (skill->getSkillName().contains("force_discipline")) {

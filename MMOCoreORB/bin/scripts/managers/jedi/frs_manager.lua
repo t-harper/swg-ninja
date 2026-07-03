@@ -1,4 +1,4 @@
-frsEnabled = 0 -- pre9-jedi: FRS is a Publish 9 addition
+frsEnabled = 1 -- pre9 local: FRS on (fossil knights enroll via knight trials) -- pre9-jedi: FRS is a Publish 9 addition
 
 -- Object ID of Enclave buildings
 lightEnclaveID = 8525417

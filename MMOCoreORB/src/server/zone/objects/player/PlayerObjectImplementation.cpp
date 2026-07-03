@@ -1836,7 +1836,12 @@ void PlayerObjectImplementation::notifyOnline() {
 
 	MissionManager* missionManager = zoneServer->getMissionManager();
 
-	if (missionManager != nullptr && playerCreature->hasSkill("force_title_jedi_rank_02")) {
+	// pre9 local: retro-stamp fossil jedi (padawan box awarded before the
+	// jediState hook existed) so the state-keyed systems apply to them.
+	if (jediState < 2 && playerCreature->hasSkill("jedi_padawan_novice"))
+		setJediState(2);
+
+	if (missionManager != nullptr && (playerCreature->hasSkill("force_title_jedi_rank_02") || jediState >= 2)) {
 		uint64 id = playerCreature->getObjectID();
 
 		if (!missionManager->hasPlayerBountyTargetInList(id))

@@ -256,6 +256,7 @@
 #include "server/zone/objects/creature/commands/SetFirstNameCommand.h"
 #include "server/zone/objects/creature/commands/SetFormupCommand.h"
 #include "server/zone/objects/creature/commands/SetGodModeCommand.h"
+#include "server/zone/objects/creature/commands/GmBuffCommand.h"
 #include "server/zone/objects/creature/commands/SetHueCommand.h"
 #include "server/zone/objects/creature/commands/SetIntimidateCommand.h"
 #include "server/zone/objects/creature/commands/SetLastNameCommand.h"

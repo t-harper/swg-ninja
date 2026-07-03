@@ -71,6 +71,11 @@ end
 
 --Check for force skill prerequisites
 function JediManager:canLearnSkill(pPlayer, skillName)
+	-- pre9 local: whitelist ONLY the FRS/title chains (knight trials +
+	-- FRS enrollment on the fossil tree); village force trees stay locked.
+	if (string.find(skillName, "^force_title_jedi_") ~= nil or string.find(skillName, "^force_rank_") ~= nil) then
+		return true
+	end
 	-- Default behaviour for the canLearnSkill check, return false.
 	return false
 end

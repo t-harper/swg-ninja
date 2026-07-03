@@ -1862,9 +1862,19 @@ void PlayerObjectImplementation::notifyOnline() {
 
 				ManagedReference<TangibleObject*> vehicle = vehicleDevice->getControlledObject();
 
-				if (vehicle != nullptr && vehicle->getLocalZone() != nullptr) {
+				if (vehicle != nullptr) {
+					// unconditional normalize: force-store no matter what
+					// half-state the vehicle is in (world, parented, or
+					// already gone — storeObject is safe when not deployed)
 					Locker vehicleDeviceLocker(vehicleDevice, playerCreature);
 					vehicleDevice->storeObject(playerCreature, true);
+				} else {
+					// dead device (vehicle link destroyed) — it can never
+					// call/store again; remove the junk from the datapad
+					Locker vehicleDeviceLocker(vehicleDevice, playerCreature);
+					vehicleDevice->destroyObjectFromWorld(true);
+					vehicleDevice->destroyObjectFromDatabase(true);
+					--i;
 				}
 			}
 		}

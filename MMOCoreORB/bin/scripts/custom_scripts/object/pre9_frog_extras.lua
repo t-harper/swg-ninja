@@ -57,6 +57,22 @@ else
 			"Mandalorian Shoes", MANDO .. "shoes.iff",
 		}
 
+		local DWSCHEM = "object/tangible/loot/loot_schematic/death_watch_mandalorian_"
+		armor[#armor + 1] = "Mandalorian Schematics"
+		armor[#armor + 1] = {
+			"Mandalorian Belt Schematic", DWSCHEM .. "belt_schematic.iff",
+			"Mandalorian Left Bicep Schematic", DWSCHEM .. "bicep_l_schematic.iff",
+			"Mandalorian Right Bicep Schematic", DWSCHEM .. "bicep_r_schematic.iff",
+			"Mandalorian Boots Schematic", DWSCHEM .. "boots_schematic.iff",
+			"Mandalorian Left Bracer Schematic", DWSCHEM .. "bracer_l_schematic.iff",
+			"Mandalorian Right Bracer Schematic", DWSCHEM .. "bracer_r_schematic.iff",
+			"Mandalorian Chest Plate Schematic", DWSCHEM .. "chest_plate_schematic.iff",
+			"Mandalorian Gloves Schematic", DWSCHEM .. "gloves_schematic.iff",
+			"Mandalorian Helmet Schematic", DWSCHEM .. "helmet_schematic.iff",
+			"Mandalorian Leggings Schematic", DWSCHEM .. "leggings_schematic.iff",
+			"Mandalorian Jetpack Schematic", DWSCHEM .. "jetpack_schematic.iff",
+		}
+
 		local BONE = "object/tangible/wearables/armor/bone/armor_bone_s01_"
 		armor[#armor + 1] = "Bone Armor"
 		armor[#armor + 1] = {

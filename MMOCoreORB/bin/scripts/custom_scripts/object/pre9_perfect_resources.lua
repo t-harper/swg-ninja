@@ -24,14 +24,14 @@ local function findSub(list, name)
 end
 
 local t = ObjectTemplates[crcString(path)]
-local deeds = t and findSub(findSub(t.itemList, "Items"), "Deeds")
+local items = t and findSub(t.itemList, "Items")
 
-if deeds == nil then
-	print("pre9_perfect_resources: FAILED to locate Items > Deeds in the character builder menu (stock layout changed?)")
+if items == nil then
+	print("pre9_perfect_resources: FAILED to locate Items in the character builder menu (stock layout changed?)")
 else
-	-- Insert directly after the "Resource Deed" pair (positions 1,2).
-	table.insert(deeds, 3, "perfect_resource")
-	table.insert(deeds, 3, "Perfect Resources")
+	-- Top-level Items entry (moved out of Deeds 2026-07-04 by request).
+	table.insert(items, 1, "perfect_resource")
+	table.insert(items, 1, "Perfect Resources")
 	ObjectTemplates:addTemplate(t, path)
 	print("pre9_perfect_resources: added Perfect Resources to the character builder menu")
 end

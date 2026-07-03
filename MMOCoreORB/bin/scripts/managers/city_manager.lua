@@ -245,4 +245,21 @@ CitySpecializations = {
 			{"private_defense", 90}
 		}
 	},
+	{--pre9 local: ALL specializations at once — intended for rank-7
+	-- Planetary Capitals (union of every spec above; one entry = all
+	-- mods apply, same mechanism sample_rich uses for its two).
+		name = "All Specializations (Planetary Capital)",
+		cost = 700000,
+		skillMods = {
+			{"private_spec_samplesize", 20},
+			{"private_spec_samplerate", 10},
+			{"private_spec_assembly", 10},
+			{"private_medical_rating", 10},
+			{"private_spec_cloning", 20},
+			{"private_spec_experimentation", 15},
+			{"private_spec_missions", 15},
+			{"private_spec_entertainer", 10},
+			{"private_defense", 90}
+		}
+	},
 }

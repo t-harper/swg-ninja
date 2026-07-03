@@ -82,6 +82,11 @@ class CityRegion extends ManagedObject implements Logger {
 
 	protected boolean registered;
 
+	// pre9 local: GM-flagged public city (e.g. player-city Theed) — never
+	// ranks down, never pays/decays maintenance, mayor gets placement
+	// powers inside the region.
+	protected boolean publicCity;
+
 	protected boolean hasShuttle;
 
 	protected unsigned long shuttleID;
@@ -137,6 +142,9 @@ class CityRegion extends ManagedObject implements Logger {
 	public static final byte RANK_TOWNSHIP = 3;
 	public static final byte RANK_CITY = 4;
 	public static final byte RANK_METROPOLIS = 5;
+	// pre9 local: extended ranks (600m / 1000m radius)
+	public static final byte RANK_CAPITAL = 6;
+	public static final byte RANK_PLANETARY_CAPITAL = 7;
 
 	public static final byte TAX_INCOME = 0;
 	public static final byte TAX_PROPERTY = 1;
@@ -325,6 +333,16 @@ class CityRegion extends ManagedObject implements Logger {
 	@read
 	public boolean isRegistered() {
 		return registered;
+	}
+
+	@read
+	public boolean isPublicCity() {
+		return publicCity;
+	}
+
+	@dirty
+	public void setPublicCity(boolean val) {
+		publicCity = val;
 	}
 
 	@dirty

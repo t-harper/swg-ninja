@@ -64,6 +64,9 @@ class CityManager extends ManagedService implements Logger {
 	public static final byte TOWNSHIP = 3;
 	public static final byte CITY = 4;
 	public static final byte METROPOLIS = 5;
+	// pre9 local: extended ranks
+	public static final byte CAPITAL = 6;
+	public static final byte PLANETARY_CAPITAL = 7;
 
 	public CityManager(ZoneServer zserv) {
 		Logger.setLoggingName("CityManager");

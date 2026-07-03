@@ -267,6 +267,42 @@ int StructureManager::getStructureFootprint(SharedStructureObjectTemplate* objec
 	return 0;
 }
 
+bool StructureManager::isTrustedPlacer(CreatureObject* creature, Zone* zone, float x, float y) {
+	if (creature == nullptr)
+		return false;
+
+	PlayerObject* ghost = creature->getPlayerObject();
+
+	if (ghost != nullptr && ghost->isPrivileged())
+		return true;
+
+	if (zone == nullptr)
+		return false;
+
+	// mayor of a PUBLIC city places freely inside its region
+	SortedVector<ManagedReference<ActiveArea*>> areas;
+	zone->getInRangeActiveAreas(x, 0, y, &areas, true);
+
+	for (int i = 0; i < areas.size(); ++i) {
+		ActiveArea* area = areas.get(i).get();
+
+		if (area == nullptr || !area->isRegion())
+			continue;
+
+		Region* region = dynamic_cast<Region*>(area);
+
+		if (region == nullptr)
+			continue;
+
+		ManagedReference<CityRegion*> city = region->getCityRegion().get();
+
+		if (city != nullptr && city->isPublicCity() && city->isMayor(creature->getObjectID()))
+			return true;
+	}
+
+	return false;
+}
+
 int StructureManager::placeStructureFromDeed(CreatureObject* creature, StructureDeed* deed, float x, float y, int angle) {
 	ManagedReference<Zone*> zone = creature->getZone();
 
@@ -314,12 +350,12 @@ int StructureManager::placeStructureFromDeed(CreatureObject* creature, Structure
 		return 1;
 	}
 
-	// pre9 local: privileged (staff) characters may place structures in
-	// otherwise-protected locations (no-build zones, NPC city limits —
-	// e.g. mid-Theed). The player-structure footprint overlap checks
-	// further down still apply to everyone.
-	PlayerObject* placerGhost = creature->getPlayerObject();
-	bool privilegedPlacement = (placerGhost != nullptr && placerGhost->isPrivileged());
+	// pre9 local: privileged (staff) characters — and mayors of PUBLIC
+	// cities within their region — may place structures in otherwise-
+	// protected locations (no-build zones, NPC city limits — e.g.
+	// mid-Theed). The player-structure footprint overlap checks further
+	// down still apply to everyone.
+	bool privilegedPlacement = isTrustedPlacer(creature, zone, x, y);
 
 	if (!privilegedPlacement && !planetManager->isBuildingPermittedAt(x, y, creature)) {
 		creature->sendSystemMessage("@player_structure:not_permitted"); // Building is not permitted here.

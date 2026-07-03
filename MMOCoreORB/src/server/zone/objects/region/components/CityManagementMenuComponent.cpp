@@ -46,6 +46,9 @@ void CityManagementMenuComponent::fillObjectMenuResponse(SceneObject* sceneObjec
 		menuResponse->addRadialMenuItemToRadialID(227,228,3,"@city/city:rank_up"); // 	Force Rank Up
 		menuResponse->addRadialMenuItemToRadialID(227,229,3,"@city/city:rank_down"); // Force Rank Down
 		menuResponse->addRadialMenuItemToRadialID(227,230,3,"@city/city:force_update"); // Force City Update or Election
+		// pre9 local: toggle the public-city flag (never ranks down, no
+		// maintenance decay, mayor gains placement powers in-region)
+		menuResponse->addRadialMenuItemToRadialID(227,231,3, city->isPublicCity() ? "Public City: ON (toggle)" : "Public City: OFF (toggle)");
 	}
 #endif
 
@@ -164,6 +167,13 @@ int CityManagementMenuComponent::handleObjectMenuSelect(SceneObject* sceneObject
 	case 230:
 		if(ghost->isPrivileged()) {
 			cityManager->promptForceUpdate(city, player);
+		}
+		break;
+	case 231: // pre9 local: toggle public city
+		if(ghost->isPrivileged()) {
+			city->setPublicCity(!city->isPublicCity());
+			player->sendSystemMessage(String("City '" + city->getCityRegionName() + "' is now a "
+					+ (city->isPublicCity() ? "PUBLIC" : "normal") + " city."));
 		}
 		break;
 #endif

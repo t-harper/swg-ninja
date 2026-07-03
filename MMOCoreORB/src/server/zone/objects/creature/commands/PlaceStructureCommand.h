@@ -9,6 +9,7 @@
 #include "server/zone/objects/tangible/deed/structure/StructureDeed.h"
 #include "server/zone/managers/planet/PlanetManager.h"
 #include "server/zone/managers/collision/CollisionManager.h"
+#include "server/zone/managers/structure/StructureManager.h"
 #include "QueueCommand.h"
 
 class PlaceStructureCommand : public QueueCommand {
@@ -38,11 +39,12 @@ public:
 
 		ManagedReference<CityRegion*> city = creature->getCityRegion().get();
 
-		// pre9 local: privileged (staff) characters bypass every
-		// location-permission gate in this command (client-city region,
-		// no-build areas, static no-build footprints).
-		ManagedReference<PlayerObject*> placerGhost = creature->getPlayerObject();
-		bool privilegedPlacement = (placerGhost != nullptr && placerGhost->isPrivileged());
+		// pre9 local: privileged (staff) characters — and public-city
+		// mayors inside their region — bypass every location-permission
+		// gate in this command (client-city region, no-build areas,
+		// static no-build footprints).
+		bool privilegedPlacement = StructureManager::isTrustedPlacer(creature, creature->getZone(),
+				creature->getWorldPositionX(), creature->getWorldPositionY());
 
 		if (!privilegedPlacement && city != nullptr && city->isClientRegion()) {
 			StringIdChatParameter param("player_structure", "city_too_close"); // You cannot place here. It is too close to %TO.

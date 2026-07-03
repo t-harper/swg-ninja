@@ -786,8 +786,10 @@ void CityManagerImplementation::processCityUpdate(CityRegion* city) {
 		int maintainCitizens = citizensPerRank.get(cityRank - 1);
 
 		if (citizens < maintainCitizens) {
-			contractCity(city);
-		} else if (cityRank < METROPOLIS) {
+			// pre9 local: public cities never rank down
+			if (!city->isPublicCity())
+				contractCity(city);
+		} else if (cityRank < PLANETARY_CAPITAL) {
 			int advanceCitizens = citizensPerRank.get(cityRank);
 
 			if (citizens >= advanceCitizens) {
@@ -846,6 +848,10 @@ void CityManagerImplementation::deductCityMaintenance(CityRegion* city) {
 	int totalPaid = 0;
 
 	Locker _lock(city);
+
+	// pre9 local: public cities never pay or decay on maintenance
+	if (city->isPublicCity())
+		return;
 
 	// pay city hall maintenanance first
 	ManagedReference<StructureObject*> ch = city->getCityHall();
@@ -1315,7 +1321,7 @@ void CityManagerImplementation::contractCity(CityRegion* city) {
 void CityManagerImplementation::expandCity(CityRegion* city) {
 	uint8 currentRank = city->getCityRank();
 
-	if (currentRank == METROPOLIS) //City doesn't expand if it's metropolis.
+	if (currentRank >= PLANETARY_CAPITAL) // pre9 local: cap raised (was METROPOLIS)
 		return;
 
 	uint8 newRank = currentRank + 1;
@@ -1374,7 +1380,7 @@ void CityManagerImplementation::destroyCity(CityRegion* city) {
 
 	city->destroyNavMesh();
 
-	for (int i = CityManager::METROPOLIS; i > 0; i--) {
+	for (int i = CityManager::PLANETARY_CAPITAL; i > 0; i--) {
 		city->destroyAllStructuresForRank(uint8(i), false);
 	}
 
@@ -1604,13 +1610,13 @@ void CityManagerImplementation::sendCityAdvancement(CityRegion* city, CreatureOb
 		return;
 
 	int currentRank = citizensPerRank.get(rank - 1);
-	int nextRank = citizensPerRank.get(rank == METROPOLIS ? rank - 1 : rank);
+	int nextRank = citizensPerRank.get(rank == PLANETARY_CAPITAL ? rank - 1 : rank);
 
 	listbox->addMenuItem("@city/city:city_rank_prompt @city/city:rank" + String::valueOf(rank)); // City Rank:
 	listbox->addMenuItem("@city/city:city_pop_prompt " + String::valueOf(city->getCitizenCount()) + " @city/city:citizens"); // City Population: citizens
 	listbox->addMenuItem("@city/city:pop_req_current_rank " + String::valueOf(currentRank) + " @city/city:citizens"); // Pop. Req. for Current Rank: citizens
 
-	if (rank < CityRegion::RANK_METROPOLIS)
+	if (rank < CityRegion::RANK_PLANETARY_CAPITAL)
 		listbox->addMenuItem("@city/city:pop_req_next_rank " + String::valueOf(nextRank) + " @city/city:citizens"); // Pop. Req. for Next Rank: citizens
 	else
 		listbox->addMenuItem("@city/city:pop_req_next_rank @city/city:max_rank_achieved"); // Pop. Req. for Next Rank: Maximum City Rank Achieved

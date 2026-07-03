@@ -9,6 +9,7 @@
 #include "server/zone/packets/player/EnterStructurePlacementModeMessage.h"
 #include "templates/manager/TemplateManager.h"
 #include "templates/faction/Factions.h"
+#include "server/zone/managers/structure/StructureManager.h"
 
 class PlaceStructureModeCommand : public QueueCommand {
 public:
@@ -40,10 +41,11 @@ public:
 
 		ManagedReference<CityRegion*> city = creature->getCityRegion().get();
 
-		// pre9 local: privileged (staff) characters may enter placement
-		// mode inside NPC city limits (matches the StructureManager bypass).
-		ManagedReference<PlayerObject*> placerGhost = creature->getPlayerObject();
-		bool privilegedPlacement = (placerGhost != nullptr && placerGhost->isPrivileged());
+		// pre9 local: privileged (staff) characters — and public-city
+		// mayors inside their region — may enter placement mode inside
+		// NPC city limits (matches the StructureManager bypass).
+		bool privilegedPlacement = StructureManager::isTrustedPlacer(creature, creature->getZone(),
+				creature->getWorldPositionX(), creature->getWorldPositionY());
 
 		if (!privilegedPlacement && city != nullptr && city->isClientRegion()) {
 			creature->sendSystemMessage("@player_structure:not_permitted"); //Building is not permitted here.

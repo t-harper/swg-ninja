@@ -75,11 +75,11 @@ OldCityGracePeriod = 4320
 EnableCityWarn = false
 
 --The number of citizens required to achieve each city rank. (Outpost, Village, Township, City, Metropolis)
-CitizensPerRank = {1, 2, 3, 4, 5} -- pre9 local: linear ranks (stock {2,4,6,8,10})
+CitizensPerRank = {1, 2, 3, 4, 5, 6, 7} -- pre9 local: linear ranks incl. Capital/Planetary Capital (stock {2,4,6,8,10})
 --CitizensPerRank = {10, 20, 35, 55, 85}
 
 --The radius in meters of the city at each city rank. (Outpost, Village, Township, City, Metropolis)
-RadiusPerRank = {150, 200, 300, 400, 450}
+RadiusPerRank = {150, 200, 300, 400, 450, 600, 1000} -- pre9 local: ranks 6/7
 
 -- Maximum for each rank.  ex. rank 1 = DecorationsPerRank * 1, rank 5 = DecorationsPerRank * 5
 DecorationsPerRank = 10
@@ -96,17 +96,19 @@ maintenanceDiscount = 1.0
 	This is the number of cities allowed per planet, per rank. (Outpost, Village, Township, City, Metropolis)
 	The maximum amount of cities per rank is 255.
 --]]
+-- pre9 local: 7 columns (ranks 6/7 added). Planetary Capital (rank 7)
+-- capped at ONE per planet — isCityRankCapped enforces it at advancement.
 CitiesAllowed = {
-	{"corellia", {20, 20, 15, 10, 10}},
-	{"dantooine", {50, 50, 30, 20, 20}},
-	{"dathomir", {0, 0, 0, 0, 0}},
-	{"endor", {0, 0, 0, 0, 0}},
-	{"lok", {50, 50, 30, 20, 20}},
-	{"naboo", {20, 20, 15, 10, 10}},
-	{"rori", {50, 50, 30, 20, 20}},
-	{"talus", {50, 50, 30, 20, 20}},
-	{"tatooine", {20, 20, 15, 10, 10}},
-	{"yavin4", {0, 0, 0, 0, 0}}
+	{"corellia", {20, 20, 15, 10, 10, 5, 1}},
+	{"dantooine", {50, 50, 30, 20, 20, 5, 1}},
+	{"dathomir", {0, 0, 0, 0, 0, 0, 0}},
+	{"endor", {0, 0, 0, 0, 0, 0, 0}},
+	{"lok", {50, 50, 30, 20, 20, 5, 1}},
+	{"naboo", {20, 20, 15, 10, 10, 5, 1}},
+	{"rori", {50, 50, 30, 20, 20, 5, 1}},
+	{"talus", {50, 50, 30, 20, 20, 5, 1}},
+	{"tatooine", {20, 20, 15, 10, 10, 5, 1}},
+	{"yavin4", {0, 0, 0, 0, 0, 0, 0}}
 }
 
 

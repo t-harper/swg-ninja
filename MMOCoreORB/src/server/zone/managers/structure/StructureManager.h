@@ -12,6 +12,7 @@
 namespace server {
 namespace zone {
 	class ZoneServer;
+	class Zone;
 namespace objects {
 namespace scene {
 	class SceneObject;
@@ -57,6 +58,11 @@ public:
 	void loadPlayerStructures(const String& zoneName);
 
 	int placeStructureFromDeed(CreatureObject* creature, StructureDeed* deed, float x, float y, int angle);
+
+	// pre9 local: true for privileged (staff) placers AND for the mayor
+	// of a PUBLIC city when (x, y) lies inside that city's region — the
+	// placement gates trust both identically.
+	static bool isTrustedPlacer(CreatureObject* creature, Zone* zone, float x, float y);
 
 	/**
 	 * Simply creates and places a structure at the provided coordinates.

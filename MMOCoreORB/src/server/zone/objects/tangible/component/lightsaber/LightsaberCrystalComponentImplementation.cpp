@@ -406,21 +406,9 @@ void LightsaberCrystalComponentImplementation::tuneCrystal(CreatureObject* playe
 		return;
 	}
 
-	if (getColor() == 31) {
-		ManagedReference<PlayerObject*> ghost = player->getPlayerObject();
-
-		if (ghost == nullptr)
-			return;
-
-		int tuningCost = 100 + (quality * 75);
-
-		if (ghost->getForcePower() <= tuningCost) {
-			player->sendSystemMessage("@jedi_spam:no_force_power");
-			return;
-		}
-
-		ghost->setForcePower(ghost->getForcePower() - tuningCost);
-	}
+	// pre9 local: tuning is free — zero-force design (stock charged
+	// 100 + quality*75 force to tune pearls, blocking fossil jedi whose
+	// pool is 0).
 
 	if (ownerID == 0) {
 		validateCrystalStats();

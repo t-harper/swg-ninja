@@ -71,7 +71,11 @@ public:
 #else // WITH_SWGREALMS_API
 		StringBuffer query;
 		query << "SELECT session_id FROM sessions WHERE account_id = " << accountID;
-		query << " AND  ip = '"<< client->getSession()->getIPAddress() <<"' AND expires > NOW();";
+		// pre9 local: no ip match — rootless podman port-forwarding rewrites
+		// the client source per-container, so the login instance and the
+		// zone-only instances (multi-galaxy) never see the same address.
+		// The session KEY equality check below remains the credential.
+		query << " AND expires > NOW();";
 		UniqueReference<ResultSet*> result(ServerDatabase::instance()->executeQuery(query));
 
 		if (result == nullptr || !result->next()) {

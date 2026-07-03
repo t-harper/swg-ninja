@@ -382,8 +382,18 @@ int StructureManager::placeStructureFromDeed(CreatureObject* creature, Structure
 			city = areaCity;
 
 		// pre9 local: when a PLAYER city overlaps an NPC city (public
-		// Theed), the player city governs zoning/rank/civic/unique rules.
-		if (!areaCity->isClientRegion()) {
+		// Theed), governance depends on WHO is placing. TRUSTED placers
+		// (staff / that public city's mayor) resolve the PLAYER city so
+		// its zoning/rank/civic/unique rules apply; everyone else
+		// resolves the CLIENT region so the NPC-city protections stand
+		// absolute (mayor curates via place + /transferstructure — not a
+		// militia power).
+		if (privilegedPlacement && !areaCity->isClientRegion()) {
+			city = areaCity;
+			break;
+		}
+
+		if (!privilegedPlacement && areaCity->isClientRegion()) {
 			city = areaCity;
 			break;
 		}

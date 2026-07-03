@@ -1708,6 +1708,24 @@ void PlayerObjectImplementation::notifyOnline() {
 	ChatManager* chatManager = server->getChatManager();
 	ZoneServer* zoneServer = server->getZoneServer();
 
+	// pre9 local: sync the character's permission level from the ACCOUNT
+	// at every login — account elevations (accounts.admin_level) apply to
+	// existing characters without needing /setPermissionLevel bootstrap.
+	{
+		ManagedReference<Account*> loginAccount = getAccount();
+
+		if (loginAccount != nullptr && zoneServer != nullptr) {
+			int accountLevel = loginAccount->getAdminLevel();
+
+			if (accountLevel != adminLevel) {
+				PlayerManager* playerManager = zoneServer->getPlayerManager();
+
+				if (playerManager != nullptr)
+					playerManager->updatePermissionLevel(playerCreature, accountLevel);
+			}
+		}
+	}
+
 	String lowerFirstName = playerCreature->getFirstName();
 	lowerFirstName = lowerFirstName.toLowerCase();
 

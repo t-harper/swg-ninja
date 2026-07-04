@@ -8,6 +8,7 @@
 #include "server/zone/managers/player/PlayerManager.h"
 #include "server/zone/managers/skill/SkillManager.h"
 #include "server/zone/managers/skill/SkillModManager.h"
+#include "server/zone/managers/crafting/schematicmap/SchematicMap.h"
 #include "server/zone/managers/planet/PlanetManager.h"
 #include "server/zone/managers/mission/MissionManager.h"
 #include "server/zone/objects/intangible/VehicleControlDevice.h"
@@ -1837,6 +1838,22 @@ void PlayerObjectImplementation::notifyOnline() {
 	schedulePvpTefRemovalTask();
 
 	MissionManager* missionManager = zoneServer->getMissionManager();
+
+	// pre9 local: re-derive granted draft schematics from the CURRENT
+	// skill data (idempotent — addSchematics skips ones already held).
+	// Heals characters whose schematic lists drifted from their skills
+	// (e.g. the r13 crystal-pack strip, or future table changes).
+	{
+		SkillManager* skillManager = SkillManager::instance();
+		const SkillList* skillList = playerCreature->getSkillList();
+
+		for (int i = 0; i < skillList->size(); ++i) {
+			Skill* skill = skillList->get(i);
+
+			if (skill != nullptr && skill->getSchematicsGranted()->size() > 0)
+				SchematicMap::instance()->addSchematics(asPlayerObject(), *skill->getSchematicsGranted(), true);
+		}
+	}
 
 	// pre9 local: re-derive skill-box skill mods from the CURRENT skills
 	// table — tre revisions that add mods to already-learned skills

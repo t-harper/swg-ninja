@@ -21,6 +21,7 @@
 #include "server/zone/objects/factorycrate/FactoryCrate.h"
 #include "server/zone/objects/tangible/wearables/WearableObject.h"
 #include "server/zone/objects/tangible/component/lightsaber/LightsaberCrystalComponent.h"
+#include "server/zone/objects/tangible/wearables/ArmorObject.h"
 #include "server/zone/ZoneServer.h"
 #include "server/zone/managers/minigames/FishingManager.h"
 #include "server/zone/objects/player/sui/keypadbox/SuiKeypadBox.h"
@@ -283,7 +284,7 @@ void SuiManager::handleCharacterBuilderSelectItem(CreatureObject* player, SuiBox
 		// pre9 local: crate:/socketed: tokens embed an .iff path but are
 		// non-item tokens — without this they'd fall into the item
 		// branch and fail ("error creating the requested item").
-		if (templatePath.indexOf(".iff") < 0 || templatePath.beginsWith("crate:") || templatePath.beginsWith("socketed:")) { // Non-item selections
+		if (templatePath.indexOf(".iff") < 0 || templatePath.beginsWith("crate:") || templatePath.beginsWith("socketed:") || templatePath.beginsWith("hicomp:")) { // Non-item selections
 
 			if (templatePath == "unlearn_all_skills") {
 
@@ -560,6 +561,66 @@ void SuiManager::handleCharacterBuilderSelectItem(CreatureObject* player, SuiBox
 
 				ghost->addSuiBox(cbSui);
 				return;
+
+			// High-End Composite (pre9): "hicomp:<label>:<path>" mints a
+			// composite piece with 4 sockets, 90/90 kinetic/energy, 75
+			// other resists, 40 stun, 1.5x encumbrance, and a serial.
+			} else if (templatePath.beginsWith("hicomp:")) {
+				String hcSpec = templatePath.subString(7);
+				int hcSep = hcSpec.indexOf(':');
+				String hcLabel = (hcSep > 0) ? hcSpec.subString(0, hcSep) : "";
+				String hcPath = (hcSep > 0) ? hcSpec.subString(hcSep + 1) : hcSpec;
+
+				ManagedReference<SceneObject*> hcInventory = player->getSlottedObject("inventory");
+
+				if (hcInventory == nullptr || hcInventory->isContainerFullRecursive()) {
+					player->sendSystemMessage("Your inventory is full.");
+				} else {
+					ManagedReference<SceneObject*> hcScene = zserv->createObject(hcPath.hashCode(), 2);
+
+					if (hcScene == nullptr || !hcScene->isArmorObject()) {
+						if (hcScene != nullptr) {
+							Locker hlocker(hcScene);
+							hcScene->destroyObjectFromDatabase(true);
+						}
+
+						player->sendSystemMessage("Failed to create the armor piece.");
+					} else {
+						ManagedReference<ArmorObject*> hcArmor = cast<ArmorObject*>(hcScene.get());
+
+						Locker hlocker(hcArmor);
+
+						hcArmor->setMaxSockets(WearableObject::MAXSOCKETS);
+						hcArmor->setKinetic(90.f);
+						hcArmor->setEnergy(90.f);
+						hcArmor->setElectricity(75.f);
+						hcArmor->setBlast(75.f);
+						hcArmor->setHeat(75.f);
+						hcArmor->setCold(75.f);
+						hcArmor->setAcid(75.f);
+						hcArmor->setLightSaber(75.f);
+						hcArmor->setStun(40.f);
+						hcArmor->setHealthEncumbrance(hcArmor->getHealthEncumbrance() * 3 / 2);
+						hcArmor->setActionEncumbrance(hcArmor->getActionEncumbrance() * 3 / 2);
+						hcArmor->setMindEncumbrance(hcArmor->getMindEncumbrance() * 3 / 2);
+
+						CraftingManager* hcCrafting = zserv->getCraftingManager();
+
+						if (hcCrafting != nullptr)
+							hcArmor->setSerialNumber(hcCrafting->generateSerial());
+
+						if (!hcLabel.isEmpty())
+							hcArmor->setCustomObjectName(hcLabel + " (High-End)", false);
+
+						if (hcInventory->transferObject(hcArmor, -1, true)) {
+							hcInventory->broadcastObject(hcArmor, true);
+							player->sendSystemMessage("Created: " + hcLabel + " (High-End).");
+						} else {
+							hcArmor->destroyObjectFromDatabase(true);
+							player->sendSystemMessage("Failed to transfer the armor to your inventory.");
+						}
+					}
+				}
 
 			// Special color crystals (pre9): "crystal_color:<index>:<label>"
 			// mints a force crystal at a rare color index (12+ — normal

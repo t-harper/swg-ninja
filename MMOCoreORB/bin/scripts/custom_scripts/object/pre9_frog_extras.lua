@@ -99,6 +99,20 @@ else
 			"Mandalorian Jetpack Schematic", DWSCHEM .. "jetpack_schematic.iff",
 		}
 
+		local COMP = "object/tangible/wearables/armor/composite/armor_composite_"
+		armor[#armor + 1] = "High-End Composite"
+		armor[#armor + 1] = {
+			"Composite Left Bicep (HE)", "hicomp:Composite Left Bicep:" .. COMP .. "bicep_l.iff",
+			"Composite Right Bicep (HE)", "hicomp:Composite Right Bicep:" .. COMP .. "bicep_r.iff",
+			"Composite Boots (HE)", "hicomp:Composite Boots:" .. COMP .. "boots.iff",
+			"Composite Left Bracer (HE)", "hicomp:Composite Left Bracer:" .. COMP .. "bracer_l.iff",
+			"Composite Right Bracer (HE)", "hicomp:Composite Right Bracer:" .. COMP .. "bracer_r.iff",
+			"Composite Chest Plate (HE)", "hicomp:Composite Chest Plate:" .. COMP .. "chest_plate.iff",
+			"Composite Gloves (HE)", "hicomp:Composite Gloves:" .. COMP .. "gloves.iff",
+			"Composite Helmet (HE)", "hicomp:Composite Helmet:" .. COMP .. "helmet.iff",
+			"Composite Leggings (HE)", "hicomp:Composite Leggings:" .. COMP .. "leggings.iff",
+		}
+
 		local BONE = "object/tangible/wearables/armor/bone/armor_bone_s01_"
 		armor[#armor + 1] = "Bone Armor"
 		armor[#armor + 1] = {

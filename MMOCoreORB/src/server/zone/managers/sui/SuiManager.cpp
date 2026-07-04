@@ -600,16 +600,24 @@ void SuiManager::handleCharacterBuilderSelectItem(CreatureObject* player, SuiBox
 						// reachable, then back-compute members for the
 						// sub-cap targets. Lightsaber stays 0 — sabers
 						// cut through everything.
-						const float HC_SLICE = 1.01f;
+						// setEffectivenessSlice takes the DELTA (0..0.5)
+						// and stores 1+delta; the 90 cap arms only when
+						// sliced && slice > 1.
 						hcArmor->setSliced(true);
-						hcArmor->setEffectivenessSlice(HC_SLICE);
+						hcArmor->setEffectivenessSlice(0.01f);
 
 						const float hcBase = hcArmor->getBaseProtection();
+						const float hcSpec = hcArmor->getSpecialProtection();
 						auto hcRaw = [&](int type, float target) -> float {
 							if (hcArmor->isVulnerable(type))
 								return target;
 
-							return Math::max(0.f, target / HC_SLICE - hcBase);
+							// +0.5 keeps the int math landing ON target
+							// (the 1.01 slice adds <1 below 100)
+							if (hcArmor->isSpecial(type))
+								return Math::max(0.f, target - hcSpec + 0.5f);
+
+							return Math::max(0.f, target - hcBase + 0.5f);
 						};
 
 						hcArmor->setKinetic(500.f);  // pinned to the 90 sliced cap

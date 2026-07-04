@@ -247,6 +247,10 @@ class ArmorObject extends WearableObject {
 		return baseProtection;
 	}
 
+	public float getSpecialProtection() {
+		return specialProtection;
+	}
+
 	public void setEffectivenessSlice(float value) {
 		if (value > 0.5f || value < 0)
 			return;

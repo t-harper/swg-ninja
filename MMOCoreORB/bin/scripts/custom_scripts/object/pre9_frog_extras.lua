@@ -43,26 +43,28 @@ else
 	local jediItems = findSub(items, "Jedi Items")
 	if jediItems ~= nil then
 		jediItems[#jediItems + 1] = "Special Crystals"
+		-- canonical color names from string/en/jedi_spam.stf
+		-- saber_color_N — labels must match the client color line
 		jediItems[#jediItems + 1] = {
-			"Sunrider's Destiny", "crystal_color:12:Sunrider's Destiny",
-			"Kenobi's Legacy", "crystal_color:13:Kenobi's Legacy",
-			"Windu's Guile", "crystal_color:14:Windu's Guile",
-			"Bane's Heart", "crystal_color:15:Bane's Heart",
-			"Bondara's Folly", "crystal_color:16:Bondara's Folly",
-			"Ventress' Malice", "crystal_color:17:Ventress' Malice",
-			"Traya's Truth", "crystal_color:18:Traya's Truth",
-			"Ragnos' Ember", "crystal_color:19:Ragnos' Ember",
-			"Revan's Resolve", "crystal_color:20:Revan's Resolve",
-			"Ulic's Redemption", "crystal_color:21:Ulic's Redemption",
-			"Bogan's Shadow", "crystal_color:22:Bogan's Shadow",
-			"Ashla's Grace", "crystal_color:23:Ashla's Grace",
-			"Hoth's Bulwark", "crystal_color:24:Hoth's Bulwark",
-			"Vodo's Wisdom", "crystal_color:25:Vodo's Wisdom",
-			"Arca's Vigil", "crystal_color:26:Arca's Vigil",
-			"Ood's Endurance", "crystal_color:27:Ood's Endurance",
-			"Odan-Urr's Insight", "crystal_color:28:Odan-Urr's Insight",
-			"Thon's Serenity", "crystal_color:29:Thon's Serenity",
-			"Exar's Doom", "crystal_color:30:Exar's Doom",
+			"Maul's Vengence", "crystal_color:12:Maul's Vengence",
+			"Kun's Blood", "crystal_color:13:Kun's Blood",
+			"Bondara's Folly", "crystal_color:14:Bondara's Folly",
+			"Ulic's Redemption", "crystal_color:15:Ulic's Redemption",
+			"Bane's Heart", "crystal_color:16:Bane's Heart",
+			"Gallia's Intuition", "crystal_color:17:Gallia's Intuition",
+			"Prowess of Plo Koon", "crystal_color:18:Prowess of Plo Koon",
+			"B'nar's Sacrifice", "crystal_color:19:B'nar's Sacrifice",
+			"Windu's Guile", "crystal_color:20:Windu's Guile",
+			"Mundi's Response", "crystal_color:21:Mundi's Response",
+			"Strength of Luminaria", "crystal_color:22:Strength of Luminaria",
+			"Baas's Wisdom", "crystal_color:23:Baas's Wisdom",
+			"Quintessence of the Force", "crystal_color:24:Quintessence of the Force",
+			"Dawn of Dagobah", "crystal_color:25:Dawn of Dagobah",
+			"Horn's Future", "crystal_color:26:Horn's Future",
+			"Qui-gon's Devotion", "crystal_color:27:Qui-gon's Devotion",
+			"Kenobi's Legacy", "crystal_color:28:Kenobi's Legacy",
+			"Sunrider's Destiny", "crystal_color:29:Sunrider's Destiny",
+			"Kit's Ferocity", "crystal_color:30:Kit's Ferocity",
 		}
 	end
 

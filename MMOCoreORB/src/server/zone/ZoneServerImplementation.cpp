@@ -960,8 +960,7 @@ void ZoneServerImplementation::loadLoginMessage() {
 		reader = nullptr;
 	}
 
-	loginMessage += "\nLatest Commits:\n";
-	loginMessage += ConfigManager::instance()->getRevision();
+	// pre9 local: no commit history / author names on the login screen.
 
 	delete reader;
 	delete file;

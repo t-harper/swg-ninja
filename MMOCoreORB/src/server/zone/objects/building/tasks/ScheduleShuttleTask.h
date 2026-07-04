@@ -53,25 +53,24 @@ public:
 
 		ManagedReference<CityRegion*> cityRegion = strongShuttle->getCityRegion().get();
 
-		// pre9 local: only ACTUAL player-city shuttle templates take the
-		// player-city branch. Without this, a player city overlapping an
-		// NPC city (public Theed at 1000m) swallows the STATIC city
-		// shuttles at boot — they register as "the player city's shuttle"
-		// and the static travel points (Theed Spaceport etc.) never get a
-		// shuttle linked ("Travel from this location is unavailable").
+		// pre9 local: POSITION decides ownership, not the city region.
+		// SOE reuses the player_shuttle/player_transport templates for
+		// STATIC NPC pads, so template checks can't discriminate — and a
+		// player city overlapping an NPC city (public Theed at 1000m)
+		// makes region checks lie. A shuttle standing within 25m of a
+		// STATIC travel point IS that point's shuttle; only shuttles with
+		// no static point nearby (player shuttleport/starport child
+		// spawns) register a player-city point.
 		bool isStarport = false;
-		bool isPlayerCityShuttle = false;
 		auto shuttleTemplate = strongShuttle->getObjectTemplate();
 
-		if (shuttleTemplate != nullptr) {
-			const String& shuttleTemplateName = shuttleTemplate->getFullTemplateString();
+		if (shuttleTemplate != nullptr)
+			isStarport = shuttleTemplate->getFullTemplateString().contains("starport_shuttle");
 
-			isStarport = shuttleTemplateName.contains("starport_shuttle");
-			isPlayerCityShuttle = isStarport || shuttleTemplateName.contains("player_shuttle");
-		}
+		Reference<PlanetTravelPoint*> staticPoint = planetManager->getNearestPlanetTravelPoint(strongShuttle, 25.f);
 
 		// Player City
-		if ((cityRegion != nullptr) && !cityRegion->isClientRegion() && isPlayerCityShuttle) {
+		if ((cityRegion != nullptr) && !cityRegion->isClientRegion() && staticPoint == nullptr) {
 			float x = strongShuttle->getWorldPositionX();
 			float y = strongShuttle->getWorldPositionY();
 			float z = strongShuttle->getWorldPositionZ();

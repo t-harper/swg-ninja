@@ -53,8 +53,25 @@ public:
 
 		ManagedReference<CityRegion*> cityRegion = strongShuttle->getCityRegion().get();
 
+		// pre9 local: only ACTUAL player-city shuttle templates take the
+		// player-city branch. Without this, a player city overlapping an
+		// NPC city (public Theed at 1000m) swallows the STATIC city
+		// shuttles at boot — they register as "the player city's shuttle"
+		// and the static travel points (Theed Spaceport etc.) never get a
+		// shuttle linked ("Travel from this location is unavailable").
+		bool isStarport = false;
+		bool isPlayerCityShuttle = false;
+		auto shuttleTemplate = strongShuttle->getObjectTemplate();
+
+		if (shuttleTemplate != nullptr) {
+			const String& shuttleTemplateName = shuttleTemplate->getFullTemplateString();
+
+			isStarport = shuttleTemplateName.contains("starport_shuttle");
+			isPlayerCityShuttle = isStarport || shuttleTemplateName.contains("player_shuttle");
+		}
+
 		// Player City
-		if ((cityRegion != nullptr) && !cityRegion->isClientRegion()) {
+		if ((cityRegion != nullptr) && !cityRegion->isClientRegion() && isPlayerCityShuttle) {
 			float x = strongShuttle->getWorldPositionX();
 			float y = strongShuttle->getWorldPositionY();
 			float z = strongShuttle->getWorldPositionZ();
@@ -69,16 +86,6 @@ public:
 			clocker.release();
 
 			PlanetTravelPoint* planetTravelPoint = new PlanetTravelPoint(zoneName, cityRegion->getCityRegionName(), arrivalVector, arrivalVector, strongShuttle, 6.f);
-
-			// pre9 local: player-city STARPORTS spawn a distinct shuttle
-			// template (starport_shuttle); their travel point allows
-			// interplanetary travel. JTL ship launch is handled by the
-			// building's terminal_space child independently.
-			bool isStarport = false;
-			auto shuttleTemplate = strongShuttle->getObjectTemplate();
-
-			if (shuttleTemplate != nullptr && shuttleTemplate->getFullTemplateString().contains("starport_shuttle"))
-				isStarport = true;
 
 			if (isStarport)
 				planetTravelPoint->setInterplanetary(true);

@@ -332,8 +332,10 @@ void LightsaberCrystalComponentImplementation::fillObjectMenuResponse(ObjectMenu
 	if (ghost != nullptr && ghost->isPrivileged()) {
 		menuResponse->addRadialMenuItem(129, 3, "Staff Commands");
 
-		if (getColor() == 31)
+		if (getColor() == 31) {
 			menuResponse->addRadialMenuItemToRadialID(129, 130, 3, "Recalculate Stats");
+			menuResponse->addRadialMenuItemToRadialID(129, 132, 3, "Maximize Stats"); // pre9 local
+		}
 
 		if (ownerID != 0)
 			menuResponse->addRadialMenuItemToRadialID(129, 131, 3, "Untune Crystal");
@@ -360,6 +362,28 @@ int LightsaberCrystalComponentImplementation::handleObjectMenuSelect(CreatureObj
 	if (ghost != nullptr && ghost->isPrivileged()){
 		if (selectedID == 130 && getColor() == 31) {
 			generateCrystalStats();
+		} else if (selectedID == 132 && getColor() == 31) {
+			// pre9 local: staff "Maximize Stats" — best bound of every stat
+			// at the top of the pearl scale.
+			ManagedReference<LootManager*> lootManager = getZoneServer()->getLootManager();
+			const CrystalData* crystalData = lootManager != nullptr ? lootManager->getCrystalData(getObjectTemplate()->getTemplateFileName()) : nullptr;
+
+			if (crystalData != nullptr) {
+				itemLevel = 350;
+				quality = getCrystalQuality(); // FLAWLESS at 350
+
+				setMaxCondition(crystalData->getMaxHitpoints());
+				damage = crystalData->getMaxDamage();
+				sacHealth = crystalData->getMinHealthSac();
+				sacAction = crystalData->getMinActionSac();
+				sacMind = crystalData->getMinMindSac();
+				woundChance = crystalData->getMaxWoundChance();
+				forceCost = 0;
+				floatForceCost = 0.f;
+				attackSpeed = Math::getPrecision(crystalData->getMinAttackSpeed(), 2);
+
+				player->sendSystemMessage("Pearl stats maximized.");
+			}
 		} else if (selectedID == 131 && ownerID != 0) {
 			ownerID = 0;
 

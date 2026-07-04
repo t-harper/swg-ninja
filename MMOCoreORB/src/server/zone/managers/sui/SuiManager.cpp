@@ -20,6 +20,7 @@
 #include "server/zone/objects/tangible/TangibleObject.h"
 #include "server/zone/objects/factorycrate/FactoryCrate.h"
 #include "server/zone/objects/tangible/wearables/WearableObject.h"
+#include "server/zone/objects/tangible/component/lightsaber/LightsaberCrystalComponent.h"
 #include "server/zone/ZoneServer.h"
 #include "server/zone/managers/minigames/FishingManager.h"
 #include "server/zone/objects/player/sui/keypadbox/SuiKeypadBox.h"
@@ -559,6 +560,49 @@ void SuiManager::handleCharacterBuilderSelectItem(CreatureObject* player, SuiBox
 
 				ghost->addSuiBox(cbSui);
 				return;
+
+			// Special color crystals (pre9): "crystal_color:<index>:<label>"
+			// mints a force crystal at a rare color index (12+ — normal
+			// loot rolls only 0-11) with the legendary name stamped on.
+			} else if (templatePath.beginsWith("crystal_color:")) {
+				String colorSpec = templatePath.subString(14);
+				int colorSep = colorSpec.indexOf(':');
+				int crystalColor = Integer::valueOf(colorSep > 0 ? colorSpec.subString(0, colorSep) : colorSpec);
+				String crystalLabel = (colorSep > 0) ? colorSpec.subString(colorSep + 1) : "";
+
+				ManagedReference<SceneObject*> crysInventory = player->getSlottedObject("inventory");
+
+				if (crysInventory == nullptr || crysInventory->isContainerFullRecursive()) {
+					player->sendSystemMessage("Your inventory is full.");
+				} else {
+					ManagedReference<SceneObject*> crysScene = zserv->createObject(STRING_HASHCODE("object/tangible/component/weapon/lightsaber/lightsaber_module_force_crystal.iff"), 2);
+
+					if (crysScene == nullptr || !crysScene->isLightsaberCrystalObject()) {
+						if (crysScene != nullptr) {
+							Locker clocker(crysScene);
+							crysScene->destroyObjectFromDatabase(true);
+						}
+
+						player->sendSystemMessage("Failed to create the crystal.");
+					} else {
+						LightsaberCrystalComponent* crystal = cast<LightsaberCrystalComponent*>(crysScene.get());
+
+						Locker clocker(crystal);
+
+						crystal->setColor(crystalColor);
+
+						if (!crystalLabel.isEmpty())
+							crystal->setCustomObjectName(crystalLabel, false);
+
+						if (crysInventory->transferObject(crystal, -1, true)) {
+							crysInventory->broadcastObject(crystal, true);
+							player->sendSystemMessage("Created: " + crystalLabel + ".");
+						} else {
+							crystal->destroyObjectFromDatabase(true);
+							player->sendSystemMessage("Failed to transfer the crystal.");
+						}
+					}
+				}
 
 			// Socketed clothing (pre9): "socketed:<label>:<server template
 			// path>" mints the wearable with all 4 sockets open (frog-made

@@ -40,6 +40,18 @@ else
 	items[#items + 1] = "Armor Attachment Builder"
 	items[#items + 1] = "aa_builder"
 
+	local jediItems = findSub(items, "Jedi Items")
+	if jediItems ~= nil then
+		jediItems[#jediItems + 1] = "Special Crystals"
+		jediItems[#jediItems + 1] = {
+			"Sunrider's Destiny", "crystal_color:12:Sunrider's Destiny",
+			"Kenobi's Legacy", "crystal_color:13:Kenobi's Legacy",
+			"Windu's Guile", "crystal_color:14:Windu's Guile",
+			"Bane's Heart", "crystal_color:15:Bane's Heart",
+			"Bondara's Folly", "crystal_color:16:Bondara's Folly",
+		}
+	end
+
 	local W = "object/tangible/wearables/"
 	items[#items + 1] = "Socketed Clothing"
 	items[#items + 1] = {

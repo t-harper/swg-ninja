@@ -1,7 +1,7 @@
 JediTrials = ScreenPlay:new {
 	padawanTrialsEnabled = true,
 	knightTrialsEnabled = true,
-	fossilBranchesRequired = 3, -- pre9 local: padawan branches mastered to qualify
+	fossilBranchesRequired = 3, -- pre9 local: KNIGHT (journeyman) branches mastered to qualify
 
 	-- Object ID's of the various force shrines.
 	forceShrineIds = {
@@ -54,14 +54,15 @@ function JediTrials:isEligibleForKnightTrials(pPlayer)
 end
 
 -- pre9 local: fossil-tree knight eligibility — master (tier 4) at least
--- fossilBranchesRequired of the 4 padawan branches. Replaces the village
+-- fossilBranchesRequired of the 4 KNIGHT (journeyman) branches, either
+-- side. Replaces the village
 -- force_discipline counting, which is always false on this server.
 function JediTrials:fossilKnightPrereqsMet(pPlayer)
 	local branches = { "saber", "healing", "force_power", "force_manipulation" }
 	local mastered = 0
 
 	for i = 1, #branches do
-		if (CreatureObject(pPlayer):hasSkill("jedi_padawan_" .. branches[i] .. "_04")) then
+		if (CreatureObject(pPlayer):hasSkill("jedi_light_side_journeyman_" .. branches[i] .. "_04") or CreatureObject(pPlayer):hasSkill("jedi_dark_side_journeyman_" .. branches[i] .. "_04")) then
 			mastered = mastered + 1
 		end
 	end

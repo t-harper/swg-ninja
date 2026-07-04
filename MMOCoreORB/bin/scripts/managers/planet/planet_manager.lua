@@ -137,6 +137,29 @@ dantooine = {
 	}
 }
 
+hutta = {
+	weatherEnabled = 1,
+	gcwEnabled = 0,
+
+	planetTravelPoints = {
+		{name = "Jiguuna Starport", x = -767.0, z = 80.0, y = 1795.0, interplanetaryTravelAllowed = 1, incomingTravelAllowed = 1, landingRange = 6}
+	},
+
+	planetObjects = {
+		{templateFile = "object/creature/npc/theme_park/player_transport.iff", ox = 0, oy = 0, oz = 0, ow = 1, x = -767.0, z = 80.0, y = 1795.0, parentid = 0}
+	}
+}
+
+chandrila = {
+	weatherEnabled = 1,
+	gcwEnabled = 0,
+
+	planetTravelPoints = {
+		{name = "Chandrila Starport", x = 164.0, z = 6.0, y = -2937.0, interplanetaryTravelAllowed = 1, incomingTravelAllowed = 1, landingRange = 6},
+		{name = "Chandrila Outpost", x = -5248.3, z = 18.9, y = 281.2, interplanetaryTravelAllowed = 1, incomingTravelAllowed = 1, landingRange = 6}
+	},
+}
+
 dathomir = {
 	weatherEnabled = 1,
 	gcwEnabled = 1,

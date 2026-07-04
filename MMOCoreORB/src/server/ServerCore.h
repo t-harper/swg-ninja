@@ -112,6 +112,11 @@ public:
 
 	void shutdown();
 	void queueConsoleCommand(const String& commandString);
+
+	// pre9 local: lets FifoConsoleService observe console availability
+	bool isConsoleHandlingCommands() const {
+		return handleCmds;
+	}
 	void handleCommands();
 	void processConfig();
 	void signalShutdown(ShutdownFlags flags = ShutdownFlags::DEFAULT);

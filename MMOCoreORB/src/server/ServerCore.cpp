@@ -5,6 +5,8 @@
 #include "ServerCore.h"
 
 #include <type_traits>
+#include <sys/stat.h>
+#include <cstdio>
 
 #include "db/MySqlDatabase.h"
 #include "db/ServerDatabase.h"
@@ -53,6 +55,54 @@ namespace coredetail {
 		bool inputAvailable() const;
 
 		void run() override;
+	};
+
+	// pre9 local: host-writable command FIFO at log/console.fifo — the
+	// stdin console dies permanently on its first EOF under podman
+	// (any closed `podman attach` delivers one), so host scripts
+	// (swg-restart, unit ExecStop) use this channel for
+	// save/broadcast/shutdown instead. Lines feed the same
+	// queueConsoleCommand pipeline as the stdin reader.
+	class FifoConsoleService final : public ServiceThread {
+		ServerCore* core;
+
+	public:
+		FifoConsoleService(ServerCore* serverCoreInstance) : ServiceThread("FifoConsoleService") {
+			core = serverCoreInstance;
+		}
+
+		void run() override {
+			const char* fifoPath = "log/console.fifo";
+
+			unlink(fifoPath);
+
+			if (mkfifo(fifoPath, 0660) != 0) {
+				System::out << "[FifoConsoleService] mkfifo failed, channel disabled" << endl;
+				return;
+			}
+
+			while (core->isConsoleHandlingCommands()) {
+				FILE* fifo = fopen(fifoPath, "r"); // blocks until a writer opens
+
+				if (fifo == nullptr) {
+					Thread::sleep(1000);
+					continue;
+				}
+
+				char line[256];
+
+				while (fgets(line, sizeof(line), fifo) != nullptr) {
+					String cmd = String(line).trim();
+
+					if (!cmd.isEmpty()) {
+						System::out << "[console.fifo] " << cmd << endl;
+						core->queueConsoleCommand(cmd);
+					}
+				}
+
+				fclose(fifo); // writer side closed; reopen for the next sender
+			}
+		}
 	};
 
 #ifdef PLATFORM_WIN
@@ -1080,6 +1130,10 @@ void ServerCore::handleCommands() {
 
 	auto reader = coredetail::ConsoleReaderService(instance);
 	reader.start(true);
+
+	// pre9 local: reliable host command channel (see FifoConsoleService)
+	auto fifoReader = coredetail::FifoConsoleService(instance);
+	fifoReader.start(true);
 
 	while (handleCmds) {
 		Thread::sleep(500);

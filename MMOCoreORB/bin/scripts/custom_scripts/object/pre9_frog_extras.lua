@@ -49,6 +49,20 @@ else
 			"Windu's Guile", "crystal_color:14:Windu's Guile",
 			"Bane's Heart", "crystal_color:15:Bane's Heart",
 			"Bondara's Folly", "crystal_color:16:Bondara's Folly",
+			"Ventress' Malice", "crystal_color:17:Ventress' Malice",
+			"Traya's Truth", "crystal_color:18:Traya's Truth",
+			"Ragnos' Ember", "crystal_color:19:Ragnos' Ember",
+			"Revan's Resolve", "crystal_color:20:Revan's Resolve",
+			"Ulic's Redemption", "crystal_color:21:Ulic's Redemption",
+			"Bogan's Shadow", "crystal_color:22:Bogan's Shadow",
+			"Ashla's Grace", "crystal_color:23:Ashla's Grace",
+			"Hoth's Bulwark", "crystal_color:24:Hoth's Bulwark",
+			"Vodo's Wisdom", "crystal_color:25:Vodo's Wisdom",
+			"Arca's Vigil", "crystal_color:26:Arca's Vigil",
+			"Ood's Endurance", "crystal_color:27:Ood's Endurance",
+			"Odan-Urr's Insight", "crystal_color:28:Odan-Urr's Insight",
+			"Thon's Serenity", "crystal_color:29:Thon's Serenity",
+			"Exar's Doom", "crystal_color:30:Exar's Doom",
 		}
 	end
 

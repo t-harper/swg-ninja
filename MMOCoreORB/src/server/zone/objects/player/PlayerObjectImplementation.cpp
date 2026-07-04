@@ -7,6 +7,7 @@
 #include "server/zone/managers/object/ObjectManager.h"
 #include "server/zone/managers/player/PlayerManager.h"
 #include "server/zone/managers/skill/SkillManager.h"
+#include "server/zone/managers/skill/SkillModManager.h"
 #include "server/zone/managers/planet/PlanetManager.h"
 #include "server/zone/managers/mission/MissionManager.h"
 #include "server/zone/objects/intangible/VehicleControlDevice.h"
@@ -1836,6 +1837,11 @@ void PlayerObjectImplementation::notifyOnline() {
 	schedulePvpTefRemovalTask();
 
 	MissionManager* missionManager = zoneServer->getMissionManager();
+
+	// pre9 local: re-derive skill-box skill mods from the CURRENT skills
+	// table — tre revisions that add mods to already-learned skills
+	// (e.g. r7 slope_move) otherwise never reach existing characters.
+	SkillModManager::instance()->verifySkillBoxSkillMods(playerCreature);
 
 	// pre9 local: retro-stamp fossil jedi (padawan box awarded before the
 	// jediState hook existed) so the state-keyed systems apply to them.

@@ -243,6 +243,10 @@ class ArmorObject extends WearableObject {
 		mindEncumbrance = encumber;
 	}
 
+	public float getBaseProtection() {
+		return baseProtection;
+	}
+
 	public void setEffectivenessSlice(float value) {
 		if (value > 0.5f || value < 0)
 			return;

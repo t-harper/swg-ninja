@@ -22,6 +22,7 @@
 #include "server/zone/objects/tangible/wearables/WearableObject.h"
 #include "server/zone/objects/tangible/component/lightsaber/LightsaberCrystalComponent.h"
 #include "server/zone/objects/tangible/wearables/ArmorObject.h"
+#include "templates/tangible/SharedWeaponObjectTemplate.h"
 #include "server/zone/ZoneServer.h"
 #include "server/zone/managers/minigames/FishingManager.h"
 #include "server/zone/objects/player/sui/keypadbox/SuiKeypadBox.h"
@@ -591,15 +592,35 @@ void SuiManager::handleCharacterBuilderSelectItem(CreatureObject* player, SuiBox
 						Locker hlocker(hcArmor);
 
 						hcArmor->setMaxSockets(WearableObject::MAXSOCKETS);
-						hcArmor->setKinetic(90.f);
-						hcArmor->setEnergy(90.f);
-						hcArmor->setElectricity(75.f);
-						hcArmor->setBlast(75.f);
-						hcArmor->setHeat(75.f);
-						hcArmor->setCold(75.f);
-						hcArmor->setAcid(75.f);
-						hcArmor->setLightSaber(75.f);
-						hcArmor->setStun(40.f);
+
+						// Effective values go through getTypeValue():
+						// vulnerable type -> raw member; otherwise
+						// (base + member) * slice, capped 80 unsliced /
+						// 90 sliced. Slice the piece so 90/90 is
+						// reachable, then back-compute members for the
+						// sub-cap targets. Lightsaber stays 0 — sabers
+						// cut through everything.
+						const float HC_SLICE = 1.01f;
+						hcArmor->setSliced(true);
+						hcArmor->setEffectivenessSlice(HC_SLICE);
+
+						const float hcBase = hcArmor->getBaseProtection();
+						auto hcRaw = [&](int type, float target) -> float {
+							if (hcArmor->isVulnerable(type))
+								return target;
+
+							return Math::max(0.f, target / HC_SLICE - hcBase);
+						};
+
+						hcArmor->setKinetic(500.f);  // pinned to the 90 sliced cap
+						hcArmor->setEnergy(500.f);   // pinned to the 90 sliced cap
+						hcArmor->setElectricity(hcRaw(SharedWeaponObjectTemplate::ELECTRICITY, 75.f));
+						hcArmor->setBlast(hcRaw(SharedWeaponObjectTemplate::BLAST, 75.f));
+						hcArmor->setHeat(hcRaw(SharedWeaponObjectTemplate::HEAT, 75.f));
+						hcArmor->setCold(hcRaw(SharedWeaponObjectTemplate::COLD, 75.f));
+						hcArmor->setAcid(hcRaw(SharedWeaponObjectTemplate::ACID, 75.f));
+						hcArmor->setLightSaber(0.f);
+						hcArmor->setStun(hcRaw(SharedWeaponObjectTemplate::STUN, 40.f));
 						hcArmor->setHealthEncumbrance(hcArmor->getHealthEncumbrance() * 3 / 2);
 						hcArmor->setActionEncumbrance(hcArmor->getActionEncumbrance() * 3 / 2);
 						hcArmor->setMindEncumbrance(hcArmor->getMindEncumbrance() * 3 / 2);

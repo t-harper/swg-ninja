@@ -2178,11 +2178,12 @@ void PlayerManagerImplementation::disseminateExperience(TangibleObject* destruct
 				//Award individual expType
 				awardExperience(attackerCreo, xpType, xpAmount);
 
-				// pre9 local: lightsaber kills also feed jedi XP at 1/5
-				// the saber amount — a fresh padawan otherwise has no
-				// jedi_general source until force attacks are trained.
+				// pre9 local: lightsaber kills also feed jedi XP at the
+				// same ratio combat XP accrues from weapon XP (0.1) — a
+				// fresh padawan otherwise has no jedi_general source
+				// until force attacks are trained.
 				if (xpType.contains("lightsaber"))
-					awardExperience(attackerCreo, "jedi_general", xpAmount / 5);
+					awardExperience(attackerCreo, "jedi_general", xpAmount, true, 0.1f);
 			}
 
 			awardExperience(attackerCreo, "combat_general", combatXp, true, 0.1f);

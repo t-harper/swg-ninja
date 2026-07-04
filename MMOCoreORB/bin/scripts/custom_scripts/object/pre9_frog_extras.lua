@@ -37,6 +37,9 @@ else
 	items[#items + 1] = "Clothing Attachment Builder"
 	items[#items + 1] = "sea_builder"
 
+	items[#items + 1] = "Armor Attachment Builder"
+	items[#items + 1] = "aa_builder"
+
 	local armor = findSub(items, "Armor")
 
 	if armor == nil then

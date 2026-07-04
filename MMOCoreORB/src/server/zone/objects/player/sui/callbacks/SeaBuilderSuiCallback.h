@@ -27,15 +27,26 @@
 class SeaBuilderSuiCallback : public SuiCallback {
 	Vector<String> allMods;
 	Vector<String> chosenMods;
+	bool armorMode;
 
 public:
 	static const int MAXMODS = 6;
 
-	SeaBuilderSuiCallback(ZoneServer* serv) : SuiCallback(serv) {
+	SeaBuilderSuiCallback(ZoneServer* serv, bool armor = false) : SuiCallback(serv) {
+		armorMode = armor;
+
 		LootManager* lootManager = serv->getLootManager();
 
-		if (lootManager != nullptr)
-			lootManager->getLootableClothingAttachmentMods(allMods);
+		if (lootManager != nullptr) {
+			if (armorMode)
+				lootManager->getLootableArmorAttachmentMods(allMods);
+			else
+				lootManager->getLootableClothingAttachmentMods(allMods);
+		}
+	}
+
+	bool isArmorMode() const {
+		return armorMode;
 	}
 
 	const Vector<String>* getAllMods() const {
@@ -46,8 +57,8 @@ public:
 		return &chosenMods;
 	}
 
-	static void populate(SuiListBox* listBox, const Vector<String>& all, const Vector<String>& chosen) {
-		listBox->setPromptTitle("Clothing Attachment Builder");
+	static void populate(SuiListBox* listBox, const Vector<String>& all, const Vector<String>& chosen, bool armor = false) {
+		listBox->setPromptTitle(armor ? "Armor Attachment Builder" : "Clothing Attachment Builder");
 
 		StringBuffer prompt;
 		prompt << "Select a skill mod and press OK to add it at +25 (up to "
@@ -115,7 +126,7 @@ public:
 			chosenMods.add(choice);
 
 		listBox->removeAllMenuItems();
-		populate(listBox, allMods, chosenMods);
+		populate(listBox, allMods, chosenMods, armorMode);
 
 		ghost->addSuiBox(listBox);
 		creature->sendMessage(listBox->generateMessage());
@@ -137,7 +148,7 @@ private:
 
 		ZoneServer* zserv = creature->getZoneServer();
 
-		String templatePath = "object/tangible/gem/clothing.iff";
+		String templatePath = armorMode ? "object/tangible/gem/armor.iff" : "object/tangible/gem/clothing.iff";
 		ManagedReference<SceneObject*> object = zserv->createObject(templatePath.hashCode(), 1);
 
 		if (object == nullptr || !object->isAttachment()) {

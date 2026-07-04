@@ -225,6 +225,9 @@ for i = 1, #PRE9_SABER_LIST do
 		t.damageType = PRE9_DAMAGE_TYPE
 		t.forceCost = 0
 		t.xpType = PRE9_XP[e.family]
+		-- pre9: make per-type saber toughness mods functional (stock
+		-- weapons reference only lightsaber_toughness)
+		t.defenderToughnessModifiers = { "lightsaber_toughness", e.family .. "lightsaber_toughness" }
 		if t.minDamage ~= nil then t.minDamage = t.minDamage * PRE9_DAMAGE_MULT end
 		if t.maxDamage ~= nil then t.maxDamage = t.maxDamage * PRE9_DAMAGE_MULT end
 		if t.experimentalSubGroupTitles ~= nil and t.experimentalMin ~= nil and t.experimentalMax ~= nil then

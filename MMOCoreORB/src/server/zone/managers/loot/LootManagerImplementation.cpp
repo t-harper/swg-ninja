@@ -657,18 +657,35 @@ String LootManagerImplementation::getRandomLootableMod(uint32 sceneObjectType) {
 }
 
 void LootManagerImplementation::getLootableClothingAttachmentMods(Vector<String>& mods) {
-	for (int i = 0; i < lootableClothingAttachmentMods.size(); ++i) {
-		mods.add(lootableClothingAttachmentMods.get(i));
-	}
+	// pre9 local: merged with the builder-only extras (jedi/saber/
+	// toughness — kept out of the lootable table so random looted SEAs
+	// stay stock) and SORTED so entries are findable in the SUI list.
+	SortedVector<String> sorted;
+	sorted.setNoDuplicateInsertPlan();
 
-	// pre9 local: builder-only extras (jedi/saber/toughness mods) — kept
-	// out of the lootable table so random looted SEAs stay stock.
-	for (int i = 0; i < seaBuilderExtraMods.size(); ++i) {
-		const String& mod = seaBuilderExtraMods.get(i);
+	for (int i = 0; i < lootableClothingAttachmentMods.size(); ++i)
+		sorted.put(lootableClothingAttachmentMods.get(i));
 
-		if (!mods.contains(mod))
-			mods.add(mod);
-	}
+	for (int i = 0; i < seaBuilderExtraMods.size(); ++i)
+		sorted.put(seaBuilderExtraMods.get(i));
+
+	for (int i = 0; i < sorted.size(); ++i)
+		mods.add(sorted.get(i));
+}
+
+void LootManagerImplementation::getLootableArmorAttachmentMods(Vector<String>& mods) {
+	// pre9 local: armor attachment builder — same extras, armor pool.
+	SortedVector<String> sorted;
+	sorted.setNoDuplicateInsertPlan();
+
+	for (int i = 0; i < lootableArmorAttachmentMods.size(); ++i)
+		sorted.put(lootableArmorAttachmentMods.get(i));
+
+	for (int i = 0; i < seaBuilderExtraMods.size(); ++i)
+		sorted.put(seaBuilderExtraMods.get(i));
+
+	for (int i = 0; i < sorted.size(); ++i)
+		mods.add(sorted.get(i));
 }
 
 bool LootManagerImplementation::createLoot(TransactionLog& trx, SceneObject* container, AiAgent* creature) {

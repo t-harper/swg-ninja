@@ -181,6 +181,9 @@ seaBuilderExtraMods = {
 	"twohandmelee_toughness",
 	"polearm_toughness",
 	"unarmed_toughness",
+	"onehandlightsaber_toughness",
+	"twohandlightsaber_toughness",
+	"polearmlightsaber_toughness",
 }
 
 lootableClothingAttachmentStatMods = {

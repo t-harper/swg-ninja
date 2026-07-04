@@ -217,6 +217,8 @@ class LootManager extends ManagedService implements Logger {
 	@local
 	public native void getLootableClothingAttachmentMods(@dereferenced Vector<string> mods);
 
+	public native void getLootableArmorAttachmentMods(@dereferenced Vector<string> mods);
+
 	public native int calculateLootCredits(int level);
 
 	@local

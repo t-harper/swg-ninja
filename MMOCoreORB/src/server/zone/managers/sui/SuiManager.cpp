@@ -543,14 +543,15 @@ void SuiManager::handleCharacterBuilderSelectItem(CreatureObject* player, SuiBox
 				return;
 
 			// Clothing attachment builder (SEAs at +25 per chosen mod)
-			} else if (templatePath == "sea_builder") {
+			} else if (templatePath == "sea_builder" || templatePath == "aa_builder") {
+				bool armorMode = (templatePath == "aa_builder");
 				ManagedReference<SuiListBox*> seaBox = new SuiListBox(player, SuiWindowType::FREE_RESOURCE);
-				Reference<SeaBuilderSuiCallback*> seaCallback = new SeaBuilderSuiCallback(zserv);
+				Reference<SeaBuilderSuiCallback*> seaCallback = new SeaBuilderSuiCallback(zserv, armorMode);
 				seaBox->setCallback(seaCallback.get());
 				seaBox->setCancelButton(true, "@cancel");
 				seaBox->setOkButton(true, "@ok");
 
-				SeaBuilderSuiCallback::populate(seaBox, *seaCallback->getAllMods(), *seaCallback->getChosenMods());
+				SeaBuilderSuiCallback::populate(seaBox, *seaCallback->getAllMods(), *seaCallback->getChosenMods(), armorMode);
 
 				ghost->addSuiBox(seaBox);
 				player->sendMessage(seaBox->generateMessage());

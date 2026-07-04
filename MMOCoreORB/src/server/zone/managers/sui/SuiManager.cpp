@@ -19,6 +19,7 @@
 #include "server/zone/objects/player/sui/callbacks/SeaBuilderSuiCallback.h"
 #include "server/zone/objects/tangible/TangibleObject.h"
 #include "server/zone/objects/factorycrate/FactoryCrate.h"
+#include "server/zone/objects/tangible/wearables/WearableObject.h"
 #include "server/zone/ZoneServer.h"
 #include "server/zone/managers/minigames/FishingManager.h"
 #include "server/zone/objects/player/sui/keypadbox/SuiKeypadBox.h"
@@ -278,10 +279,10 @@ void SuiManager::handleCharacterBuilderSelectItem(CreatureObject* player, SuiBox
 
 		String templatePath = node->getTemplatePath();
 
-		// pre9 local: crate:<path> tokens embed an .iff path but are
+		// pre9 local: crate:/socketed: tokens embed an .iff path but are
 		// non-item tokens — without this they'd fall into the item
 		// branch and fail ("error creating the requested item").
-		if (templatePath.indexOf(".iff") < 0 || templatePath.beginsWith("crate:")) { // Non-item selections
+		if (templatePath.indexOf(".iff") < 0 || templatePath.beginsWith("crate:") || templatePath.beginsWith("socketed:")) { // Non-item selections
 
 			if (templatePath == "unlearn_all_skills") {
 
@@ -558,6 +559,49 @@ void SuiManager::handleCharacterBuilderSelectItem(CreatureObject* player, SuiBox
 
 				ghost->addSuiBox(cbSui);
 				return;
+
+			// Socketed clothing (pre9): "socketed:<label>:<server template
+			// path>" mints the wearable with all 4 sockets open (frog-made
+			// clothing otherwise has none and rejects attachments).
+			} else if (templatePath.beginsWith("socketed:")) {
+				String sockSpec = templatePath.subString(9);
+				int sockSep = sockSpec.indexOf(':');
+				String sockLabel = (sockSep > 0) ? sockSpec.subString(0, sockSep) : "";
+				String sockPath = (sockSep > 0) ? sockSpec.subString(sockSep + 1) : sockSpec;
+
+				ManagedReference<SceneObject*> sockInventory = player->getSlottedObject("inventory");
+
+				if (sockInventory == nullptr || sockInventory->isContainerFullRecursive()) {
+					player->sendSystemMessage("Your inventory is full.");
+				} else {
+					ManagedReference<SceneObject*> wearScene = zserv->createObject(sockPath.hashCode(), 2);
+
+					if (wearScene == nullptr || !wearScene->isWearableObject()) {
+						if (wearScene != nullptr) {
+							Locker wlocker(wearScene);
+							wearScene->destroyObjectFromDatabase(true);
+						}
+
+						player->sendSystemMessage("Failed to create the clothing item.");
+					} else {
+						ManagedReference<WearableObject*> wearable = cast<WearableObject*>(wearScene.get());
+
+						Locker wlocker(wearable);
+
+						wearable->setMaxSockets(WearableObject::MAXSOCKETS);
+
+						if (!sockLabel.isEmpty())
+							wearable->setCustomObjectName(sockLabel + " (4 sockets)", false);
+
+						if (sockInventory->transferObject(wearable, -1, true)) {
+							sockInventory->broadcastObject(wearable, true);
+							player->sendSystemMessage("Created: " + sockLabel + " with 4 sockets.");
+						} else {
+							wearable->destroyObjectFromDatabase(true);
+							player->sendSystemMessage("Failed to transfer the item to your inventory.");
+						}
+					}
+				}
 
 			// Factory crate generator (pre9): "crate:<label>:<server template
 			// path>" mints a full 1000-count factory crate of that item. The

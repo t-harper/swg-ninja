@@ -40,6 +40,17 @@ else
 	items[#items + 1] = "Armor Attachment Builder"
 	items[#items + 1] = "aa_builder"
 
+	local W = "object/tangible/wearables/"
+	items[#items + 1] = "Socketed Clothing"
+	items[#items + 1] = {
+		"Pants (4 sockets)", "socketed:Pants:" .. W .. "pants/pants_s01.iff",
+		"Shirt (4 sockets)", "socketed:Shirt:" .. W .. "shirt/shirt_s03.iff",
+		"Gloves (4 sockets)", "socketed:Gloves:" .. W .. "gloves/gloves_s02.iff",
+		"Boots (4 sockets)", "socketed:Boots:" .. W .. "boots/boots_s03.iff",
+		"Hat (4 sockets)", "socketed:Hat:" .. W .. "hat/hat_chef_s01.iff",
+		"Belt (4 sockets)", "socketed:Belt:" .. W .. "belt/belt_s01.iff",
+	}
+
 	local armor = findSub(items, "Armor")
 
 	if armor == nil then

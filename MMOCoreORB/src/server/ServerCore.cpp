@@ -40,6 +40,8 @@
 
 #include "server/zone/managers/statistics/StatisticsManager.h"
 
+#include "server/zone/managers/mapexport/MapExporter.h"
+
 ManagedReference<ZoneServer*> ServerCore::zoneServerRef = nullptr;
 SortedVector<String> ServerCore::arguments;
 bool ServerCore::truncateAllData = false;
@@ -267,6 +269,20 @@ void ServerCore::registerConsoleCommmands() {
 		}
 
 		ObjectManager::instance()->createBackup(flags);
+
+		return SUCCESS;
+	});
+
+	addCommand("exportmap", [this](const String& arguments) -> CommandResult {
+		// Never run the (object-walking) export inline on the console/main
+		// thread — hand it to a task worker so it runs with the normal
+		// per-task transaction context. exportAll() is single-flight guarded,
+		// so this can safely overlap the periodic MapExportTask.
+		Core::getTaskManager()->executeTask([]() {
+			MapExporter::instance()->exportAll();
+		}, "exportmapManual");
+
+		System::out << "map export triggered (running on a task worker)" << endl;
 
 		return SUCCESS;
 	});
@@ -871,6 +887,20 @@ void ServerCore::initialize() {
 		ObjectManager::instance()->scheduleUpdateToDatabase();
 
 		StatisticsManager::instance()->markCoreInitialized();
+
+		// pre9 local: bring up the Interactive Planet Map exporter once zones +
+		// managers are loaded. Reads Core3.MapExport.* (Enabled default true);
+		// schedules the first recurring export at IntervalMin.
+		if (zoneServer != nullptr) {
+			MapExporter* mapExporter = MapExporter::instance();
+
+			mapExporter->initialize(zoneServer);
+
+			if (mapExporter->isEnabled())
+				mapExporter->scheduleFirstRun();
+			else
+				info("map export disabled via Core3.MapExport.Enabled", true);
+		}
 
 		info("initialized", true);
 

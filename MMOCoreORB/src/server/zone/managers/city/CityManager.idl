@@ -214,6 +214,15 @@ class CityManager extends ManagedService implements Logger {
 		return cities.size();
 	}
 
+	/**
+	 * pre9 local: snapshots the current city references into the supplied
+	 * vector under the CityManager lock, so callers (e.g. the map exporter)
+	 * can iterate cities without holding the manager lock during per-city
+	 * object lookups.
+	 */
+	@local
+	public native void getCitiesSnapshot(@dereferenced Vector<CityRegion> citiesCopy);
+
 	public boolean renameCity(CityRegion city, final string newName) {
 		if(cities.contains(city.getCityRegionName())){
 			cities.drop(city.getCityRegionName());

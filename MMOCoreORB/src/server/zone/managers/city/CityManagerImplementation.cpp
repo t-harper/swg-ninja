@@ -222,6 +222,19 @@ CityRegion* CityManagerImplementation::createCity(CreatureObject* mayor, const S
 	return city;
 }
 
+void CityManagerImplementation::getCitiesSnapshot(Vector<ManagedReference<CityRegion*> >& citiesCopy) {
+	citiesCopy.removeAll();
+
+	Locker _lock(_this.getReferenceUnsafeStaticCast());
+
+	for (int i = 0; i < cities.size(); ++i) {
+		CityRegion* city = cities.get(i);
+
+		if (city != nullptr)
+			citiesCopy.add(city);
+	}
+}
+
 bool CityManagerImplementation::isCityRankCapped(const String& planetName, byte rank) {
 	Vector < byte > *citiesAllowed = &citiesAllowedPerRank.get(planetName);
 	byte maxAtRank = citiesAllowed->get(rank - 1);

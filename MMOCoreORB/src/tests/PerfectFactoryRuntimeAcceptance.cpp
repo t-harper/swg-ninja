@@ -122,7 +122,13 @@ std::vector<ManagedReference<SceneObject*> > newItems(SceneObject* inventory, co
 	return items;
 }
 void discard(SceneObject* object) {
-	Locker lock(object); object->destroyObjectFromWorld(false); object->destroyObjectFromDatabase(true);
+	Locker lock(object);
+	auto parent = object->getParent().get();
+	need(object->getZone() != nullptr, "Discard fixture requires normal world containment");
+	object->destroyObjectFromWorld(false);
+	need(parent == nullptr || !inventoryIds(parent.get()).count(object->getObjectID()),
+		"Discarded fixture item remained in its former container");
+	object->destroyObjectFromDatabase(true);
 }
 struct Product {
 	String id, path, draft, kind, category, reviveProfile;
@@ -624,6 +630,11 @@ void auditCoverage(const std::map<std::string, Product>& catalog, const Json& fi
 void exerciseRollback(ZoneServer* server, CreatureObject* player, const String& id, Json& report, Json& allRollbackIds) {
 	auto inventory = player->getSlottedObject("inventory");
 	const auto before = inventoryIds(inventory);
+	for (auto id : before) {
+		auto object = server->getObject(id);
+		need(object != nullptr && !object->_isMarkedForDeletion() && object->isPersistent(),
+			"Rollback baseline includes an already discarded or transient inventory item");
+	}
 	const int originalLimit = inventory->getContainerVolumeLimit();
 	inventory->setContainerVolumeLimit(0);
 	String error;
@@ -679,6 +690,14 @@ void runPerfectFactoryRuntimeAcceptance(ZoneServer* server, const String& fixtur
 		auto player = server->getObject(fixture.at("playerId").get<uint64>()).castTo<CreatureObject*>();
 		need(player != nullptr && player->isPlayerCreature(), "Disposable scratch player unavailable");
 		Locker lock(player); auto inventory = player->getSlottedObject("inventory"); need(inventory != nullptr, "Scratch inventory absent");
+		// Raw offline loading does not perform SelectCharacterCallback's normal
+		// zone transfer. Ordinary item disposal resolves the owner's world zone.
+		auto zone = server->getZone("corellia");
+		need(zone != nullptr && !zone->isSpaceZone(), "Scratch fixture requires a loaded ground zone");
+		player->initializePosition(7100, zone->getHeight(7100, 7100), 7100);
+		need(zone->transferObject(player, -1, false) && player->getParent() == nullptr &&
+			player->getZone() == zone && inventory->getZone() == zone && player->isInQuadTree(),
+			"Scratch fixture could not enter the ordinary ground world");
 		auto catalog = products(String(fixture.at("catalogPath").get<std::string>().c_str()));
 		auditCoverage(catalog, fixture, evidence["catalogCoverage"]);
 		if (phase == "reload") {

@@ -112,7 +112,7 @@ int LuaShipObject::storeShip(lua_State* L) {
 
 	Vector3 coordinates(x, y, z);
 
-	StoreShipTask* task = new StoreShipTask(player, shipControlDevice, zoneName, coordinates);
+	StoreShipTask* task = new StoreShipTask(player, shipControlDevice, zoneName, coordinates, true);
 
 	if (task != nullptr)
 		task->schedule(500);

@@ -5,6 +5,9 @@
 #ifndef STORESHIPTASK_H_
 #define STORESHIPTASK_H_
 
+#include <cmath>
+
+#include "server/zone/Zone.h"
 #include "server/zone/ZoneServer.h"
 #include "server/zone/objects/creature/CreatureObject.h"
 #include "server/zone/objects/intangible/ShipControlDevice.h"
@@ -22,9 +25,10 @@ class StoreShipTask : public Task, public Logger {
 	ManagedWeakReference<ShipControlDevice*> shipDev;
 	String zoneName;
 	Vector3 coordinates;
+	bool useRequestedDestination;
 
 public:
-	StoreShipTask(CreatureObject* creo, ShipControlDevice* controlDevice, String zName, Vector3 coords) : play(creo), shipDev(controlDevice), zoneName(zName), coordinates(coords) {
+	StoreShipTask(CreatureObject* creo, ShipControlDevice* controlDevice, String zName, Vector3 coords, bool selectedDestination = false) : play(creo), shipDev(controlDevice), zoneName(zName), coordinates(coords), useRequestedDestination(selectedDestination) {
 		setLoggingName("StoreShipTask");
 	}
 
@@ -59,6 +63,17 @@ public:
 			return;
 		}
 
+		if (useRequestedDestination) {
+			// Validate before moving anyone or changing the emergency return point.
+			auto destinationZone = zoneServer->getZone(zoneName);
+
+			if (destinationZone == nullptr || destinationZone->isSpaceZone()
+				|| !std::isfinite(coordinates.getX()) || !std::isfinite(coordinates.getY())
+				|| !std::isfinite(coordinates.getZ())) {
+				return;
+			}
+		}
+
 		// Lock the player
 		Locker shipLock(player);
 		Locker shipClock(ship, player);
@@ -66,6 +81,13 @@ public:
 		// Remove the ships astromech if one is assigned
 		if (ship->getShipDroidID() != 0) {
 			removeDroid(ship, player);
+		}
+
+		if (useRequestedDestination) {
+			// Removal sends every occupied station to the ship's return point.
+			// Only normal station landing replaces it with the selected destination.
+			ship->setSpaceLaunchZone(zoneName);
+			ship->setSpaceLaunchLocation(coordinates);
 		}
 
 		// Make sure no players remain in the ship

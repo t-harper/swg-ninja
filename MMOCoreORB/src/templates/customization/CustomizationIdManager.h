@@ -40,8 +40,11 @@ public:
 		return paletteColumns.get(palette);
 	}
 
-	HairAssetData* getHairAssetData(const String& hairServerTemplate) {
-		return hairAssetSkillMods.get(hairServerTemplate);
+	HairAssetData* getHairAssetData(const String& hairServerTemplate, const String& serverPlayerTemplate) {
+		// Composite key so a hair template shared across species resolves to the
+		// row for THIS creature's species (see loadHairAssetsSkillMods). Returns
+		// null (nullValue) when the hair is not valid at creation for the species.
+		return hairAssetSkillMods.get(hairServerTemplate + "\n" + serverPlayerTemplate);
 	}
 
 	bool canBeBald(const int objectCRC) {

@@ -51,6 +51,9 @@ Luna<LuaPlayerObject>::RegType LuaPlayerObject::Register[] = {
 		{ "isJediLight", &LuaPlayerObject::isJediLight },
 		{ "isJediDark", &LuaPlayerObject::isJediDark },
 		{ "setJediState", &LuaPlayerObject::setJediState },
+		{ "setMaxSkillPoints", &LuaPlayerObject::setMaxSkillPoints },
+		{ "getMaxSkillPoints", &LuaPlayerObject::getMaxSkillPoints },
+		{ "addSkillPoints", &LuaPlayerObject::addSkillPoints },
 		{ "getJediState", &LuaPlayerObject::getJediState },
 		{ "isOnline", &LuaPlayerObject::isOnline },
 		{ "activateJournalQuest", &LuaPlayerObject::activateJournalQuest },
@@ -428,6 +431,32 @@ int LuaPlayerObject::isJediDark(lua_State* L) {
 	lua_pushboolean(L, realObject->isJediDark());
 
 	return 1;
+}
+
+
+// pre9 local: GM-adjustable per-player skill point pool
+int LuaPlayerObject::setMaxSkillPoints(lua_State* L) {
+	int points = lua_tointeger(L, -1);
+
+	Locker locker(realObject);
+	realObject->setMaxSkillPoints(points);
+
+	return 0;
+}
+
+int LuaPlayerObject::getMaxSkillPoints(lua_State* L) {
+	lua_pushinteger(L, realObject->getMaxSkillPoints());
+
+	return 1;
+}
+
+int LuaPlayerObject::addSkillPoints(lua_State* L) {
+	int points = lua_tointeger(L, -1);
+
+	Locker locker(realObject);
+	realObject->addSkillPoints(points);
+
+	return 0;
 }
 
 int LuaPlayerObject::setJediState(lua_State* L) {

@@ -73,11 +73,13 @@ int BountyHunterDroidMenuComponent::handleObjectMenuSelect(SceneObject* droidObj
 }
 
 bool BountyHunterDroidMenuComponent::playerCanUseTrack(CreatureObject* player) const {
-	return player->hasSkill("combat_bountyhunter_investigation_03");
+	// pre9 local: clan mandos track with BH droids
+	return player->hasSkill("combat_bountyhunter_investigation_03") || player->hasSkill("mandalorian_rank_novice");
 }
 
 bool BountyHunterDroidMenuComponent::playerCanUseDroids(CreatureObject* player) const {
-	return player->hasSkill("combat_bountyhunter_investigation_01");
+	// pre9 local: clan mandos use BH droids
+	return player->hasSkill("combat_bountyhunter_investigation_01") || player->hasSkill("mandalorian_rank_novice");
 }
 
 bool BountyHunterDroidMenuComponent::isProbeDroid(SceneObject* droidObject) const {

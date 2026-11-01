@@ -1,4 +1,43 @@
 includeFile("../custom_scripts/screenplays/pre9_jedi.lua")
 includeFile("../custom_scripts/screenplays/pre9_city_frogs.lua")
+includeFile("../custom_scripts/screenplays/pre9_mandalorian.lua")
+includeFile("../custom_scripts/screenplays/mando_rank/mando_config.lua")
+includeFile("../custom_scripts/screenplays/mando_rank/mando_rank_manager.lua")
+includeFile("../custom_scripts/screenplays/mando_rank/mando_rank_observers.lua")
+includeFile("../custom_scripts/screenplays/mando_rank/mando_rank_duel.lua")
+includeFile("../custom_scripts/screenplays/mando_rank/mando_rank_stone.lua")
 
 includeFile("../custom_scripts/screenplays/chandrila_pilot.lua")
+
+-- Jedi themepark "Echoes of the Purge" — config first, manager second
+-- (everything else galaxy-gates through JediParkManager.enabled()).
+includeFile("../custom_scripts/screenplays/jedi_themepark/jtp_config.lua")
+includeFile("../custom_scripts/screenplays/jedi_themepark/jtp_manager.lua")
+includeFile("../custom_scripts/screenplays/jedi_themepark/jtp_cells.lua")
+includeFile("../custom_scripts/screenplays/jedi_themepark/jtp_theaters.lua")
+includeFile("../custom_scripts/screenplays/jedi_themepark/jtp_shrines.lua")
+includeFile("../custom_scripts/screenplays/jedi_themepark/jtp_observers.lua")
+includeFile("../custom_scripts/screenplays/jedi_themepark/jtp_givers.lua")
+includeFile("../custom_scripts/screenplays/jedi_themepark/convo/jtp_wanderer_handler.lua")
+includeFile("../custom_scripts/screenplays/jedi_themepark/acts/jtp_act0.lua")
+includeFile("../custom_scripts/screenplays/jedi_themepark/convo/jtp_ondel_handler.lua")
+includeFile("../custom_scripts/screenplays/jedi_themepark/convo/jtp_kenobi_handler.lua")
+includeFile("../custom_scripts/screenplays/jedi_themepark/acts/jtp_act1.lua")
+includeFile("../custom_scripts/screenplays/jedi_themepark/convo/jtp_serenna_handler.lua")
+includeFile("../custom_scripts/screenplays/jedi_themepark/convo/jtp_vheress_handler.lua")
+includeFile("../custom_scripts/screenplays/jedi_themepark/acts/jtp_act2.lua")
+includeFile("../custom_scripts/screenplays/jedi_themepark/convo/jtp_maro_handler.lua")
+includeFile("../custom_scripts/screenplays/jedi_themepark/convo/jtp_dask_handler.lua")
+includeFile("../custom_scripts/screenplays/jedi_themepark/convo/jtp_veshaan_handler.lua")
+includeFile("../custom_scripts/screenplays/jedi_themepark/convo/jtp_sereth_handler.lua")
+includeFile("../custom_scripts/screenplays/jedi_themepark/acts/jtp_act3.lua")
+includeFile("../custom_scripts/screenplays/jedi_themepark/convo/jtp_voice_handler.lua")
+includeFile("../custom_scripts/screenplays/jedi_themepark/acts/jtp_act4.lua")
+includeFile("../custom_scripts/screenplays/jedi_themepark/convo/jtp_sarov_handler.lua")
+includeFile("../custom_scripts/screenplays/jedi_themepark/acts/jtp_act5.lua")
+includeFile("../custom_scripts/screenplays/jedi_themepark/acts/jtp_act6.lua")
+includeFile("../custom_scripts/screenplays/jedi_themepark/acts/jtp_repeatables.lua")
+
+-- One-time three-step starter journey for every new Jedi novice. Loaded after
+-- the Dev-only theme park so its login wrapper composes with that package.
+includeFile("../custom_scripts/screenplays/jedi_starter_journey.lua")

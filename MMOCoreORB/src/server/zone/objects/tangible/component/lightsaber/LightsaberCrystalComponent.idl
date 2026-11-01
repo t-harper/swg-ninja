@@ -94,6 +94,11 @@ class LightsaberCrystalComponent extends Component {
 
 	public native void tuneCrystal(CreatureObject player);
 
+	// pre9 local: GM-only. Maxes every stat at the top of the crystal's scale
+	// and adds a flat damageBonus to the damage stat. Chosen tier is supplied
+	// by MaximizeCrystalSuiCallback (+30 / +300 / +3000).
+	public native void maximizeStats(CreatureObject player, int damageBonus);
+
 	public native void updateCrystal(int value);
 
 	public native int inflictDamage(TangibleObject attacker, int damageType, float damage, boolean destroy, boolean notifyClient = true);

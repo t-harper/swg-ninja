@@ -624,6 +624,8 @@
 #include "SetFormupCommand.h"
 #include "SetGodModeCommand.h"
 #include "GmBuffCommand.h"
+#include "MaxSkillPointsCommand.h"
+#include "CityTeleportCommand.h"
 #include "SetHueCommand.h"
 #include "SetIntimidateCommand.h"
 #include "SetLastNameCommand.h"
@@ -842,4 +844,3 @@
 
 
 #endif /* COMMANDSNEW_H_ */
-

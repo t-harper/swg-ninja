@@ -84,20 +84,11 @@ else
 	if armor == nil then
 		print("pre9_frog_extras: FAILED to locate Items > Armor (stock layout changed?)")
 	else
-		local MANDO = "object/tangible/wearables/armor/mandalorian/armor_mandalorian_"
-		armor[#armor + 1] = "Mandalorian Armor"
-		armor[#armor + 1] = {
-			"Mandalorian Belt", MANDO .. "belt.iff",
-			"Mandalorian Left Bicep", MANDO .. "bicep_l.iff",
-			"Mandalorian Right Bicep", MANDO .. "bicep_r.iff",
-			"Mandalorian Left Bracer", MANDO .. "bracer_l.iff",
-			"Mandalorian Right Bracer", MANDO .. "bracer_r.iff",
-			"Mandalorian Chest Plate", MANDO .. "chest_plate.iff",
-			"Mandalorian Gloves", MANDO .. "gloves.iff",
-			"Mandalorian Helmet", MANDO .. "helmet.iff",
-			"Mandalorian Leggings", MANDO .. "leggings.iff",
-			"Mandalorian Shoes", MANDO .. "shoes.iff",
-		}
+		-- Finished Mandalorian armor handout intentionally REMOVED (pre9
+		-- crafting feature): the frog now hands out only the learn
+		-- schematics below; a master armorsmith must craft each piece from
+		-- real resources. (Craftable set = composite +10%; see
+		-- custom_scripts/object/pre9_mandalorian_armor.lua.)
 
 		local DWSCHEM = "object/tangible/loot/loot_schematic/death_watch_mandalorian_"
 		armor[#armor + 1] = "Mandalorian Schematics"

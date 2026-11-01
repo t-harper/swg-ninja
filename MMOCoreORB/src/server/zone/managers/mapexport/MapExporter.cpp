@@ -19,6 +19,7 @@
 #include "server/zone/Zone.h"
 
 #include "server/zone/managers/city/CityManager.h"
+#include "server/zone/managers/player/PlayerManager.h" // pre9 local (swg-stats): online list
 #include "server/zone/managers/resource/ResourceManager.h"
 #include "server/zone/managers/resource/resourcespawner/ResourceSpawner.h"
 #include "server/zone/managers/resource/resourcespawner/resourcemap/ResourceMap.h"
@@ -28,16 +29,50 @@
 #include "server/zone/objects/structure/StructureObject.h"
 #include "server/zone/objects/building/BuildingObject.h"
 #include "server/zone/objects/creature/CreatureObject.h"
+#include "server/zone/objects/player/PlayerObject.h" // pre9 local (swg-stats): lots
 
 #include "templates/SharedObjectTemplate.h"
 
 #include "engine/util/json_utils.h"
+#include "engine/db/IndexDatabase.h"         // pre9 local (swg-stats): IndexDatabaseIterator (zone-keyed structure index)
+#include "server/zone/managers/structure/StructureManager.h" // pre9 local (swg-stats): createSubIndex()
+#include "server/zone/managers/object/ObjectManager.h"       // pre9 local (swg-stats): memory-only owner lookup
 #include "system/io/File.h"
 #include "system/thread/ReadLocker.h"
 
 #include <cstdio>
+#include <cmath>
+#include <vector>
+#include <exception>
 #include <unistd.h>
 #include <ctime>
+
+namespace {
+	// pre9 local (2026-09-04, swg-stats): one exported player structure. All
+	// fields are snapshotted under the structure's own read lock; the owner
+	// name is resolved afterwards with no lock held.
+	struct ExportedStructure {
+		uint64 oid = 0;
+		String planet;
+		String templatePath;
+		String kind;
+		String name;
+		uint64 ownerId = 0;
+		int lots = 0;
+		int maint = 0;
+		int maintRate = 0;
+		bool civic = false;
+		bool residence = false;
+		uint64 cityOid = 0;
+		float x = 0.f;
+		float y = 0.f;
+	};
+
+	// one decimal is plenty for a map marker / a credits figure
+	inline double round1(double v) {
+		return std::round(v * 10.0) / 10.0;
+	}
+}
 
 MapExporter::MapExporter() : Logger("MapExporter") {
 	enabled = true;
@@ -59,6 +94,11 @@ MapExporter::MapExporter() : Logger("MapExporter") {
 
 	fileSize.setNullValue(0);
 	fileSize.setAllowOverwriteInsertPlan();
+
+	// pre9 local (swg-stats)
+	ownerNameCache.setAllowOverwriteInsertPlan();
+	ownerLotsMaxCache.setNullValue(0);
+	ownerLotsMaxCache.setAllowOverwriteInsertPlan();
 }
 
 MapExporter::~MapExporter() {
@@ -126,6 +166,8 @@ void MapExporter::exportAll() {
 	uint64 gen = startMs;
 
 	int cityCount = 0;
+	int structureCount = 0; // pre9 local (swg-stats)
+	int onlineCount = 0;    // pre9 local (swg-stats)
 	int zoneCount = 0;
 
 	try {
@@ -134,10 +176,14 @@ void MapExporter::exportAll() {
 		File::mkpath(exportDir + "/resources/", 0755);
 
 		cityCount = exportCities(gen);
+		structureCount = exportStructures(gen); // pre9 local (swg-stats)
+		onlineCount = exportOnline(gen);        // pre9 local (swg-stats)
 		zoneCount = exportResources(gen);
 		writeLiveManifest(gen);
 	} catch (const Exception& e) {
 		error("map export failed: " + e.getMessage());
+	} catch (const std::exception& e) {
+		error(String("map export failed: ") + e.what()); // pre9 local (swg-stats)
 	} catch (...) {
 		error("map export failed: unknown exception");
 	}
@@ -147,7 +193,8 @@ void MapExporter::exportAll() {
 	uint64 elapsed = System::getMiliTime() - startMs;
 
 	StringBuffer msg;
-	msg << "map export done: " << cityCount << " cities, " << zoneCount
+	msg << "map export done: " << cityCount << " cities, " << structureCount
+		<< " structures, " << onlineCount << " online, " << zoneCount
 		<< " resource zones, in " << elapsed << "ms";
 	info(true) << msg.toString();
 }
@@ -281,7 +328,7 @@ int MapExporter::exportCities(uint64 gen) {
 	root["count"] = citiesArray.size();
 	root["cities"] = citiesArray;
 
-	String out = root.dump(2).c_str();
+	String out = root.dump(2, ' ', false, nlohmann::json::error_handler_t::replace).c_str(); // pre9 local (swg-stats): never throw on a bad UTF-8 byte in a player-entered name
 
 	// cities are cheap: always rewrite
 	writeFileAtomic("cities.json", out, gen);
@@ -578,6 +625,409 @@ int MapExporter::exportResources(uint64 gen) {
 	return zonesWithData;
 }
 
+/*
+	pre9 local (2026-09-04, swg-stats): structures.json
+
+	Every player-owned structure in the galaxy. Source of truth is the
+	zone-keyed "playerstructuresindex" walked per loaded zone (the same walk
+	StructureManager::loadPlayerStructures() does at boot, so the objects are
+	already resident and getObject() is a memory lookup). Locking discipline:
+	  - the Berkeley cursor is closed BEFORE the first object lookup;
+	  - each structure's fields are read under ITS OWN ReadLocker only;
+	  - owner lookups (name / max lots) happen afterwards with no structure
+	    lock held; getTotalOwnedStructureCount() takes a short Locker on the
+	    PlayerObject, which is the only write lock this pass ever takes and it
+	    is never nested inside another lock.
+	Never mutates game state; per-object try/catch so one bad object cannot
+	abort the pass.
+*/
+int MapExporter::exportStructures(uint64 gen) {
+	// Phase 1: enumerate the oids of every structure that belongs to a zone
+	// THIS galaxy has loaded, via the zone-keyed secondary index
+	// ("playerstructuresindex") -- the exact walk
+	// StructureManager::loadPlayerStructures() does at boot, so every oid we
+	// get back is already resident and getObject() is a memory lookup.
+	// (Walking the primary database's raw keys instead could hand us a
+	// structure on a zone this galaxy never enabled; getObject() would then
+	// deserialize it on this thread and fire its load-time side effects.)
+	// Keys only: no value blob is ever deserialized here, and the cursor is
+	// closed before the first object lookup.
+	Vector<uint64> oids;
+
+	{
+		StructureManager* structureManager = StructureManager::instance();
+		IndexDatabase* index = (structureManager != nullptr) ? structureManager->createSubIndex() : nullptr;
+
+		if (index == nullptr) {
+			error("map export: playerstructures index unavailable");
+			return 0;
+		}
+
+		berkeley::CursorConfig config;
+		config.setReadUncommitted(true);
+
+		int zoneCount = zoneServer->getZoneCount();
+
+		for (int z = 0; z < zoneCount; ++z) {
+			Zone* zone = zoneServer->getZone(z);
+
+			if (zone == nullptr)
+				continue;
+
+			String zoneName = zone->getZoneName();
+
+			if (zoneName.isEmpty())
+				continue;
+
+			uint64 zoneHash = zoneName.hashCode();
+
+			try {
+				IndexDatabaseIterator iterator(index, config);
+				uint64 objectID = 0;
+
+				if (iterator.setKeyAndGetValue(zoneHash, objectID, nullptr)) {
+					oids.add(objectID);
+
+					while (iterator.getNextKeyAndValue(zoneHash, objectID, nullptr))
+						oids.add(objectID);
+				}
+			} catch (const Exception& e) {
+				error("map export: playerstructures index walk failed for " + zoneName + ": " + e.getMessage());
+			} catch (...) {
+				error("map export: playerstructures index walk failed for " + zoneName + ": unknown exception");
+			}
+		}
+	}
+
+	// std::vector: engine Vector<E> requires a Serializable element type
+	std::vector<ExportedStructure> records;
+
+	// per-owner aggregate, insertion-ordered so the output is stable run to run
+	Vector<uint64> ownerOrder;
+	VectorMap<uint64, int> ownerLots;
+	VectorMap<uint64, int> ownerCount;
+	ownerLots.setNullValue(0);
+	ownerLots.setAllowOverwriteInsertPlan();
+	ownerCount.setNullValue(0);
+	ownerCount.setAllowOverwriteInsertPlan();
+
+	int skipped = 0;
+
+	// Phase 2: snapshot each structure under its own read lock.
+	for (int i = 0; i < oids.size(); ++i) {
+		uint64 oid = oids.get(i);
+
+		try {
+			ManagedReference<SceneObject*> obj = zoneServer->getObject(oid);
+
+			if (obj == nullptr || !obj->isStructureObject()) {
+				skipped++;
+				continue;
+			}
+
+			// destroyed (redeeded / decayed) but not yet purged from the object
+			// database -- the persistence cycle drops the record minutes later;
+			// the game already treats it as gone (lots freed), so must we
+			if (obj->_isMarkedForDeletion()) {
+				skipped++;
+				continue;
+			}
+
+			StructureObject* structure = obj.castTo<StructureObject*>();
+
+			if (structure == nullptr) {
+				skipped++;
+				continue;
+			}
+
+			ExportedStructure rec;
+			rec.oid = oid;
+
+			bool cityHall = false;
+			bool camp = false;
+
+			{
+				ReadLocker slock(structure);
+
+				Zone* zone = structure->getZoneUnsafe();
+
+				if (zone != nullptr)
+					rec.planet = zone->getZoneName();
+
+				SharedObjectTemplate* tmpl = structure->getObjectTemplate();
+
+				if (tmpl != nullptr)
+					rec.templatePath = tmpl->getFullTemplateString();
+
+				rec.name = structure->getCustomObjectName().toString();
+				rec.x = structure->getWorldPositionX();
+				rec.y = structure->getWorldPositionY();
+				rec.ownerId = structure->getOwnerObjectID();
+				rec.lots = structure->getLotSize();
+				rec.maint = structure->getSurplusMaintenance();
+				rec.maintRate = (int) structure->getMaintenanceRate();
+				rec.civic = structure->isCivicStructure();
+				cityHall = (tmpl != nullptr) && structure->isCityHall();
+				camp = (tmpl != nullptr) && structure->isCampStructure();
+
+				// weak ref -> only its oid is needed; no lock on the city.
+				// NPC (client) city regions also tag objects that enter them
+				// but never appear in cities.json, so only player cities count.
+				ManagedReference<CityRegion*> city = structure->getCityRegion().get();
+
+				if (city != nullptr && !city->isClientRegion())
+					rec.cityOid = city->getObjectID();
+
+				BuildingObject* building = structure->asBuildingObject();
+
+				if (building != nullptr)
+					rec.residence = building->isResidence();
+			}
+
+			// a structure with no zone is not in the world (mid-destroy, or on a
+			// zone this galaxy no longer loads)
+			if (rec.planet.isEmpty()) {
+				skipped++;
+				continue;
+			}
+
+			rec.kind = playerStructureKind(rec.templatePath);
+
+			// runtime type beats the path heuristic where it is unambiguous
+			if (cityHall)
+				rec.kind = "cityhall";
+			else if (camp)
+				rec.kind = "camp";
+
+			if (rec.ownerId != 0) {
+				if (!ownerLots.contains(rec.ownerId))
+					ownerOrder.add(rec.ownerId);
+
+				ownerLots.put(rec.ownerId, ownerLots.get(rec.ownerId) + rec.lots);
+				ownerCount.put(rec.ownerId, ownerCount.get(rec.ownerId) + 1);
+			}
+
+			records.push_back(rec);
+		} catch (const Exception& e) {
+			skipped++;
+			error("map export: structure " + String::valueOf(oid) + " skipped: " + e.getMessage());
+		} catch (const std::exception& e) {
+			skipped++;
+			error(String("map export: structure ") + String::valueOf(oid) + " skipped: " + e.what());
+		} catch (...) {
+			skipped++;
+			error("map export: structure " + String::valueOf(oid) + " skipped: unknown exception");
+		}
+	}
+
+	// Phase 3: resolve owners (name, max lots) with NO structure lock held.
+	// Resident owners (online, or still cached by the object manager) are a
+	// memory lookup; an offline owner is deserialized from the object database
+	// AT MOST ONCE per process lifetime (same cost as a /tell to an offline
+	// player) and then served from ownerNameCache/ownerLotsMaxCache, so the
+	// 5-minute pass never re-loads garbage-collected players. Unknown /
+	// non-player owners are emitted with name "" (negative-cached too).
+	VectorMap<uint64, String> ownerNames;
+	ownerNames.setAllowOverwriteInsertPlan();
+
+	nlohmann::json playersArray = nlohmann::json::array();
+
+	for (int i = 0; i < ownerOrder.size(); ++i) {
+		uint64 ownerId = ownerOrder.get(i);
+
+		String ownerName;
+		int lotsMax = 0;
+		int owned = ownerCount.get(ownerId);
+		bool resolved = false;
+
+		try {
+			// memory-only lookup (DOBObjectManager::getObject has no database fallback)
+			Reference<DistributedObject*> resident = ObjectManager::instance()->getObject(ownerId);
+			ManagedReference<SceneObject*> ownerObj = (resident != nullptr) ? dynamic_cast<SceneObject*>(resident.get()) : nullptr;
+
+			if (ownerObj == nullptr && !ownerNameCache.contains(ownerId)) {
+				// never seen since boot: load once from the object database
+				ownerObj = zoneServer->getObject(ownerId);
+			}
+
+			if (ownerObj != nullptr && ownerObj->isPlayerCreature()) {
+				CreatureObject* creo = ownerObj.castTo<CreatureObject*>();
+
+				if (creo != nullptr) {
+					ownerName = creo->getFirstName();
+
+					ManagedReference<PlayerObject*> ghost = creo->getPlayerObject();
+
+					if (ghost != nullptr)
+						lotsMax = ghost->getMaximumLots();
+
+					resolved = true;
+				}
+			}
+		} catch (const Exception& e) {
+			error("map export: owner " + String::valueOf(ownerId) + " lookup failed: " + e.getMessage());
+		} catch (const std::exception& e) {
+			error(String("map export: owner ") + String::valueOf(ownerId) + " lookup failed: " + e.what());
+		} catch (...) {
+			error("map export: owner " + String::valueOf(ownerId) + " lookup failed: unknown exception");
+		}
+
+		if (resolved) {
+			ownerNameCache.put(ownerId, ownerName);
+			ownerLotsMaxCache.put(ownerId, lotsMax);
+		} else if (ownerNameCache.contains(ownerId)) {
+			ownerName = ownerNameCache.get(ownerId);
+			lotsMax = ownerLotsMaxCache.get(ownerId);
+		} else {
+			// missing / non-player owner: remember that so it is not retried every pass
+			ownerNameCache.put(ownerId, ownerName);
+			ownerLotsMaxCache.put(ownerId, 0);
+		}
+
+		ownerNames.put(ownerId, ownerName);
+
+		nlohmann::json player = nlohmann::json::object();
+		player["oid"] = String::valueOf(ownerId).toCharArray();
+		player["name"] = ownerName.toCharArray();
+		player["lotsMax"] = lotsMax;
+		player["lotsUsed"] = ownerLots.get(ownerId);
+		player["structures"] = owned;
+
+		playersArray.push_back(player);
+	}
+
+	// Phase 4: serialize
+	nlohmann::json structuresArray = nlohmann::json::array();
+
+	for (size_t i = 0; i < records.size(); ++i) {
+		const ExportedStructure& rec = records[i];
+
+		nlohmann::json sj = nlohmann::json::object();
+
+		// oids are uint64 -> strings so JS doesn't lose precision
+		sj["oid"] = String::valueOf(rec.oid).toCharArray();
+		sj["planet"] = rec.planet.toCharArray();
+		sj["x"] = round1(rec.x);
+		sj["y"] = round1(rec.y);
+		sj["t"] = rec.templatePath.toCharArray();
+		sj["kind"] = rec.kind.toCharArray();
+		sj["name"] = rec.name.toCharArray();
+		sj["ownerId"] = String::valueOf(rec.ownerId).toCharArray();
+
+		String ownerName;
+
+		if (ownerNames.contains(rec.ownerId))
+			ownerName = ownerNames.get(rec.ownerId);
+
+		sj["owner"] = ownerName.toCharArray();
+		sj["lots"] = rec.lots;
+		sj["maint"] = (double) rec.maint;
+		sj["maintRate"] = rec.maintRate;
+		sj["civic"] = rec.civic;
+
+		if (rec.cityOid != 0)
+			sj["cityOid"] = String::valueOf(rec.cityOid).toCharArray();
+
+		sj["residence"] = rec.residence;
+
+		structuresArray.push_back(sj);
+	}
+
+	nlohmann::json root = nlohmann::json::object();
+	root["gen"] = gen;
+	root["count"] = structuresArray.size();
+	root["structures"] = structuresArray;
+	root["players"] = playersArray;
+
+	String out = root.dump(2, ' ', false, nlohmann::json::error_handler_t::replace).c_str(); // pre9 local (swg-stats): never throw on a bad UTF-8 byte in a player-entered name
+
+	writeFileAtomic("structures.json", out, gen);
+
+	StringBuffer msg;
+	msg << "structures: " << oids.size() << " keys in playerstructures, " << structuresArray.size()
+		<< " exported, " << playersArray.size() << " owners, " << skipped << " skipped";
+	info(true) << msg.toString();
+
+	return (int) structuresArray.size();
+}
+
+/*
+	pre9 local (2026-09-04, swg-stats): online.json
+
+	Names + planet of every connected character, from
+	PlayerManager::getOnlinePlayerList() (a snapshot taken under the online
+	map mutex, released before we touch any creature). No coordinates on
+	purpose: the swg-map server must never serve this file publicly.
+*/
+int MapExporter::exportOnline(uint64 gen) {
+	PlayerManager* playerManager = zoneServer->getPlayerManager();
+
+	if (playerManager == nullptr)
+		return 0;
+
+	Vector<uint64> onlineIds = playerManager->getOnlinePlayerList();
+
+	nlohmann::json playersArray = nlohmann::json::array();
+
+	for (int i = 0; i < onlineIds.size(); ++i) {
+		uint64 oid = onlineIds.get(i);
+
+		try {
+			ManagedReference<SceneObject*> obj = zoneServer->getObject(oid);
+
+			if (obj == nullptr || !obj->isPlayerCreature())
+				continue;
+
+			CreatureObject* creo = obj.castTo<CreatureObject*>();
+
+			if (creo == nullptr)
+				continue;
+
+			String name;
+			String planet;
+
+			{
+				ReadLocker clock(creo);
+
+				name = creo->getFirstName();
+
+				// resolves through the parent chain (inside a building / ship)
+				Zone* zone = creo->getZoneUnsafe();
+
+				if (zone != nullptr)
+					planet = zone->getZoneName();
+			}
+
+			if (name.isEmpty())
+				continue;
+
+			nlohmann::json pj = nlohmann::json::object();
+			pj["oid"] = String::valueOf(oid).toCharArray();
+			pj["name"] = name.toCharArray();
+			pj["planet"] = planet.toCharArray();
+
+			playersArray.push_back(pj);
+		} catch (const Exception& e) {
+			error("map export: online player " + String::valueOf(oid) + " skipped: " + e.getMessage());
+		} catch (const std::exception& e) {
+			error(String("map export: online player ") + String::valueOf(oid) + " skipped: " + e.what());
+		} catch (...) {
+			error("map export: online player " + String::valueOf(oid) + " skipped: unknown exception");
+		}
+	}
+
+	nlohmann::json root = nlohmann::json::object();
+	root["gen"] = gen;
+	root["count"] = playersArray.size();
+	root["players"] = playersArray;
+
+	String out = root.dump(2, ' ', false, nlohmann::json::error_handler_t::replace).c_str(); // pre9 local (swg-stats): never throw on a bad UTF-8 byte in a player-entered name
+
+	writeFileAtomic("online.json", out, gen);
+
+	return (int) playersArray.size();
+}
+
 void MapExporter::writeLiveManifest(uint64 gen) {
 	nlohmann::json root = nlohmann::json::object();
 	root["gen"] = gen;
@@ -599,7 +1049,7 @@ void MapExporter::writeLiveManifest(uint64 gen) {
 
 	root["files"] = files;
 
-	String out = root.dump(2).c_str();
+	String out = root.dump(2, ' ', false, nlohmann::json::error_handler_t::replace).c_str(); // pre9 local (swg-stats): never throw on a bad UTF-8 byte in a player-entered name
 
 	writeFileAtomic("live-manifest.json", out, gen);
 }
@@ -734,6 +1184,52 @@ String MapExporter::structureKind(const String& templatePath, uint32 gameObjectT
 
 	if (t.contains("garage") || t.contains("vehicle"))
 		return "garage";
+
+	return "other";
+}
+
+/*
+	pre9 local (2026-09-04, swg-stats): contract classification for player
+	structures. Ordered substring rules over the lower-cased server template
+	path (docs/CONTRACT.md in ~/code/swg-stats). "cityhall" is accepted next
+	to the contract's "city_hall" because Core3 city halls are
+	object/building/player/city/cityhall_<planet>.iff.
+*/
+String MapExporter::playerStructureKind(const String& templatePath) {
+	String t = templatePath.toLowerCase();
+
+	if (t.contains("city_hall") || t.contains("cityhall"))
+		return "cityhall";
+
+	if (t.contains("guild_hall") || t.contains("guildhall"))
+		return "guildhall";
+
+	if (t.contains("player/city/"))
+		return "civic";
+
+	if (t.contains("building/player/")
+			&& (t.contains("cloning") || t.contains("bank") || t.contains("shuttleport")
+				|| t.contains("garage") || t.contains("cantina") || t.contains("theater")
+				|| t.contains("hospital") || t.contains("medical")))
+		return "civic";
+
+	if (t.contains("harvester") || t.contains("mining"))
+		return "harvester";
+
+	if (t.contains("factory"))
+		return "factory";
+
+	if (t.contains("generator") || t.contains("power"))
+		return "generator";
+
+	if (t.contains("camp"))
+		return "camp";
+
+	if (t.contains("hq_") || t.contains("faction_perk") || t.contains("military"))
+		return "gcw";
+
+	if (t.contains("building/player/"))
+		return "house";
 
 	return "other";
 }

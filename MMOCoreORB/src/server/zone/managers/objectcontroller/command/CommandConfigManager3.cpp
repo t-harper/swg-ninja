@@ -257,6 +257,8 @@
 #include "server/zone/objects/creature/commands/SetFormupCommand.h"
 #include "server/zone/objects/creature/commands/SetGodModeCommand.h"
 #include "server/zone/objects/creature/commands/GmBuffCommand.h"
+#include "server/zone/objects/creature/commands/MaxSkillPointsCommand.h"
+#include "server/zone/objects/creature/commands/CityTeleportCommand.h"
 #include "server/zone/objects/creature/commands/SetHueCommand.h"
 #include "server/zone/objects/creature/commands/SetIntimidateCommand.h"
 #include "server/zone/objects/creature/commands/SetLastNameCommand.h"
@@ -558,6 +560,8 @@ void CommandConfigManager::registerCommands3() {
 	commandFactory.registerCommand<SetFormupCommand>(String("setFormup").toLowerCase());
 	commandFactory.registerCommand<SetGodModeCommand>(String("setGodMode").toLowerCase());
 	commandFactory.registerCommand<GmBuffCommand>(String("gmBuff").toLowerCase()); // pre9 local
+	commandFactory.registerCommand<MaxSkillPointsCommand>(String("maxSkillPoints").toLowerCase()); // pre9 local
+	commandFactory.registerCommand<CityTeleportCommand>(String("cityTeleport").toLowerCase()); // pre9 local
 	commandFactory.registerCommand<SetHueCommand>(String("setHue").toLowerCase());
 	commandFactory.registerCommand<SetIntimidateCommand>(String("setIntimidate").toLowerCase());
 	commandFactory.registerCommand<SetLastNameCommand>(String("setLastName").toLowerCase());

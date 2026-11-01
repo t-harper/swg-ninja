@@ -20,9 +20,16 @@ void CustomizationIdManager::loadHairAssetsSkillMods(IffStream* iffStream) {
 		HairAssetData* data = new HairAssetData();
 		data->readObject(dataTable.getRow(i));
 
-		hairAssetSkillMods.put(data->getServerTemplate(), data);
+		// Key by (hair server template + server player template). A single hair
+		// object template can be shared by multiple species (e.g. custom species
+		// reusing stock human/singing_mountain_clan hairs); keying by the hair
+		// template alone would let the last species row clobber all the others,
+		// causing PlayerCreationManager::addHair / ImageDesignManager to reject
+		// the hair as "not compatible" for every species but the last one loaded.
+		// '\n' is a safe separator: it never appears in a template path.
+		hairAssetSkillMods.put(data->getServerTemplate() + "\n" + data->getServerPlayerTemplate(), data);
 
-		debug() << "adding " << data->getServerTemplate();
+		debug() << "adding " << data->getServerTemplate() << " for " << data->getServerPlayerTemplate();
 	}
 
 	info() << "loaded " << paletteColumns.size() << " hair assets";

@@ -578,6 +578,14 @@ Reference<SceneObject*> PlanetManagerImplementation::loadSnapshotObject(WorldSna
 
 	object = zoneServer->createClientObject(serverTemplate.hashCode(), objectID);
 
+	// Guard: an unregistered server template yields a null object here. Log the
+	// path + zone (grep "snapshot skip:") so it can be staged/registered later,
+	// and skip it instead of null-dereferencing (which segfaulted the boot).
+	if (object == nullptr) {
+		error("snapshot skip: unregistered template '" + serverTemplate + "' on zone " + zone->getZoneName() + " -- register its server template to resolve");
+		return nullptr;
+	}
+
 	Locker locker(object);
 
 	object->initializePosition(position.getX(), position.getZ(), position.getY());

@@ -85,6 +85,7 @@
 #include "server/zone/objects/player/sui/SuiBoxPage.h"
 #include "server/zone/objects/tangible/powerup/PowerupObject.h"
 #include "server/zone/objects/resource/ResourceSpawn.h"
+#include "server/zone/objects/resource/ResourceContainer.h"
 #include "server/zone/objects/tangible/component/Component.h"
 #include "server/zone/objects/pathfinding/NavArea.h"
 #include "server/zone/objects/player/sui/listbox/LuaSuiListBox.h"
@@ -475,6 +476,7 @@ void DirectorManager::initializeLuaEngine(Lua* luaEngine) {
 	luaEngine->registerFunction("addStartingWeaponsInto", addStartingWeaponsInto);
 	luaEngine->registerFunction("setAuthorizationState", setAuthorizationState);
 	luaEngine->registerFunction("giveItem", giveItem);
+	luaEngine->registerFunction("giveInitializedItem", giveInitializedItem);
 	luaEngine->registerFunction("giveControlDevice", giveControlDevice);
 	luaEngine->registerFunction("checkTooManyHirelings", checkTooManyHirelings);
 	luaEngine->registerFunction("checkInt64Lua", checkInt64Lua);
@@ -500,6 +502,7 @@ void DirectorManager::initializeLuaEngine(Lua* luaEngine) {
 	luaEngine->registerFunction("createLootSet", createLootSet);
 	luaEngine->registerFunction("createLootFromCollection", createLootFromCollection);
 	luaEngine->registerFunction("givePlayerResource", givePlayerResource);
+	luaEngine->registerFunction("getPlayerResourceQuantity", getPlayerResourceQuantity);
 
 	luaEngine->registerFunction("getRegion", getRegion);
 	luaEngine->registerFunction("writeScreenPlayData", writeScreenPlayData);
@@ -1131,21 +1134,28 @@ int DirectorManager::givePlayerResource(lua_State* L) {
 	const String typeString = lua_tostring(L, -2);
 	CreatureObject* player = (CreatureObject*)lua_touserdata(L, -3);
 
-	if (player == nullptr)
-		return 0;
+	if (player == nullptr) {
+		lua_pushboolean(L, false);
+		return 1;
+	}
 
 	ZoneServer* zoneServer = ServerCore::getZoneServer();
 	Zone* zone = player->getZone();
 
-	if (zoneServer == nullptr || zone == nullptr)
-		return 0;
+	if (zoneServer == nullptr || zone == nullptr) {
+		lua_pushboolean(L, false);
+		return 1;
+	}
 
 	ResourceManager* resourceManager = zoneServer->getResourceManager();
 
-	if (resourceManager == nullptr)
-		return 0;
+	if (resourceManager == nullptr) {
+		lua_pushboolean(L, false);
+		return 1;
+	}
 
 	int type = 0;
+	bool broadType = true;
 
 	// TODO: Global resource types
 	// SOLAR = 1; CHEMICAL = 2; FLORA = 3; GAS = 4; GEOTHERMAL = 5; MINERAL = 6; WATER = 7; WIND = 8; FUSION = 9;
@@ -1171,26 +1181,79 @@ int DirectorManager::givePlayerResource(lua_State* L) {
 		type = 9;
 	else if (typeString == "inorganic")
 		type = 10;
+	else
+		broadType = false;
 
-	Vector<ManagedReference<ResourceSpawn*> > resources;
-	resourceManager->getResourceListByType(resources, type, zone->getZoneName());
+	ManagedReference<ResourceSpawn*> spawn;
 
-	if (resources.size() < 1)
-		return 0;
+	if (broadType) {
+		Vector<ManagedReference<ResourceSpawn*> > resources;
+		resourceManager->getResourceListByType(resources, type, zone->getZoneName());
 
-	ManagedReference<ResourceSpawn*> spawn = resources.get(System::random(resources.size() - 1));
+		if (resources.size() > 0)
+			spawn = resources.get(System::random(resources.size() - 1));
+	} else {
+		// Compatibility extension for scripted rewards: broad family tokens above
+		// keep their stock, current-planet behavior. A concrete leaf class instead
+		// resolves through the perfect-resource tree, so a quest grant never depends
+		// on that class happening to be in spawn on the player's current planet.
+		const String spawnName = resourceManager->preparePerfectResource(typeString);
+
+		if (!spawnName.isEmpty())
+			spawn = resourceManager->getResourceSpawn(spawnName);
+	}
 
 	if (spawn == nullptr) {
-		return 0;
+		lua_pushboolean(L, false);
+		return 1;
 	}
 
 	TransactionLog trx(TrxCode::LUASCRIPT, player);
 	trx.addContextFromLua(L);
 
-	resourceManager->harvestResourceToPlayer(trx, player, spawn, quantity);
-	trx.commit();
+	const bool granted = resourceManager->harvestResourceToPlayer(trx, player, spawn, quantity);
 
-	return 0;
+	if (granted)
+		trx.commit();
+	else
+		trx.abort() << __FUNCTION__ << " failed: resource=" << typeString << "; quantity=" << quantity;
+
+	lua_pushboolean(L, granted);
+	return 1;
+}
+
+int DirectorManager::getPlayerResourceQuantity(lua_State* L) {
+	if (checkArgumentCount(L, 2) == 1) {
+		String err = "incorrect number of arguments passed to DirectorManager::getPlayerResourceQuantity";
+		printTraceError(L, err);
+		ERROR_CODE = INCORRECT_ARGUMENTS;
+		return 0;
+	}
+
+	CreatureObject* player = (CreatureObject*)lua_touserdata(L, -2);
+	const String resourceClass = lua_tostring(L, -1);
+	int64 quantity = 0;
+
+	if (player != nullptr && !resourceClass.isEmpty()) {
+		SceneObject* inventory = player->getSlottedObject("inventory");
+
+		if (inventory != nullptr) {
+			for (int i = 0; i < inventory->getContainerObjectsSize(); ++i) {
+				ManagedReference<ResourceContainer*> container = inventory->getContainerObject(i).castTo<ResourceContainer*>();
+
+				if (container == nullptr)
+					continue;
+
+				ResourceSpawn* spawn = container->getSpawnObject();
+
+				if (spawn != nullptr && spawn->isType(resourceClass))
+					quantity += container->getQuantity();
+			}
+		}
+	}
+
+	lua_pushinteger(L, static_cast<lua_Integer>(quantity));
+	return 1;
 }
 
 int DirectorManager::getTimestamp(lua_State* L) {
@@ -2476,6 +2539,57 @@ int DirectorManager::giveItem(lua_State* L) {
 		lua_pushnil(L);
 	}
 
+	return 1;
+}
+
+int DirectorManager::giveInitializedItem(lua_State* L) {
+	if (checkArgumentCount(L, 3) == 1) {
+		String err = "incorrect number of arguments passed to DirectorManager::giveInitializedItem";
+		printTraceError(L, err);
+		ERROR_CODE = INCORRECT_ARGUMENTS;
+		return 0;
+	}
+
+	SceneObject* container = (SceneObject*)lua_touserdata(L, -3);
+	const String objectTemplate = lua_tostring(L, -2);
+	const int slot = lua_tointeger(L, -1);
+
+	if (container == nullptr || objectTemplate.isEmpty()) {
+		lua_pushnil(L);
+		return 1;
+	}
+
+	ZoneServer* zoneServer = container->getZoneServer();
+
+	if (zoneServer == nullptr) {
+		lua_pushnil(L);
+		return 1;
+	}
+
+	ManagedReference<SceneObject*> item = zoneServer->createObject(objectTemplate.hashCode(), 1);
+
+	if (item == nullptr) {
+		lua_pushnil(L);
+		return 1;
+	}
+
+	Locker itemLocker(item);
+	item->createChildObjects();
+
+	if (!container->transferObject(item, slot, true)) {
+		item->destroyObjectFromDatabase(true);
+		lua_pushnil(L);
+		return 1;
+	}
+
+	item->_setUpdated(true);
+
+	ManagedReference<SceneObject*> parent = item->getParentRecursively(SceneObjectType::PLAYERCREATURE);
+
+	if (parent != nullptr && parent->isPlayerCreature())
+		item->sendTo(parent, true);
+
+	lua_pushlightuserdata(L, item.get());
 	return 1;
 }
 

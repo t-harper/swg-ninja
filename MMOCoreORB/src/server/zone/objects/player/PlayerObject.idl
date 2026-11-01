@@ -223,6 +223,8 @@ class PlayerObject extends IntangibleObject {
 
 	protected int skillPoints; //TODO: This could be encapsulated in the skill list.
 
+	protected int maxSkillPoints; // pre9 local: per-player skill point pool (GM-adjustable; getter floors at 250 so legacy objects self-migrate)
+
 	protected int pvpRating;
 
 	@dereferenced
@@ -360,6 +362,7 @@ class PlayerObject extends IntangibleObject {
 		isPlayerCloning = false;
 
 		skillPoints = 0;
+		maxSkillPoints = 250;
 
 		conversatingObject = 0;
 
@@ -1667,6 +1670,18 @@ class PlayerObject extends IntangibleObject {
 	@read
 	public int getSkillPoints() {
 		return skillPoints;
+	}
+
+	public void setMaxSkillPoints(int points) {
+		maxSkillPoints = points;
+	}
+
+	@read
+	public int getMaxSkillPoints() {
+		if (maxSkillPoints < 250)
+			return 250;
+
+		return maxSkillPoints;
 	}
 
 	@local

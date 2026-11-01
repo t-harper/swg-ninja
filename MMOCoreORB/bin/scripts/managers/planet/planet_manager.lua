@@ -150,6 +150,19 @@ hutta = {
 	}
 }
 
+hoth = {
+	weatherEnabled = 0,
+	gcwEnabled = 0,
+
+	planetTravelPoints = {
+		{name = "Echo Base Starport", x = 0.0, z = 0.0, y = -2000.0, interplanetaryTravelAllowed = 1, incomingTravelAllowed = 1, landingRange = 6}
+	},
+
+	planetObjects = {
+		{templateFile = "object/creature/npc/theme_park/player_transport.iff", ox = 0, oy = 0, oz = 0, ow = 1, x = 0.0, z = 0.0, y = -2000.0, parentid = 0}
+	}
+}
+
 chandrila = {
 	weatherEnabled = 1,
 	gcwEnabled = 0,

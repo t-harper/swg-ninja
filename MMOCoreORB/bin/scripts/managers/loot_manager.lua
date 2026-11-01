@@ -184,6 +184,35 @@ seaBuilderExtraMods = {
 	"onehandlightsaber_toughness",
 	"twohandlightsaber_toughness",
 	"polearmlightsaber_toughness",
+
+	-- pre9 local: crafting lines the stock lootable tables never offer.
+	-- Bio-engineer (outdoors_bio_engineer) + the full shipwright
+	-- (crafting_shipwright) set: assembly, experimentation AND the four
+	-- reverse-engineering mods. Builder-only, exactly like the jedi block
+	-- above — random looted SEAs stay stock.
+	"bio_engineer_assembly",
+	"bio_engineer_experimentation",
+	"dna_harvesting",
+
+	"advanced_assembly",
+	"advanced_ship_experimentation",
+	"booster_assembly",
+	"booster_experimentation",
+	"chassis_assembly",
+	"chassis_experimentation",
+	"engine_assembly",
+	"engine_experimentation",
+	"power_systems",
+	"power_systems_experimentation",
+	"shields_assembly",
+	"shields_experimentation",
+	"weapon_systems",
+	"weapon_systems_experimentation",
+
+	"defense_reverse",
+	"engineering_reverse",
+	"propulsion_reverse",
+	"systems_reverse",
 }
 
 lootableClothingAttachmentStatMods = {

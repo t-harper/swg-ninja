@@ -752,8 +752,14 @@ Reference<SceneObject*> ZoneServerImplementation::createClientObject(uint32 temp
 		//lock(); ObjectManager has its own mutex
 
 		obj = objectManager->createObject(templateCRC, 1, "clientobjects", oid, false);
-		obj->setClientObject(true);
-		obj->initializeTransientMembers();
+
+		// Guard: createObject returns null for an unregistered template CRC.
+		// Dereferencing it (setClientObject) segfaults the boot. Callers must
+		// handle the null (world-snapshot loader logs + skips it).
+		if (obj != nullptr) {
+			obj->setClientObject(true);
+			obj->initializeTransientMembers();
+		}
 
 		//unlock();
 	} catch (Exception& e) {

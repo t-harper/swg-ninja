@@ -424,7 +424,7 @@ bool SkillManager::awardSkill(const String& skillName, CreatureObject* creature,
 
 		const SkillList* list = creature->getSkillList();
 
-		int totalSkillPointsWasted = 250;
+		int totalSkillPointsWasted = ghost->getMaxSkillPoints(); // pre9 local: per-player pool
 
 		for (int i = 0; i < list->size(); ++i) {
 			Skill* skill = list->get(i);
@@ -638,7 +638,7 @@ bool SkillManager::surrenderSkill(const String& skillName, CreatureObject* creat
 
 		const SkillList* list = creature->getSkillList();
 
-		int totalSkillPointsWasted = 250;
+		int totalSkillPointsWasted = ghost->getMaxSkillPoints(); // pre9 local: per-player pool
 
 		for (int i = 0; i < list->size(); ++i) {
 			Skill* skill = list->get(i);

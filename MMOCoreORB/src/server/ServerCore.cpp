@@ -1277,8 +1277,18 @@ void coredetail::ConsoleReaderService::run() {
 
 		res = fgets(line, sizeof(line), stdin);
 
-		if (!res)
+		if (!res) {
+			// pre9 local (2026-09-04, swg-stats): once stdin hits EOF (systemd
+			// hands podman a /dev/null stdin and conmon forwards the EOF) glibc
+			// latches the stream's EOF flag: select() keeps reporting the fd
+			// readable and fgets() returns NULL without ever calling read(),
+			// so this loop spun at 100% of a core per process. Clear the
+			// sticky EOF (a later writer on the same pipe -- console-cmd.sh --
+			// is then actually read) and back off for a second.
+			clearerr(stdin);
+			Thread::sleep(1000);
 			continue;
+		}
 
 		auto cmd = String(line).trim();
 

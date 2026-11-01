@@ -32,6 +32,8 @@ class ManufactureSchematic extends IntangibleObject {
 	protected int manufactureLimit;
 	protected float complexity;
 
+	public static final int MAX_MANUFACTURE_LIMIT = 10000;
+
 	@weakReference
 	protected CreatureObject crafter;
 
@@ -101,7 +103,7 @@ class ManufactureSchematic extends IntangibleObject {
 
 		possibleSyncIssue = false;
 
-		manufactureLimit = 1000;
+		manufactureLimit = MAX_MANUFACTURE_LIMIT;
 
 		ContainerPermissions permissions = super.getContainerPermissionsForUpdate();
 		permissions.setInheritPermissionsFromParent(true);

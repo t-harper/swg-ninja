@@ -1512,3 +1512,15 @@ oldFilterWords = {
 	{ "citizens", DECLINED_RESERVED },
 	{ "self", DECLINED_RESERVED }
 }
+-- ============================================================================
+-- swg.ninja local (2026-07-11): NAME FILTER OFF by operator request —
+-- profanity/fiction/developer regex filtering disabled for player names,
+-- ships, chat rooms, etc. Both tables are emptied so the
+-- Core3.NameManager.FilterTable knob is moot either way. The original
+-- lists remain intact above; delete this block to restore. Applies per
+-- galaxy at boot or instantly via console: reloadmanager name
+-- (TRACKED stock file — recheck this block after Core3 pulls; see
+-- changes-from-live.md.)
+-- ============================================================================
+filterWords = {}
+oldFilterWords = {}

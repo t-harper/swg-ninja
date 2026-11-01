@@ -47,7 +47,8 @@ const static char* Species[] = {
 	"bith",		// male bith
 	"bith",		// female bith
 	"gotal",	// male gotal
-	"talz"		// male talz
+	"talz",		// male talz
+	"gungan"	// male gungan
 };
 
 const static int TemplateSpecies[] = { //hex code for species number
@@ -90,7 +91,8 @@ const static int TemplateSpecies[] = { //hex code for species number
 		0, // bith
 		0, //bith
 		0, //gotal
-		0 //talz
+		0, //talz
+		0x1d //gungan
 };
 
 const static char* Gender[] = {
@@ -133,7 +135,8 @@ const static char* Gender[] = {
 	"male", 	// bith male
 	"female", 	// bith female
 	"male", 	// gotal male
-	"male" 		// talz male
+	"male", 	// talz male
+	"male" 		// gungan male
 };
 
 const static char* RaceStrs[] = {
@@ -177,6 +180,7 @@ const static char* RaceStrs[] = {
 	"object/creature/player/shared_bith_female.iff", 	// bith female
 	"object/creature/player/shared_gotal_male.iff", 	// gotal male
 	"object/creature/player/shared_talz_male.iff", 		// talz male
+	"object/creature/player/shared_gungan_male.iff", 	// gungan male
 };
 
 const static char* CCRaceStrs[] = {
@@ -220,6 +224,7 @@ const static char* CCRaceStrs[] = {
 	"object/creature/player/bith_female.iff", 	//bith female
 	"object/creature/player/gotal_male.iff", 	//gotal male
 	"object/creature/player/talz_male.iff", 	//talz male
+	"object/creature/player/gungan_male.iff", 	//gungan male
 };
 
 static uint32 SharedRace[] = { //race CRC
@@ -263,6 +268,7 @@ static uint32 SharedRace[] = { //race CRC
 	0xB2C9CBE0, // bith female
 	0x30CFFED2, // gotal male
 	0xDBA89F7C, // talz male
+	0x3A7F5790, // gungan male
 };
 
 static unsigned int attributeLimits[10][19] = {

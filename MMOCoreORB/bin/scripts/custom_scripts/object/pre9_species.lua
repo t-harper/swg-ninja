@@ -598,3 +598,37 @@ object_creature_player_weequay_male = object_creature_player_shared_weequay_male
 }
 
 ObjectTemplates:addTemplate(object_creature_player_weequay_male, "object/creature/player/weequay_male.iff")
+
+--Gungan male (pre9 addition 2026-07-07 — client half ships in
+--swgninja_species_r2.tre + pre9_jedi_r22.tre; rides the stock NPC
+--appearance/gungan_m.sat, whose gungan.skt is bone-compatible with
+--all_b so stock clothing/armor renders; species int 0 in the shared
+--iff so the client wearable gate treats it as human, and
+--getCustomSpeciesBaseRace maps it to human_male server-side)
+object_creature_player_shared_gungan_male = SharedCreatureObjectTemplate:new {
+	clientTemplateFileName = "object/creature/player/shared_gungan_male.iff"}
+ObjectTemplates:addClientTemplate(object_creature_player_shared_gungan_male, "object/creature/player/shared_gungan_male.iff")
+
+object_creature_player_gungan_male = object_creature_player_shared_gungan_male:new {
+	baseHAM = { 100, 100, 100, 100, 100, 100, 100, 100, 100 },
+	gameObjectType = 1033,
+	groundZoneComponent = "PlayerZoneComponent",
+	spaceZoneComponent = "PlayerSpaceZoneComponent",
+	objectMenuComponent = "PlayerObjectMenuComponent",
+	containerComponent = "PlayerContainerComponent",
+	pvpStatusBitmask = PLAYER,
+	templateType = PLAYERCREATURE,
+	childObjects = {
+		{templateFile = "object/tangible/inventory/character_inventory.iff", x = 0, z = 0, y = 0, ox = 0, oy = 0, oz = 0, ow = 0, cellid = -1, containmentType = 4},
+		{templateFile = "object/tangible/datapad/character_datapad.iff", x = 0, z = 0, y = 0, ox = 0, oy = 0, oz = 0, ow = 0, cellid = -1, containmentType = 4},
+		{templateFile = "object/player/player.iff", x = 0, z = 0, y = 0, ox = 0, oy = 0, oz = 0, ow = 0, cellid = -1, containmentType = 4},
+		{templateFile = "object/tangible/bank/character_bank.iff", x = 0, z = 0, y = 0, ox = 0, oy = 0, oz = 0, ow = 0, cellid = -1, containmentType = 4},
+		{templateFile = "object/tangible/mission_bag/mission_bag.iff", x = 0, z = 0, y = 0, ox = 0, oy = 0, oz = 0, ow = 0, cellid = -1, containmentType = 4},
+		{templateFile = "object/weapon/melee/unarmed/unarmed_default_player.iff", x = 0, z = 0, y = 0, ox = 0, oy = 0, oz = 0, ow = 0, cellid = -1, containmentType = 4}
+	},
+	defaultLanguage = 1,
+	startingItems = { },
+	startingSkills = { "species_gungan", "social_language_basic_comprehend", "social_language_basic_speak" }
+}
+
+ObjectTemplates:addTemplate(object_creature_player_gungan_male, "object/creature/player/gungan_male.iff")

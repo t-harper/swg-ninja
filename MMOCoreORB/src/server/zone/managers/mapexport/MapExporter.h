@@ -2,9 +2,10 @@
 	pre9 local: Interactive Planet Map exporter (task W1/CPP-exporter).
 
 	In-server module that periodically snapshots live world data — player
-	cities + their civic structures, and the resource spawn catalog +
+	cities + their civic structures, every player-owned structure (+ per-owner
+	lot totals), the online character list, and the resource spawn catalog +
 	per-planet density grids — and writes it as JSON under bin/exports/map/
-	for the external map webapp to consume.
+	for the external map webapp and the swg-exporter (swg-stats) to consume.
 
 	This is a read-only observer: it never mutates game state. It runs on a
 	task worker (MapExportTask) on a fixed interval, and can be triggered
@@ -54,6 +55,12 @@ class MapExporter : public Singleton<MapExporter>, public Object, public Logger 
 	// the recurring export task, kept alive across fires
 	Reference<Task*> exportTask;
 
+	// pre9 local (2026-09-04, swg-stats): per-owner cache (first name, max
+	// lots) so an offline structure owner is deserialized from the object
+	// database at most once per process lifetime, not on every pass.
+	VectorMap<uint64, String> ownerNameCache;
+	VectorMap<uint64, int> ownerLotsMaxCache;
+
 public:
 	MapExporter();
 	~MapExporter();
@@ -82,6 +89,15 @@ private:
 	// returns the number of cities written
 	int exportCities(uint64 gen);
 
+	// pre9 local (2026-09-04, swg-stats): every player-owned structure loaded
+	// in the galaxy (keys of the "playerstructures" object database) plus the
+	// per-owner lot aggregate -> structures.json. Returns structures written.
+	int exportStructures(uint64 gen);
+
+	// pre9 local (2026-09-04, swg-stats): currently connected characters
+	// (name + planet only, no coordinates) -> online.json. Returns count.
+	int exportOnline(uint64 gen);
+
 	// returns the number of per-zone resource files (re)written
 	int exportResources(uint64 gen);
 
@@ -100,6 +116,10 @@ private:
 
 	// classify a civic structure into a coarse kind for the map legend
 	static String structureKind(const String& templatePath, uint32 gameObjectType);
+
+	// pre9 local (2026-09-04, swg-stats): contract "kind" for player structures
+	// (ordered template-path substring rules, see docs/CONTRACT.md in swg-stats)
+	static String playerStructureKind(const String& templatePath);
 };
 
 #endif /* MAPEXPORTER_H_ */

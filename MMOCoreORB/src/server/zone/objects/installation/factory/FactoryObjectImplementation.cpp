@@ -30,6 +30,11 @@
 
 //#define DEBUG_FACTORIES
 
+namespace {
+	constexpr int GM_TURBO_BATCH_SIZE = 25;
+	constexpr int GM_TURBO_DELAY_MS = 25;
+}
+
 void FactoryObjectImplementation::loadTemplateData(SharedObjectTemplate* templateData) {
 	InstallationObjectImplementation::loadTemplateData(templateData);
 
@@ -533,6 +538,35 @@ void FactoryObjectImplementation::handleOperateToggle(CreatureObject* player) {
 	}
 }
 
+void FactoryObjectImplementation::handleGMFinishQueue(CreatureObject* player) {
+	/// Pre: _this.getReferenceUnsafeStaticCast() locked (see @preLocked)
+
+	// pre9 local: staff-only time-skip. Sets the transient gmTurbo flag so
+	// each factory task processes a bounded batch, then yields briefly before
+	// continuing. This drains the current run quickly without holding the
+	// factory lock for the entire queue.
+	// The ingredient/hopper consumption path is untouched — this is a
+	// TIME-SKIP, not a free / ingredient-free craft.
+	if (player == nullptr)
+		return;
+
+	if (!isActive()) {
+		player->sendSystemMessage("This factory is not currently operating.");
+		return;
+	}
+
+	gmTurbo = true;
+
+	// Fast-forward the already-scheduled next item so the run begins
+	// draining immediately instead of waiting out the current long timer.
+	Reference<Task*> pending = getPendingTask("createFactoryObject");
+
+	if (pending != nullptr)
+		pending->reschedule(GM_TURBO_DELAY_MS);
+
+	player->sendSystemMessage("Factory turbo engaged: finishing the current manufacturing run.");
+}
+
 bool FactoryObjectImplementation::startFactory() {
 	if (getContainerObjectsSize() == 0) {
 		return false;
@@ -604,6 +638,8 @@ void FactoryObjectImplementation::stopFactory(const String& message, const Strin
 	info(true) << "stopFactory - called";
 #endif
 
+	gmTurbo = false; // pre9 local: GM turbo only applies to the current run
+
 	setActive(false, true);
 
 	Reference<Task*> pending = getPendingTask("createFactoryObject");
@@ -659,107 +695,110 @@ void FactoryObjectImplementation::createNewObject() {
 	info(true) << "createNewObject - called";
 #endif
 
-	if (getContainerObjectsSize() == 0) {
-		stopFactory("manf_error", "", "", -1);
-		return;
-	}
+	const int itemsThisTask = gmTurbo ? GM_TURBO_BATCH_SIZE : 1;
 
-	ManagedReference<ManufactureSchematic*> schematic = getContainerObject(0).castTo<ManufactureSchematic*>();
-
-	if (schematic == nullptr || !schematic->isManufactureSchematic()) {
-		stopFactory("manf_error_4", "", "", -1);
-		return;
-	}
-
-	ManagedReference<TangibleObject*> prototype = cast<TangibleObject*>(schematic->getPrototype());
-
-	if (prototype == nullptr) {
-		stopFactory("manf_error_2", "", "", -1);
-		return;
-	}
-
-	/// Shutdown when out of power or maint
-	Time timeToWorkTill;
-	bool shutdownAfterWork = updateMaintenance(timeToWorkTill);
-
-	if (shutdownAfterWork) {
-		Time currentTime;
-
-		float elapsedTime = (currentTime.getTime() - lastMaintenanceTime.getTime());
-
-		float energyAmount = (elapsedTime / 3600.0) * getBasePowerRate();
-		if (energyAmount > surplusPower) {
-			stopFactory("manf_no_power", getDisplayedName(), "", -1);
+	for (int item = 0; item < itemsThisTask; ++item) {
+		if (getContainerObjectsSize() == 0) {
+			stopFactory("manf_error", "", "", -1);
 			return;
 		}
 
-		stopFactory("manf_done_sub", "", "", -1);
-		return;
-	}
+		ManagedReference<ManufactureSchematic*> schematic = getContainerObject(0).castTo<ManufactureSchematic*>();
 
-	verifyOperators();
-
-	String type = "";
-	String displayedName = "";
-
-	schematic->canManufactureItem(type, displayedName);
-
-	if (displayedName != "") {
-		stopFactory(type, displayedName);
-		return;
-	}
-
-	int crateSize = schematic->getFactoryCrateSize();
-
-	if (crateSize <= 0) {
-		stopFactory("manf_error", "", "", -1);
-		return;
-	}
-
-	if (crateSize > 1) {
-		String crateType = schematic->getFactoryCrateType();
-
-		ManagedReference<FactoryCrate*> crate = locateCrateInOutputHopper(prototype);
-
-		if (crate == nullptr)
-			crate = createNewFactoryCrate(prototype, crateSize, crateType);
-		else {
-			Locker clocker(crate, _this.getReferenceUnsafeStaticCast());
-			crate->setUseCount(crate->getUseCount() + 1, true);
-		}
-
-		if (crate == nullptr) {
+		if (schematic == nullptr || !schematic->isManufactureSchematic()) {
+			stopFactory("manf_error_4", "", "", -1);
 			return;
 		}
 
-		FactoryCrateObjectDeltaMessage3* dfcty3 = new FactoryCrateObjectDeltaMessage3(crate);
-		dfcty3->setQuantity(crate->getUseCount());
-		dfcty3->close();
+		ManagedReference<TangibleObject*> prototype = cast<TangibleObject*>(schematic->getPrototype());
 
-		broadcastToOperators(dfcty3);
-	} else {
-		ManagedReference<TangibleObject*> newItem = createNewUncratedItem(prototype);
-
-		if (newItem == nullptr)
+		if (prototype == nullptr) {
+			stopFactory("manf_error_2", "", "", -1);
 			return;
-	}
+		}
 
-	Locker clocker(schematic, _this.getReferenceUnsafeStaticCast());
+		/// Shutdown when out of power or maint
+		Time timeToWorkTill;
+		bool shutdownAfterWork = updateMaintenance(timeToWorkTill);
 
-	schematic->manufactureItem(_this.getReferenceUnsafeStaticCast());
-	currentRunCount++;
+		if (shutdownAfterWork) {
+			Time currentTime;
 
-	if (schematic->getManufactureLimit() < 1) {
-		schematic->destroyObjectFromWorld(true);
-		schematic->destroyObjectFromDatabase(true);
-		stopFactory("manf_done", getDisplayedName(), "", currentRunCount);
-		return;
+			float elapsedTime = (currentTime.getTime() - lastMaintenanceTime.getTime());
+
+			float energyAmount = (elapsedTime / 3600.0) * getBasePowerRate();
+			if (energyAmount > surplusPower) {
+				stopFactory("manf_no_power", getDisplayedName(), "", -1);
+				return;
+			}
+
+			stopFactory("manf_done_sub", "", "", -1);
+			return;
+		}
+
+		verifyOperators();
+
+		String type = "";
+		String displayedName = "";
+
+		schematic->canManufactureItem(type, displayedName);
+
+		if (displayedName != "") {
+			stopFactory(type, displayedName);
+			return;
+		}
+
+		int crateSize = schematic->getFactoryCrateSize();
+
+		if (crateSize <= 0) {
+			stopFactory("manf_error", "", "", -1);
+			return;
+		}
+
+		if (crateSize > 1) {
+			String crateType = schematic->getFactoryCrateType();
+
+			ManagedReference<FactoryCrate*> crate = locateCrateInOutputHopper(prototype);
+
+			if (crate == nullptr)
+				crate = createNewFactoryCrate(prototype, crateSize, crateType);
+			else {
+				Locker clocker(crate, _this.getReferenceUnsafeStaticCast());
+				crate->setUseCount(crate->getUseCount() + 1, true);
+			}
+
+			if (crate == nullptr)
+				return;
+
+			FactoryCrateObjectDeltaMessage3* dfcty3 = new FactoryCrateObjectDeltaMessage3(crate);
+			dfcty3->setQuantity(crate->getUseCount());
+			dfcty3->close();
+
+			broadcastToOperators(dfcty3);
+		} else {
+			ManagedReference<TangibleObject*> newItem = createNewUncratedItem(prototype);
+
+			if (newItem == nullptr)
+				return;
+		}
+
+		Locker clocker(schematic, _this.getReferenceUnsafeStaticCast());
+
+		schematic->manufactureItem(_this.getReferenceUnsafeStaticCast());
+		currentRunCount++;
+
+		if (schematic->getManufactureLimit() < 1) {
+			schematic->destroyObjectFromWorld(true);
+			schematic->destroyObjectFromDatabase(true);
+			stopFactory("manf_done", getDisplayedName(), "", currentRunCount);
+			return;
+		}
 	}
 
 	Reference<Task*> pending = getPendingTask("createFactoryObject");
 
 	if (pending != nullptr)
-		pending->reschedule(timer * 1000);
+		pending->reschedule(gmTurbo ? GM_TURBO_DELAY_MS : (timer * 1000));
 	else
 		stopFactory("manf_error", "", "", -1);
 }

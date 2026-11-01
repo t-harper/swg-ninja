@@ -140,6 +140,7 @@ namespace server {
 		static int createLootSet(lua_State* L);
 		static int createLootFromCollection(lua_State* L);
 		static int givePlayerResource(lua_State* L);
+		static int getPlayerResourceQuantity(lua_State* L);
 		static int getRandomNumber(lua_State* L);
 		static int getHashCode(lua_State* L);
 		static int spatialChat(lua_State* L);
@@ -162,6 +163,7 @@ namespace server {
 		static int addStartingWeaponsInto(lua_State* L);
 		static int setAuthorizationState(lua_State* L);
 		static int giveItem(lua_State* L);
+		static int giveInitializedItem(lua_State* L);
 		static int giveControlDevice(lua_State* L);
 		static int checkTooManyHirelings(lua_State* L);
 		static int checkInt64Lua(lua_State* L);

@@ -39,7 +39,12 @@ end
 -- Default handling of the onPlayerLoggedIn event.
 -- @param pCreatureObject pointer to the creature object for the player that logged in.
 function JediManager:onPlayerLoggedIn(pCreatureObject)
-	-- Default behaviour for the onPlayerLoggedIn event, do nothing.
+	-- Character Builder, /grantSkill, and pre-existing novices bypass the
+	-- trainer conversation. Schedule the starter journey from the manager that
+	-- Core3 loads into every Lua state so all of those paths reconcile on login.
+	if (pCreatureObject ~= nil and JediStarterJourney ~= nil) then
+		createEvent(3000, "JediStarterJourney", "offerIfEligible", pCreatureObject, "")
+	end
 end
 
 -- Default handling of the onPlayerLoggedOut event.
@@ -91,4 +96,3 @@ function JediManager:onFSTreeCompleted(pCreatureObject, branch)
 end
 
 return JediManager
-

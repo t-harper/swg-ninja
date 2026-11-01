@@ -26,9 +26,17 @@ class FactoryObject extends InstallationObject {
 
 	protected transient FactoryHopperObserver hopperObserver;
 
+	// pre9 local: transient staff "turbo" flag. When set, each factory task
+	// processes a bounded item batch and reschedules after 25ms, draining the
+	// current run quickly while periodically yielding the factory lock.
+	// Ingredients are still consumed normally. Cleared when the run stops;
+	// never persisted.
+	protected transient boolean gmTurbo;
+
 	public FactoryObject() {
 		Logger.setLoggingName("FactoryObject");
 		hopperObserver = null;
+		gmTurbo = false;
 	}
 
 	@local
@@ -111,6 +119,10 @@ class FactoryObject extends InstallationObject {
 
 	@preLocked
 	public native void handleOperateToggle(CreatureObject player);
+
+	// pre9 local: staff radial handler — time-skip the current manufacture run.
+	@preLocked
+	public native void handleGMFinishQueue(CreatureObject player);
 
 	@preLocked
 	public native boolean startFactory();

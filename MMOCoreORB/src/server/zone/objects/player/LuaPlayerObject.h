@@ -55,6 +55,9 @@ namespace player {
 		int isJediLight(lua_State* L);
 		int isJediDark(lua_State* L);
 		int setJediState(lua_State* L);
+		int setMaxSkillPoints(lua_State* L);
+		int getMaxSkillPoints(lua_State* L);
+		int addSkillPoints(lua_State* L);
 		int getJediState(lua_State* L);
 		int isOnline(lua_State* L);
 		int activateJournalQuest(lua_State* L);

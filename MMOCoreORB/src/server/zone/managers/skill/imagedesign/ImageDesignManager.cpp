@@ -396,7 +396,7 @@ const Vector<CustomizationData>* ImageDesignManager::getCustomizationData(uint32
 TangibleObject* ImageDesignManager::createHairObject(CreatureObject* imageDesigner, CreatureObject* targetObject, const String& hairTemplate, const String& hairCustomization) {
 	Reference<TangibleObject*> oldHair = targetObject->getSlottedObject("hair").castTo<TangibleObject*>();
 
-	HairAssetData* hairAssetData = CustomizationIdManager::instance()->getHairAssetData(hairTemplate);
+	HairAssetData* hairAssetData = CustomizationIdManager::instance()->getHairAssetData(hairTemplate, targetObject->getObjectTemplate()->getFullTemplateString());
 
 	if (hairTemplate.isEmpty()) {
 		if (!CustomizationIdManager::instance()->canBeBald(targetObject->getServerObjectCRC())) {

@@ -32,7 +32,7 @@ class ResourceManager extends Observer implements Logger {
 	
 	public static final int RESOURCE_DEED_QUANTITY = 30000;
 
-	public static final int PERFECT_RESOURCE_QUANTITY = 10000000; // one full crate (tracks ResourceContainer.MAXSIZE)
+	public static final int PERFECT_RESOURCE_QUANTITY = 100000000; // one full crate (tracks ResourceContainer.MAXSIZE)
 	
 	public ResourceManager(ZoneServer server, ZoneProcessServer impl) {
 
@@ -120,4 +120,3 @@ class ResourceManager extends Observer implements Logger {
 		return zoneServer;
 	}
 }
-

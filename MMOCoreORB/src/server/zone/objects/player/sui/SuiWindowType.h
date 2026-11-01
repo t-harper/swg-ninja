@@ -276,6 +276,9 @@ public:
 		SHIP_TEXTURE_SELECT					= 1100,
 		REVERSE_ENGINEER					= 1101,
 		DROID_CHIP_PROGRAMMING					= 1102,
+
+		//pre9 local
+		MAXIMIZE_CRYSTAL					= 1103,
 	};
 };
 

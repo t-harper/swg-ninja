@@ -2,6 +2,7 @@ package server.zone.objects.waypoint;
 
 import server.zone.objects.intangible.IntangibleObject;
 import server.zone.objects.creature.CreatureObject;
+import server.zone.packets.object.ObjectMenuResponse;
 import engine.service.proto.BaseMessage;
 include server.zone.packets.scene.AttributeListMessage;
 include templates.SharedObjectTemplate;
@@ -60,6 +61,14 @@ class WaypointObject extends IntangibleObject {
 	@local
 	@dirty
 	public native void fillAttributeList(AttributeListMessage msg, CreatureObject object);
+
+	@local
+	@dirty
+	public native void fillObjectMenuResponse(ObjectMenuResponse menuResponse, CreatureObject player);
+
+	@preLocked
+	@arg1preLocked
+	public native int handleObjectMenuSelect(CreatureObject player, byte selectedID);
 
 	@preLocked
 	public void setCellID(unsigned int id) {

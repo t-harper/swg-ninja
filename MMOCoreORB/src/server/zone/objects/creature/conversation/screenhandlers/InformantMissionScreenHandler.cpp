@@ -52,7 +52,8 @@ ConversationScreen* InformantMissionScreenHandler::handleScreen(CreatureObject* 
 	}
 
 	//Check if player is bounty hunter.
-	if (!conversingPlayer->hasSkill("combat_bountyhunter_novice")) {
+	// pre9 local: informants talk to sworn clan mandos
+	if (!conversingPlayer->hasSkill("combat_bountyhunter_novice") && !conversingPlayer->hasSkill("mandalorian_rank_novice")) {
 		conversationScreen->setDialogText(String("@mission/mission_generic:informant_not_bounty_hunter"));
 	} else {
 		//Get bounty mission object if it exists.

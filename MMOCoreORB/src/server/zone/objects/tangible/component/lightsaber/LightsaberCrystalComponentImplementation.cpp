@@ -12,6 +12,8 @@
 #include "server/zone/packets/scene/AttributeListMessage.h"
 #include "server/zone/objects/player/PlayerObject.h"
 #include "server/zone/objects/player/sui/callbacks/LightsaberCrystalTuneSuiCallback.h"
+#include "server/zone/objects/player/sui/callbacks/MaximizeCrystalSuiCallback.h"
+#include "server/zone/objects/player/sui/listbox/SuiListBox.h"
 #include "server/zone/objects/tangible/weapon/WeaponObject.h"
 #include "server/zone/managers/stringid/StringIdManager.h"
 #include "server/zone/managers/loot/CrystalData.h"
@@ -332,9 +334,13 @@ void LightsaberCrystalComponentImplementation::fillObjectMenuResponse(ObjectMenu
 	if (ghost != nullptr && ghost->isPrivileged()) {
 		menuResponse->addRadialMenuItem(129, 3, "Staff Commands");
 
+		// pre9 local: color == 31 is the stat-bearing crystal flag — it covers
+		// BOTH krayt dragon pearls and power crystals (plain color crystals are
+		// 0-11 and carry no damage stat, so the maximize tool is not offered on
+		// them). GM-only: this whole block is already inside isPrivileged().
 		if (getColor() == 31) {
 			menuResponse->addRadialMenuItemToRadialID(129, 130, 3, "Recalculate Stats");
-			menuResponse->addRadialMenuItemToRadialID(129, 132, 3, "Maximize Stats"); // pre9 local
+			menuResponse->addRadialMenuItemToRadialID(129, 132, 3, "Maximize Stats (GM)"); // pre9 local: opens damage-tier dropdown
 		}
 
 		if (ownerID != 0)
@@ -363,27 +369,23 @@ int LightsaberCrystalComponentImplementation::handleObjectMenuSelect(CreatureObj
 		if (selectedID == 130 && getColor() == 31) {
 			generateCrystalStats();
 		} else if (selectedID == 132 && getColor() == 31) {
-			// pre9 local: staff "Maximize Stats" — best bound of every stat
-			// at the top of the pearl scale.
-			ManagedReference<LootManager*> lootManager = getZoneServer()->getLootManager();
-			const CrystalData* crystalData = lootManager != nullptr ? lootManager->getCrystalData(getObjectTemplate()->getTemplateFileName()) : nullptr;
+			// pre9 local: GM-only "Maximize Stats" — open a dropdown so the GM
+			// can pick the damage bump tier (+30 / +300 / +3000). The chosen tier
+			// is applied by MaximizeCrystalSuiCallback -> maximizeStats(). Works on
+			// any stat-bearing crystal (color == 31: krayt pearls AND power crystals).
+			ManagedReference<SuiListBox*> listBox = new SuiListBox(player, SuiWindowType::MAXIMIZE_CRYSTAL);
 
-			if (crystalData != nullptr) {
-				itemLevel = 350;
-				quality = getCrystalQuality(); // FLAWLESS at 350
+			listBox->setPromptTitle("Maximize Crystal Stats");
+			listBox->setPromptText("Maxes every stat, then adds the selected flat damage bonus.");
+			listBox->addMenuItem("+30 Damage");   // index 0
+			listBox->addMenuItem("+300 Damage");  // index 1
+			listBox->addMenuItem("+3000 Damage"); // index 2
+			listBox->setCancelButton(true, "@cancel");
+			listBox->setUsingObject(_this.getReferenceUnsafeStaticCast());
+			listBox->setCallback(new MaximizeCrystalSuiCallback(player->getZoneServer()));
 
-				setMaxCondition(crystalData->getMaxHitpoints());
-				damage = crystalData->getMaxDamage();
-				sacHealth = crystalData->getMinHealthSac();
-				sacAction = crystalData->getMinActionSac();
-				sacMind = crystalData->getMinMindSac();
-				woundChance = crystalData->getMaxWoundChance();
-				forceCost = 0;
-				floatForceCost = 0.f;
-				attackSpeed = Math::getPrecision(crystalData->getMinAttackSpeed(), 2);
-
-				player->sendSystemMessage("Pearl stats maximized.");
-			}
+			ghost->addSuiBox(listBox);
+			player->sendMessage(listBox->generateMessage());
 		} else if (selectedID == 131 && ownerID != 0) {
 			ownerID = 0;
 
@@ -398,6 +400,41 @@ int LightsaberCrystalComponentImplementation::handleObjectMenuSelect(CreatureObj
 	}
 
 	return 0;
+}
+
+void LightsaberCrystalComponentImplementation::maximizeStats(CreatureObject* player, int damageBonus) {
+	// pre9 local: GM-only. Best bound of every stat at the top of the crystal's
+	// scale, plus a flat damageBonus on the damage stat (a stat crystal shows one
+	// 'damage' value as both min and max damage). Applies to any stat-bearing
+	// crystal (color == 31: krayt dragon pearls AND power crystals).
+	PlayerObject* ghost = player != nullptr ? player->getPlayerObject() : nullptr;
+
+	if (ghost == nullptr || !ghost->isPrivileged())
+		return;
+
+	if (getColor() != 31)
+		return;
+
+	ManagedReference<LootManager*> lootManager = getZoneServer()->getLootManager();
+	const CrystalData* crystalData = lootManager != nullptr ? lootManager->getCrystalData(getObjectTemplate()->getTemplateFileName()) : nullptr;
+
+	if (crystalData == nullptr)
+		return;
+
+	itemLevel = 350;
+	quality = getCrystalQuality(); // FLAWLESS at 350
+
+	setMaxCondition(crystalData->getMaxHitpoints());
+	damage = crystalData->getMaxDamage() + damageBonus;
+	sacHealth = crystalData->getMinHealthSac();
+	sacAction = crystalData->getMinActionSac();
+	sacMind = crystalData->getMinMindSac();
+	woundChance = crystalData->getMaxWoundChance();
+	forceCost = 0;
+	floatForceCost = 0.f;
+	attackSpeed = Math::getPrecision(crystalData->getMinAttackSpeed(), 2);
+
+	player->sendSystemMessage("Crystal stats maximized (+" + String::valueOf(damageBonus) + " damage).");
 }
 
 bool LightsaberCrystalComponentImplementation::hasPlayerAsParent(CreatureObject* player) {

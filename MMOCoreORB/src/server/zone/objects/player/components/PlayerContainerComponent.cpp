@@ -14,6 +14,60 @@
 #include "server/zone/managers/player/PlayerManager.h"
 #include "server/zone/ZoneServer.h"
 #include "server/zone/managers/visibility/VisibilityManager.h"
+#include "system/util/VectorMap.h"
+
+namespace {
+	/*
+	 * Custom (non-stock) playable species reuse a stock body/skeleton for their
+	 * appearance, so the clothing that fits that stock body also fits them. The
+	 * stock wearable playerRaces lists only enumerate the ~10 stock playable
+	 * species (+ vendor NPC variants), so without this mapping every custom
+	 * species is hard-rejected at equip ("You lack the necessary requirements to
+	 * wear this object"). Each custom species template is mapped to the stock
+	 * race whose body its mesh is built on, verified from the client
+	 * appearanceFilename .sat skeleton: the near-human species share
+	 * appearance/skeleton/all_b.skt + hum_{m,f}_face and map to
+	 * human_{male,female}; hutt (hutt.skt) and talz (muftak.skt) have unique
+	 * skeletons and fall back to the gender-matched human body as the closest
+	 * wearable base. Returns an empty String for stock/unknown templates, which
+	 * then keep the original (unchanged) behavior.
+	 */
+	const String& getCustomSpeciesBaseRace(const String& race) {
+		static const VectorMap<String, String> baseRaceMap = []() {
+			const String humanMale = "object/creature/player/human_male.iff";
+			const String humanFemale = "object/creature/player/human_female.iff";
+
+			VectorMap<String, String> map;
+			map.put("object/creature/player/aqualish_female.iff", humanFemale);
+			map.put("object/creature/player/aqualish_male.iff", humanMale);
+			map.put("object/creature/player/bith_female.iff", humanFemale);
+			map.put("object/creature/player/bith_male.iff", humanMale);
+			map.put("object/creature/player/chiss_female.iff", humanFemale);
+			map.put("object/creature/player/chiss_male.iff", humanMale);
+			map.put("object/creature/player/devaronian_male.iff", humanMale);
+			map.put("object/creature/player/gotal_male.iff", humanMale);
+			map.put("object/creature/player/gran_male.iff", humanMale);
+			map.put("object/creature/player/gungan_male.iff", humanMale);
+			map.put("object/creature/player/hutt_female.iff", humanFemale);
+			map.put("object/creature/player/hutt_male.iff", humanMale);
+			map.put("object/creature/player/ishi_tib_male.iff", humanMale);
+			map.put("object/creature/player/nautolan_male.iff", humanMale);
+			map.put("object/creature/player/nightsister_female.iff", humanFemale);
+			map.put("object/creature/player/nikto_male.iff", humanMale);
+			map.put("object/creature/player/quarren_male.iff", humanMale);
+			map.put("object/creature/player/smc_female.iff", humanFemale);
+			map.put("object/creature/player/talz_male.iff", humanMale);
+			map.put("object/creature/player/togruta_female.iff", humanFemale);
+			map.put("object/creature/player/weequay_male.iff", humanMale);
+
+			return map;
+		}();
+
+		// get() returns an empty String (the map's nullValue) for any template
+		// not in the table, i.e. stock species and non-player objects.
+		return baseRaceMap.get(race);
+	}
+}
 
 int PlayerContainerComponent::canAddObject(SceneObject* sceneObject, SceneObject* object, int containmentType, String& errorDescription) const {
 	CreatureObject* creo = dynamic_cast<CreatureObject*>(sceneObject);
@@ -32,9 +86,17 @@ int PlayerContainerComponent::canAddObject(SceneObject* sceneObject, SceneObject
 			String race = creo->getObjectTemplate()->getFullTemplateString();
 
 			if (!races->contains(race.hashCode())) {
-				errorDescription = "You lack the necessary requirements to wear this object";
+				// Custom species aren't listed in the stock wearable playerRaces;
+				// fall back to the stock base race their body is built on so they
+				// can wear the same clothing. Stock species match directly above
+				// and never reach this fallback, so their behavior is unchanged.
+				const String& baseRace = getCustomSpeciesBaseRace(race);
 
-				return TransferErrorCode::PLAYERUSEMASKERROR;
+				if (baseRace.isEmpty() || !races->contains(baseRace.hashCode())) {
+					errorDescription = "You lack the necessary requirements to wear this object";
+
+					return TransferErrorCode::PLAYERUSEMASKERROR;
+				}
 			}
 		}
 

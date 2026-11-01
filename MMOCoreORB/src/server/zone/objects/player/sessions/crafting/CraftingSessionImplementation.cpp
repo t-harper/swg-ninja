@@ -1275,8 +1275,8 @@ void CraftingSessionImplementation::customization(const String& name, byte templ
 
 	prototype->setCustomObjectName(customName, false);
 
-	if (schematicCount < 0 || schematicCount > 1000) {
-		schematicCount = 1000;
+	if (schematicCount < 0 || schematicCount > ManufactureSchematic::MAX_MANUFACTURE_LIMIT) {
+		schematicCount = ManufactureSchematic::MAX_MANUFACTURE_LIMIT;
 	}
 
 	manufactureSchematic->setManufactureLimit(schematicCount);

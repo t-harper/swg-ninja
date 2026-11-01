@@ -10,12 +10,22 @@
 #include "server/zone/packets/object/ObjectMenuResponse.h"
 #include "server/zone/objects/creature/CreatureObject.h"
 #include "server/zone/objects/installation/factory/FactoryObject.h"
+#include "server/zone/objects/player/PlayerObject.h"
 
 void FactoryObjectMenuComponent::fillObjectMenuResponse(SceneObject* sceneObject, ObjectMenuResponse* menuResponse, CreatureObject* player) const {
 	if (!sceneObject->isFactory())
 		return;
 
 	FactoryObject* factory = cast<FactoryObject*>(sceneObject);
+
+	// pre9 local: staff-only "Finish Queue (GM)" radial — time-skips a
+	// running manufacture run in bounded batches (ingredients still consumed).
+	// Offered to any privileged player, even one not on the admin list;
+	// the handler no-ops with a message if the factory isn't operating.
+	PlayerObject* ghost = player->getPlayerObject();
+
+	if (ghost != nullptr && ghost->isPrivileged())
+		menuResponse->addRadialMenuItem(134, 3, "Finish Queue (GM)");
 
 	if (!factory->isOnAdminList(player))
 		return;
@@ -45,6 +55,17 @@ int FactoryObjectMenuComponent::handleObjectMenuSelect(SceneObject* sceneObject,
 		return 1;
 
 	FactoryObject* factory = cast<FactoryObject*>(sceneObject);
+
+	// pre9 local: staff "Finish Queue (GM)" — handled before the admin-list
+	// gate so a GM can time-skip any factory's run.
+	if (selectedID == 134) {
+		PlayerObject* ghost = player->getPlayerObject();
+
+		if (ghost != nullptr && ghost->isPrivileged())
+			factory->handleGMFinishQueue(player);
+
+		return 0;
+	}
 
 	if (!factory->isOnAdminList(player))
 		return 1;

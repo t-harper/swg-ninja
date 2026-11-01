@@ -22,4 +22,15 @@ schematics = {
 	{path="object/draft_schematic/clothing/clothing_hat_nightsister_s03.iff"},
 	{path="object/draft_schematic/armor/armor_segment_mandalorian.iff"},
 	{path="object/draft_schematic/munition/grenade_cortosis.iff"},
+	-- Mandalorian armor pieces (composite clones, craftable by master armorsmith)
+	{path="object/draft_schematic/armor/armor_mandalorian_belt.iff"},
+	{path="object/draft_schematic/armor/armor_mandalorian_bicep_l.iff"},
+	{path="object/draft_schematic/armor/armor_mandalorian_bicep_r.iff"},
+	{path="object/draft_schematic/armor/armor_mandalorian_bracer_l.iff"},
+	{path="object/draft_schematic/armor/armor_mandalorian_bracer_r.iff"},
+	{path="object/draft_schematic/armor/armor_mandalorian_chest_plate.iff"},
+	{path="object/draft_schematic/armor/armor_mandalorian_gloves.iff"},
+	{path="object/draft_schematic/armor/armor_mandalorian_helmet.iff"},
+	{path="object/draft_schematic/armor/armor_mandalorian_leggings.iff"},
+	{path="object/draft_schematic/armor/armor_mandalorian_shoes.iff"},
 }

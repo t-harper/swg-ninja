@@ -453,6 +453,7 @@ void DirectorManager::initializeLuaEngine(Lua* luaEngine) {
 	luaEngine->registerFunction("forcePeace", forcePeace);
 	luaEngine->registerFunction("readSharedMemory", readSharedMemory);
 	luaEngine->registerFunction("writeSharedMemory", writeSharedMemory);
+	luaEngine->registerFunction("compareAndSetSharedMemory", compareAndSetSharedMemory);
 	luaEngine->registerFunction("deleteSharedMemory", deleteSharedMemory);
 	luaEngine->registerFunction("readStringSharedMemory", readStringSharedMemory);
 	luaEngine->registerFunction("writeStringSharedMemory", writeStringSharedMemory);
@@ -1506,6 +1507,33 @@ int DirectorManager::writeSharedMemory(lua_State* L) {
 #endif
 
 	return 0;
+}
+
+int DirectorManager::compareAndSetSharedMemory(lua_State* L) {
+	if (checkArgumentCount(L, 3) == 1) {
+		String err = "incorrect number of arguments passed to DirectorManager::compareAndSetSharedMemory";
+		printTraceError(L, err);
+		ERROR_CODE = INCORRECT_ARGUMENTS;
+		return 0;
+	}
+
+	String key = lua_tostring(L, -3);
+	uint64 expected = lua_tointeger(L, -2);
+	uint64 desired = lua_tointeger(L, -1);
+	bool changed;
+	{
+		// Same write lock as the existing shared-memory get/put API. Never
+		// call Lua or lock scene objects while this Director lock is held.
+#ifndef WITH_STM
+		Locker locker(DirectorManager::instance());
+#endif
+		changed = DirectorManager::instance()->sharedMemory->get(key) == expected;
+		if (changed)
+			DirectorManager::instance()->sharedMemory->put(key, desired);
+	}
+
+	lua_pushboolean(L, changed);
+	return 1;
 }
 
 int DirectorManager::readStringSharedMemory(lua_State* L) {

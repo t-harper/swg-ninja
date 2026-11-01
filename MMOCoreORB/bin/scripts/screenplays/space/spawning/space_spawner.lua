@@ -375,6 +375,7 @@ function SpaceSpawnerScreenPlay:rememberSpawnerShip(pShipAgent, tableNum, cohort
 
 	if (cohortID ~= nil) then
 		writeData(agentID .. ":SpawnerSquadron:", cohortID)
+		writeData(agentID .. ":SpawnerArrival:", 1)
 	end
 end
 
@@ -382,6 +383,7 @@ function SpaceSpawnerScreenPlay:forgetSpawnerShip(agentID)
 	deleteData(agentID .. ":SpawnerIndex:")
 	deleteStringData(agentID .. ":SpawnerName:")
 	deleteData(agentID .. ":SpawnerSquadron:")
+	deleteData(agentID .. ":SpawnerArrival:")
 end
 
 function SpaceSpawnerScreenPlay:dropSpawnObservers(pShipAgent)
@@ -435,6 +437,7 @@ function SpaceSpawnerScreenPlay:forgetSquadron(cohortID)
 	deleteData(key .. "active")
 	deleteData(key .. "index")
 	deleteData(key .. "leader")
+	deleteData(key .. "queued")
 	deleteStringVectorSharedMemory(key .. "members")
 end
 
@@ -458,6 +461,97 @@ function SpaceSpawnerScreenPlay:clearSquadronRegistrations(cohortID)
 	end
 	self:forgetSquadron(cohortID)
 	return survivingShips
+end
+
+-- Cohort state: 1 idle, 2 owned/assembling, 3 owned with a pending change.
+-- A callback holding a different ship's lock never waits for the owner.
+function SpaceSpawnerScreenPlay:requestSquadronUpdate(cohortID)
+	local key = self:squadronKey(cohortID)
+	if (compareAndSetSharedMemory(key .. "active", 1, 2)) then
+		self:reconcileOwnedSquadron(cohortID)
+		return
+	end
+	if (compareAndSetSharedMemory(key .. "active", 2, 3)) then
+		return
+	end
+
+	-- If the owner released between our two claims, coalesce a single retry.
+	-- State 3 already guarantees another owner scan; never poll a busy owner.
+	if (readData(key .. "active") == 1 and compareAndSetSharedMemory(key .. "queued", 1, 2)) then
+		createEvent(1, self.screenplayName, "reconcileSquadron", nil, tostring(cohortID))
+	end
+end
+
+function SpaceSpawnerScreenPlay:reconcileSquadron(pNil, argument)
+	local cohortID = tonumber(argument)
+	local key = self:squadronKey(cohortID)
+	if (compareAndSetSharedMemory(key .. "queued", 2, 1)) then
+		self:requestSquadronUpdate(cohortID)
+	end
+end
+
+function SpaceSpawnerScreenPlay:reconcileOwnedSquadron(cohortID)
+	local key = self:squadronKey(cohortID)
+	while (true) do
+		local tableNum = readData(key .. "index")
+		local spawnTable = self.shipSpawns[tableNum]
+		local living = {}
+		for _, value in ipairs(readStringVectorSharedMemory(key .. "members")) do
+			local agentID = tonumber(value)
+			if (agentID > 0) then
+				local pShip = getSceneObject(agentID)
+				if (pShip ~= nil and not ShipObject(pShip):isShipDestroyed()) then
+					table.insert(living, pShip)
+				else
+					self:forgetSpawnerShip(agentID)
+					if (pShip ~= nil) then
+						self:dropSpawnObservers(pShip)
+					end
+				end
+			end
+		end
+		table.sort(living, function(left, right)
+			return SceneObject(left):getObjectID() < SceneObject(right):getObjectID()
+		end)
+
+		local pLeader = living[1]
+		local arrived = pLeader ~= nil and readData(SceneObject(pLeader):getObjectID() .. ":SpawnerArrival:") == 2
+		if (pLeader == nil or arrived) then
+			-- Only the atomic owner can close a cohort. Native destruction
+			-- notifications can all precede delayed squadron removal, so their
+			-- squadronSize arguments are not a reliable final-death detector.
+			local departures = self:clearSquadronRegistrations(cohortID)
+			if (arrived) then
+				for _, pShip in ipairs(departures) do
+					self:departure(pShip)
+				end
+			end
+			createEvent(getRandomNumber(spawnTable.minRespawn, spawnTable.maxRespawn) * 1000, self.screenplayName, "spawnShipSquadron", nil, tostring(tableNum))
+			return
+		end
+
+		local leaderID = SceneObject(pLeader):getObjectID()
+		if (readData(key .. "leader") ~= leaderID) then
+			local pOldLeader = getSceneObject(readData(key .. "leader"))
+			if (pOldLeader ~= nil) then
+				dropObserver(DESTINATIONREACHED, self.screenplayName, "squadronDestinationReached", pOldLeader)
+			end
+			writeData(key .. "leader", leaderID)
+			if (spawnTable.patrolType == SHIP_AI_SINGLE_PATROL_ROTATION) then
+				createObserver(DESTINATIONREACHED, self.screenplayName, "squadronDestinationReached", pLeader)
+			end
+		end
+
+		-- CAS release cannot overwrite CLOSED. If another callback marked the
+		-- owned state dirty before release, consume it and scan again. If it
+		-- arrives after release, that callback becomes the next owner instead.
+		if (compareAndSetSharedMemory(key .. "active", 2, 1)) then
+			return
+		end
+		if (not compareAndSetSharedMemory(key .. "active", 3, 2)) then
+			return
+		end
+	end
 end
 
 function SpaceSpawnerScreenPlay:findSquadronLeader(cohortID)
@@ -488,6 +582,9 @@ function SpaceSpawnerScreenPlay:fillSquadron(tableNum, members, cohortID)
 		table.insert(templates, template)
 	end
 
+	for slot = 1, #templates do
+		members[slot] = members[slot] or "0"
+	end
 	local pLeader = cohortID ~= nil and self:findSquadronLeader(cohortID) or nil
 	local x, z, y = self:spawnLocation(spawnTable)
 	local missing = false
@@ -504,22 +601,30 @@ function SpaceSpawnerScreenPlay:fillSquadron(tableNum, members, cohortID)
 			else
 				local agentID = SceneObject(pShip):getObjectID()
 				members[slot] = tostring(agentID)
+				if (cohortID == nil) then
+					cohortID = agentID
+					local key = self:squadronKey(cohortID)
+					writeData(key .. "active", 2) -- own initial assembly before publishing observers
+					writeData(key .. "index", tableNum)
+					writeData(key .. "queued", 1)
+				end
+				-- A first member may die while later world creation is in progress.
+				-- Keep the cohort identity, but form a new native squadron if needed.
+				if (pLeader ~= nil and ShipObject(pLeader):isShipDestroyed()) then
+					pLeader = self:findSquadronLeader(cohortID)
+				end
 				local isLeader = pLeader == nil
-
 				if (isLeader) then
 					pLeader = pShip
 					ShipAiAgent(pShip):createSquadron(squadron[1])
-					cohortID = agentID
-					local key = self:squadronKey(cohortID)
-					writeData(key .. "active", 1)
-					writeData(key .. "index", tableNum)
-					writeData(key .. "leader", agentID)
+					writeData(self:squadronKey(cohortID) .. "leader", agentID)
 				else
 					ShipAiAgent(pShip):assignToSquadron(pLeader)
 				end
 
 				ShipAiAgent(pShip):setDespawnOnNoPlayerInRange(false)
 				self:rememberSpawnerShip(pShip, tableNum, cohortID)
+				writeStringVectorSharedMemory(self:squadronKey(cohortID) .. "members", members)
 				createObserver(SHIPDESTROYED, self.screenplayName, "squadronShipDestroyed", pShip)
 				self:configurePatrol(pShip, spawnTable, isLeader and "squadronDestinationReached" or nil)
 			end
@@ -535,8 +640,11 @@ end
 function SpaceSpawnerScreenPlay:spawnShipSquadron(pNil, indexString)
 	local tableNum, attempt = spawnAttempt(indexString)
 	local cohortID, pLeader, missing = self:fillSquadron(tableNum, {}, nil)
+	if (cohortID ~= nil) then
+		self:reconcileOwnedSquadron(cohortID)
+	end
 
-	if (missing) then
+	if (missing and (cohortID == nil or readData(self:squadronKey(cohortID) .. "active") > 0)) then
 		if (cohortID == nil) then
 			self:scheduleSpawnRetry("spawnShipSquadron", tostring(tableNum), attempt, nil)
 		else
@@ -548,27 +656,36 @@ end
 function SpaceSpawnerScreenPlay:retrySquadronMembers(pAnchor, argument)
 	local cohortID, attempt = spawnAttempt(argument)
 	local key = self:squadronKey(cohortID)
-	if (readData(key .. "active") ~= 1) then
+	if (readData(key .. "active") == 0) then
 		return
 	end
 
 	local pLeader = self:findSquadronLeader(cohortID)
 	if (pLeader == nil) then
-		return -- last-member destruction owns replacement and state cleanup
+		self:requestSquadronUpdate(cohortID)
+		return
+	end
+	if (pAnchor == nil or SceneObject(pAnchor):getObjectID() ~= SceneObject(pLeader):getObjectID()) then
+		createEvent(1, self.screenplayName, "retrySquadronMembers", pLeader, argument)
+		return
 	end
 
-	if (pAnchor == nil or SceneObject(pAnchor):getObjectID() ~= SceneObject(pLeader):getObjectID()) then
-		-- ScreenPlayTask locks its object. Re-anchor on a surviving leader if
-		-- the old anchor died; stale weak task pointers must not clone a fleet.
-		createEvent(1, self.screenplayName, "retrySquadronMembers", pLeader, argument)
+	if (not compareAndSetSharedMemory(key .. "active", 1, 2)) then
+		-- Don't wait while holding a different ship lock. The ordinary retry
+		-- ceiling also bounds deferred retries contending with reconciliation.
+		self:requestSquadronUpdate(cohortID)
+		if (readData(key .. "active") > 0) then
+			self:scheduleSpawnRetry("retrySquadronMembers", tostring(cohortID), attempt, pLeader)
+		end
 		return
 	end
 
 	local tableNum = readData(key .. "index")
 	local members = readStringVectorSharedMemory(key .. "members")
 	local _, _, missing = self:fillSquadron(tableNum, members, cohortID)
-	if (missing) then
-		self:scheduleSpawnRetry("retrySquadronMembers", tostring(cohortID), attempt, pLeader)
+	self:reconcileOwnedSquadron(cohortID)
+	if (missing and readData(key .. "active") > 0) then
+		self:scheduleSpawnRetry("retrySquadronMembers", tostring(cohortID), attempt, self:findSquadronLeader(cohortID))
 	end
 end
 
@@ -605,36 +722,11 @@ function SpaceSpawnerScreenPlay:squadronShipDestroyed(pShipAgent, pKillerShip, s
 	if (pShipAgent == nil or not SceneObject(pShipAgent):isShipAiAgent()) then
 		return 1
 	end
-
 	local agentID = SceneObject(pShipAgent):getObjectID()
-	local tableNum = readData(agentID .. ":SpawnerIndex:")
 	local cohortID = readData(agentID .. ":SpawnerSquadron:")
-	local key = self:squadronKey(cohortID)
-	local spawnTable = self.shipSpawns[tableNum]
-	if (spawnTable == nil or readData(key .. "active") ~= 1) then
-		return 1
+	if (cohortID > 0 and readData(agentID .. ":SpawnerIndex:") > 0) then
+		self:requestSquadronUpdate(cohortID)
 	end
-
-	self:forgetSpawnerShip(agentID)
-	self:dropSpawnObservers(pShipAgent)
-
-	-- Engine counts identify the last member; don't maintain a racy Lua
-	-- decrement shared by destruction callbacks on different ships.
-	if (squadronSize > 1) then
-		if (readData(key .. "leader") == agentID) then
-			local pLeader = self:findSquadronLeader(cohortID)
-			if (pLeader ~= nil) then
-				writeData(key .. "leader", SceneObject(pLeader):getObjectID())
-				if (spawnTable.patrolType == SHIP_AI_SINGLE_PATROL_ROTATION) then
-					createObserver(DESTINATIONREACHED, self.screenplayName, "squadronDestinationReached", pLeader)
-				end
-			end
-		end
-		return 1
-	end
-
-	self:clearSquadronRegistrations(cohortID)
-	createEvent(getRandomNumber(spawnTable.minRespawn, spawnTable.maxRespawn) * 1000, self.screenplayName, "spawnShipSquadron", nil, tostring(tableNum))
 	return 1
 end
 
@@ -660,24 +752,15 @@ function SpaceSpawnerScreenPlay:squadronDestinationReached(pLeadShipAgent)
 	if (pLeadShipAgent == nil or ShipObject(pLeadShipAgent):isShipDestroyed()) then
 		return 1
 	end
-
 	local agentID = SceneObject(pLeadShipAgent):getObjectID()
 	local cohortID = readData(agentID .. ":SpawnerSquadron:")
 	local key = self:squadronKey(cohortID)
-	local tableNum = readData(agentID .. ":SpawnerIndex:")
-	local spawnTable = self.shipSpawns[tableNum]
-	if (spawnTable == nil or readData(key .. "active") ~= 1 or readData(key .. "leader") ~= agentID) then
-		return 1
+	if (cohortID > 0 and readData(key .. "leader") == agentID) then
+		-- Absent registration is zero, so a stale callback cannot recreate an
+		-- arrival signal after cohort cleanup. A busy owner consumes this signal.
+		if (compareAndSetSharedMemory(agentID .. ":SpawnerArrival:", 1, 2)) then
+			self:requestSquadronUpdate(cohortID)
+		end
 	end
-
-	-- A live leader owns this callback. Last-member destruction cannot race
-	-- it while that leader remains in the engine's squadron. Invalidate all
-	-- registrations and observers before moving/removing any of the ships.
-	local departures = self:clearSquadronRegistrations(cohortID)
-
-	for _, pShip in ipairs(departures) do
-		self:departure(pShip)
-	end
-	createEvent(getRandomNumber(spawnTable.minRespawn, spawnTable.maxRespawn) * 1000, self.screenplayName, "spawnShipSquadron", nil, tostring(tableNum))
 	return 1
 end

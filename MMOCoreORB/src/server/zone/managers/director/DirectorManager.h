@@ -147,6 +147,7 @@ namespace server {
 		static int spatialMoodChat(lua_State* L);
 		static int readSharedMemory(lua_State* L);
 		static int writeSharedMemory(lua_State* L);
+		static int compareAndSetSharedMemory(lua_State* L);
 		static int deleteSharedMemory(lua_State* L);
 		static int readStringSharedMemory(lua_State* L);
 		static int writeStringSharedMemory(lua_State* L);

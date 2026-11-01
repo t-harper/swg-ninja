@@ -13,6 +13,7 @@ ScreenPlay = {}
 function ScreenPlay:new(object) self.__index = self; return setmetatable(object or {}, self) end
 function registerScreenPlay() end
 local world, memory, strings, vectors, events, attempts, fail, warnings, rngMax, nextID
+local afterSpawn, beforeClaim, beforeRelease, afterClaim
 local methods = {}
 function methods:getObjectID() return self.id end
 function methods:isShipAiAgent() return true end
@@ -46,9 +47,26 @@ function getRandomNumber(a,b)
  return rngMax and b or a
 end
 function isZoneEnabled() return true end
-function writeData(key,value) memory[key] = value end
+function writeData(key,value)
+ if beforeClaim and key:match(":active$") and value==0 then
+  local hook=beforeClaim;beforeClaim=nil;hook(key,1,value)
+ end
+ memory[key] = value
+end
 function readData(key) return memory[key] or 0 end
 function deleteData(key) memory[key] = nil end
+-- C++ compare-and-set is checked separately by cas_binding_spec.py. This
+-- boundary double also permits adversarial re-entry immediately before a claim.
+function compareAndSetSharedMemory(key, expected, desired)
+ if beforeRelease and key:match(":active$") and expected==2 and desired==1 then
+  local hook=beforeRelease;beforeRelease=nil;hook(key)
+ end
+ if beforeClaim then local hook=beforeClaim;beforeClaim=nil;hook(key,expected,desired) end
+ local changed=(memory[key] or 0)==expected
+ if changed then memory[key]=desired end
+ if afterClaim then afterClaim(key,expected,desired,changed) end
+ return changed
+end
 function writeStringData(key,value) strings[key] = value end
 function readStringData(key) return strings[key] or "" end
 function deleteStringData(key) strings[key] = nil end
@@ -74,12 +92,14 @@ function spawnShipAgent(name,zone,x,z,y)
  nextID = nextID + 1
  local object = setmetatable({id=nextID,name=name,points={},observers={},destroyed=false},{__index=methods})
  world[nextID] = object
+ if afterSpawn then afterSpawn(object) end
  return object
 end
 dofile(sourcePath)
 local function reset()
  world,memory,strings,vectors,events,attempts,fail,warnings = {},{},{},{},{},{},{},{}
  rngMax,nextID = false,100
+ afterSpawn,beforeClaim,beforeRelease,afterClaim=nil,nil,nil,nil
 end
 local function eq(actual,expected,message)
  assert(actual == expected,(message or "unexpected value")..": expected "..tostring(expected)..", got "..tostring(actual))
@@ -238,6 +258,70 @@ test("ordinary guard patrol preserves its limits and does not get a route observ
  play:spawnShipAgent(nil,"1");local ship=cohortShips()[1]
  eq(ship.patrol,"guard");eq(ship.minGuard,50);eq(ship.maxGuard,200);eq(ship.observers[DESTINATIONREACHED],nil)
 end)
+test("rapid two deaths replace a cohort even when both native counts are stale at two",function()
+ local play=makePlay(true);play:spawnShipSquadron(nil,"1");local ships=cohortShips()
+ destroy(play,ships[1],2);destroy(play,ships[2],2)
+ eq(replacements(),1);eq(next(memory),nil);eq(next(strings),nil);eq(next(vectors),nil)
+end)
+test("all members dead before the first callback still replace only once",function()
+ local play=makePlay(true);play:spawnShipSquadron(nil,"1");local ships=cohortShips()
+ ships[1].destroyed=true;ships[2].destroyed=true
+ play:squadronShipDestroyed(ships[1],nil,2);play:squadronShipDestroyed(ships[2],nil,2)
+ eq(replacements(),1);eq(next(memory),nil)
+end)
+test("death during initial assembly cannot abandon a surviving later member",function()
+ local play=makePlay(true)
+ afterSpawn=function(ship)
+  if ship.name=="wing_b" then local leader=world[101];destroy(play,leader,1) end
+ end
+ play:spawnShipSquadron(nil,"1")
+ eq(replacements(),0,"assembly cannot replace a still-forming fleet")
+ eq(readData(world[102].id..":SpawnerIndex:"),1)
+ eq(world[102].observers[DESTINATIONREACHED],"squadronDestinationReached")
+ play:squadronDestinationReached(world[102]);eq(replacements(),1);eq(next(memory),nil)
+end)
+test("arrival during partial assembly cleans new members before replacement",function()
+ local play=makePlay(true);fail.wing_b=1;play:spawnShipSquadron(nil,"1");local leader=world[101]
+ afterSpawn=function(ship) if ship.name=="wing_b" then play:squadronDestinationReached(leader) end end
+ runNext(play)
+ eq(replacements(),1);eq(world[102].hyperspacing,true);eq(next(memory),nil);eq(next(vectors),nil)
+end)
+test("competing completion callbacks must win an atomic cohort claim",function()
+ local play=makePlay(true);play:spawnShipSquadron(nil,"1");local ships=cohortShips()
+ beforeClaim=function() play:squadronDestinationReached(ships[1]) end
+ play:squadronDestinationReached(ships[1])
+ eq(replacements(),1);eq(next(memory),nil)
+end)
+test("death racing owner release marks dirty without losing the final replacement",function()
+ local play=makePlay(true);play:spawnShipSquadron(nil,"1");local ships=cohortShips()
+ beforeRelease=function() destroy(play,ships[2],2) end
+ destroy(play,ships[1],2)
+ eq(replacements(),1);eq(next(memory),nil);eq(next(vectors),nil)
+end)
+test("deaths observed before registration reconcile at assembly publication",function()
+ local play=makePlay(true);fail.wing_b=true
+ afterSpawn=function(ship) ship.destroyed=true end
+ play:spawnShipSquadron(nil,"1")
+ eq(replacements(),1);eq(next(memory),nil);eq(next(vectors),nil)
+ eq(#events,1,"dead initial cohort must not retain a partial retry")
+end)
+test("release race coalesces one reconcile and duplicate delivery cannot reopen closed fleet",function()
+ local play=makePlay(true);play:spawnShipSquadron(nil,"1");local leader=world[101]
+ local cohort=readData(leader.id..":SpawnerSquadron:")
+ -- Another owner briefly acquires between claim calls, then releases before
+ -- this request can mark it dirty. The screenplay must queue one reconciliation.
+ beforeClaim=function(key,expected,desired) if key:match(":active$") then memory[key]=2 end end
+ afterClaim=function(key,expected,desired,changed)
+  if key:match(":active$") and expected==1 and desired==2 and not changed then
+   memory[key]=1;afterClaim=nil
+  end
+ end
+ play:requestSquadronUpdate(cohort)
+ eq(#events,1);eq(events[1].callback,"reconcileSquadron")
+ local pending=table.remove(events,1);play:squadronDestinationReached(leader)
+ play[pending.callback](play,pending.object,pending.args);play[pending.callback](play,pending.object,pending.args)
+ eq(replacements(),1);eq(next(memory),nil);eq(next(vectors),nil)
+end)
 test("successful ordinary single spawn has no retry",function()
  local play=makePlay(false);play:spawnShipAgent(nil,"1");eq(countShips(),1);eq(#events,0)
  local ship=cohortShips()[1];eq(ship.patrol,"fixed");eq(ship.single,true);eq(readData(ship.id..":SpawnerIndex:"),1)
@@ -255,6 +339,25 @@ test("all authored zone declarations have valid respawn intervals",function()
   end
   eq(slots,expected[zone][2],zone.." authored population")
  end
+end)
+test("review: owner release between failed claim and dirty mark queues one scan",function()
+ local play=makePlay(true);play:spawnShipSquadron(nil,"1");local ships=cohortShips()
+ local cohort=readData(ships[1].id..":SpawnerSquadron:");local key=play:squadronKey(cohort)
+ ships[1].destroyed=true;ships[2].destroyed=true
+ writeData(key.."active",2)
+ local hook
+ hook=function(claimKey,expected,desired)
+  if claimKey==key.."active" and expected==2 and desired==3 then
+   writeData(key.."active",1)
+  else beforeClaim=hook end
+ end
+ beforeClaim=hook
+ play:requestSquadronUpdate(cohort)
+ eq(#events,1)
+ local duplicate=events[1]
+ runNext(play,"reconcileSquadron")
+ play:reconcileSquadron(nil,duplicate.args)
+ eq(replacements(),1);eq(next(memory),nil);eq(next(strings),nil);eq(next(vectors),nil)
 end)
 local failed=0
 for _,entry in ipairs(tests) do

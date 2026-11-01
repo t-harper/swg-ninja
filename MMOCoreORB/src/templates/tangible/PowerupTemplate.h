@@ -33,6 +33,8 @@ public:
 		return primaryAttributes.get(System::random(primaryAttributes.size() - 1));
 	}
 
+	const Vector<PowerupStat>& getPrimaryAttributes() const { return primaryAttributes; }
+
 	bool hasPrimaryAttribute() {
 		return primaryAttributes.size() > 0;
 	}

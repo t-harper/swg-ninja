@@ -1,0 +1,31 @@
+{
+  "freshGenerationsByteIdentical": true,
+  "artifactHashes": {
+    "bin/scripts/custom_scripts/managers/crafting/perfect_factory_catalog.lua": "fa8ef2ea2a638b2a74aa33d9588f709f8504e54036c94eecd36ce4eaaf13e2a2",
+    "tests/local/perfect_factory_catalog/coverage.json": "41eee620856251af11b5b53c7bd462338b05eddff8c4f844f4ee7f08bad4a074",
+    "tests/local/perfect_factory_catalog/special_profiles.json": "97ab8928c88d0d9af32ab7f67abe2317f1df8e202bca86d97c8ac50c03addef2"
+  },
+  "records": [
+    {
+      "phase": "second-fresh-generation",
+      "exitCode": 0,
+      "seconds": 40.922,
+      "stdout": "{\"entriesByKind\":{\"crystal\":14,\"dna\":870,\"fixed\":65,\"loot\":103,\"recipe\":9680},\"maximumExpandedPrototypeObjects\":374,\"maximumSelectedDepth\":5,\"recipesByProfession\":{\"Architect\":210,\"Armorsmith\":144,\"Artisan / General\":195,\"Artisan / Musician\":13,\"Bio-Engineer\":105,\"Chef\":87,\"Combat Medic\":86,\"Droid Engineer\":129,\"Jedi\":15,\"Medic / Doctor\":94,\"Scout / Ranger\":27,\"Shipwright\":278,\"Smuggler\":18,\"Tailor\":320,\"Weaponsmith\":119},\"uniqueOutputTargets\":2012,\"usableRecipes\":1795}",
+      "stderr": ""
+    },
+    {
+      "phase": "check",
+      "exitCode": 0,
+      "seconds": 25.783,
+      "stdout": "{\"entriesByKind\":{\"crystal\":14,\"dna\":870,\"fixed\":65,\"loot\":103,\"recipe\":9680},\"maximumExpandedPrototypeObjects\":374,\"maximumSelectedDepth\":5,\"recipesByProfession\":{\"Architect\":210,\"Armorsmith\":144,\"Artisan / General\":195,\"Artisan / Musician\":13,\"Bio-Engineer\":105,\"Chef\":87,\"Combat Medic\":86,\"Droid Engineer\":129,\"Jedi\":15,\"Medic / Doctor\":94,\"Scout / Ranger\":27,\"Shipwright\":278,\"Smuggler\":18,\"Tailor\":320,\"Weaponsmith\":119},\"uniqueOutputTargets\":2012,\"usableRecipes\":1795}",
+      "stderr": ""
+    },
+    {
+      "phase": "catalog-tests",
+      "exitCode": 0,
+      "seconds": 27.543,
+      "stdout": "",
+      "stderr": "...................\n----------------------------------------------------------------------\nRan 19 tests in 27.407s\n\nOK"
+    }
+  ]
+}

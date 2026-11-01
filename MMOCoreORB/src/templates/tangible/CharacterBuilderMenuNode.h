@@ -69,6 +69,32 @@ public:
 		return displayName.compareTo(obj->getDisplayName());
 	}
 
+	// pre9 local: copy once per dialog, before either rendering or resolving
+	// row indices. Published template trees and older dialogs stay untouched.
+	template <typename Availability>
+	Reference<CharacterBuilderMenuNode*> filteredCopy(const Availability& available, bool privileged = false) const {
+		if (!hasChildNodes() && templatePath == "gm_frs_editor" && !privileged)
+			return nullptr;
+		if (!hasChildNodes() && templatePath.beginsWith("perfectcrate:") &&
+				!available(templatePath.subString(13)))
+			return nullptr;
+
+		Reference<CharacterBuilderMenuNode*> copy = new CharacterBuilderMenuNode(displayName, templatePath);
+		for (int i = 0; i < childNodes.size(); ++i) {
+			auto child = childNodes.get(i)->filteredCopy(available, privileged);
+			if (child == nullptr)
+				continue;
+			child->setParentNode(copy);
+			copy->childNodes.put(child);
+		}
+
+		// Prune branches emptied by availability filtering, retaining original
+		// empty/unrelated nodes and all legacy tokens.
+		if (hasChildNodes() && !copy->hasChildNodes())
+			return nullptr;
+		return copy;
+	}
+
 	inline void setTemplatePath(const String& tplPath) {
 		templatePath = tplPath;
 		templateCRC = tplPath.hashCode();

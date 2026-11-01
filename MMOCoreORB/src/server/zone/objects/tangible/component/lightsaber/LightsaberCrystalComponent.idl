@@ -103,6 +103,8 @@ class LightsaberCrystalComponent extends Component {
 
 	public native int inflictDamage(TangibleObject attacker, int damageType, float damage, boolean destroy, boolean notifyClient = true);
 
+	// pre9 local: normal progression endpoints; new untuned generated objects only.
+	public native boolean initializeNormalMaximum();
 	public native void generateCrystalStats();
 	public native void validateCrystalStats();
 	public native int getRandomizedStat(int min, int max, int itemLevel);

@@ -47,7 +47,7 @@ void DroidPlaybackModuleDataComponent::initializeTransientMembers() {
 	}
 
 	if (droidComponent->hasKey("module_count")) {
-		totalTracks = droidComponent->getAttributeHidden("module_count");
+		totalTracks = droidComponent->getAttributeValue("module_count");
 	}
 }
 

@@ -34,9 +34,10 @@ protected:
 	int dynamicValues;
 	int modifier;
 	int level;
+	bool normalMaximum;
 
 public:
-	LootValues(const LootItemTemplate* lootTemplate, int lootLevel, float lootModifier);
+	LootValues(const LootItemTemplate* lootTemplate, int lootLevel, float lootModifier, bool normalMaximum = false);
 
 	uint32 getObjectType() const {
 		return objectType;

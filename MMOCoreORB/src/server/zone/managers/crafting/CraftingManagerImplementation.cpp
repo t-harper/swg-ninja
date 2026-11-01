@@ -184,3 +184,16 @@ void CraftingManagerImplementation::setInitialCraftingValues(TangibleObject* pro
 	SharedLabratory* lab = labs.get(labratory);
 	lab->setInitialCraftingValues(prototype,manufactureSchematic,assemblySuccess);
 }
+
+bool CraftingManagerImplementation::setPerfectCraftingValues(TangibleObject* prototype, ManufactureSchematic* schematic) {
+	if (prototype == nullptr || schematic == nullptr || schematic->getDraftSchematic() == nullptr)
+		return false;
+	// Genetics has its own input-dependent caps and hidden resistance semantics.
+	int lab = schematic->getLabratory();
+	if (lab != DraftSchematicObjectTemplate::RESOURCE_LAB && lab != DraftSchematicObjectTemplate::DROID_LAB)
+		return false;
+	auto resourceLab = dynamic_cast<ResourceLabratory*>(labs.get(lab).get());
+	if (resourceLab == nullptr) return false;
+	resourceLab->setPerfectCraftingValues(prototype, schematic);
+	return true;
+}

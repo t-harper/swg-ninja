@@ -22,6 +22,12 @@ class CrystalData : public Object {
 	int maxWoundChance;
 
 public:
+	// Progression endpoints may be reversed (negative cost/speed benefits).
+	template<typename T>
+	static bool containsNormalStat(T value, T first, T last) {
+		return value >= std::min(first, last) && value <= std::max(first, last);
+	}
+
 	CrystalData() : Object(), minDamage(0), maxDamage(0), minHitpoints(0), maxHitpoints(0), minHealthSac(0), maxHealthSac(0), minActionSac(0), maxActionSac(0),
 		minMindSac(0), maxMindSac(0), minAttackSpeed(0.0), maxAttackSpeed(0.0), minForceCost(0.0), maxForceCost(0.0), minWoundChance(0), maxWoundChance(0) {
 	}

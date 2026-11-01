@@ -38,6 +38,8 @@
 #include "server/zone/objects/transaction/TransactionLog.h"
 #include "server/zone/managers/ship/ShipManager.h"
 #include "server/zone/managers/crafting/CraftingManager.h"
+#include "server/zone/managers/crafting/PerfectCraftedItemFactory.h"
+#include "server/zone/managers/frs/FrsGmEditor.h"
 #include "server/zone/objects/draftschematic/DraftSchematic.h"
 #include "server/zone/objects/manufactureschematic/ManufactureSchematic.h"
 
@@ -241,6 +243,16 @@ void SuiManager::handleCharacterBuilderSelectItem(CreatureObject* player, SuiBox
 	if (cancel != 0 || ghost == nullptr)
 		return;
 
+	// pre9 local: never resolve a stale row against another registry version.
+	if (cbSui->getCatalogGeneration() != PerfectCraftedItemFactory::getCatalogGeneration()) {
+		ManagedReference<SceneObject*> source = cbSui->getUsingObject().get();
+		auto terminal = source.castTo<CharacterBuilderTerminal*>();
+		player->sendSystemMessage("The factory catalog changed. The character builder has been reopened.");
+		if (terminal != nullptr)
+			terminal->sendInitialChoices(player);
+		return;
+	}
+
 	//Back was pressed. Send the node above it.
 	if (otherPressed) {
 		const CharacterBuilderMenuNode* parentNode = currentNode->getParentNode();
@@ -285,9 +297,12 @@ void SuiManager::handleCharacterBuilderSelectItem(CreatureObject* player, SuiBox
 		// pre9 local: crate:/socketed: tokens embed an .iff path but are
 		// non-item tokens — without this they'd fall into the item
 		// branch and fail ("error creating the requested item").
-		if (templatePath.indexOf(".iff") < 0 || templatePath.beginsWith("crate:") || templatePath.beginsWith("socketed:") || templatePath.beginsWith("hicomp:")) { // Non-item selections
+		if (templatePath.indexOf(".iff") < 0 || templatePath.beginsWith("perfectcrate:") || templatePath.beginsWith("crate:") || templatePath.beginsWith("socketed:") || templatePath.beginsWith("hicomp:")) { // Non-item selections
 
-			if (templatePath == "unlearn_all_skills") {
+			if (templatePath == "gm_frs_editor") {
+				FrsGmEditor::open(player);
+				return;
+			} else if (templatePath == "unlearn_all_skills") {
 
 				SkillManager::instance()->surrenderAllSkills(player, true, false, true);
 				player->sendSystemMessage("All skills unlearned.");
@@ -742,6 +757,16 @@ void SuiManager::handleCharacterBuilderSelectItem(CreatureObject* player, SuiBox
 			// prototype gets a crafting serial + the label as its name so it
 			// behaves exactly like a factory-run component (ingredient slots
 			// and the crate display both depend on those).
+			} else if (templatePath.beginsWith("perfectcrate:")) {
+				String id = templatePath.subString(13);
+				String error;
+				if (!PerfectCraftedItemFactory::isAvailable(id)) {
+					player->sendSystemMessage("This factory item is not currently available.");
+				} else if (PerfectCraftedItemFactory::grant(player, id, error, cbSui->getCatalogGeneration())) {
+					player->sendSystemMessage("Factory crate created (1000 identical items).");
+				} else {
+					player->sendSystemMessage(error.isEmpty() ? "Failed to create the factory crate." : error);
+				}
 			} else if (templatePath.beginsWith("crate:")) {
 				String crateSpec = templatePath.subString(6);
 				int labelSep = crateSpec.indexOf(':');

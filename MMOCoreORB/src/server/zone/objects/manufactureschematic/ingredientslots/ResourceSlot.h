@@ -13,6 +13,7 @@
 class ResourceSlot: public IngredientSlot {
 
 	int quantity;
+	bool generatedQuality = false;
 	VectorMap<ManagedReference<SceneObject*>, int> parents;
 	ManagedReference<ResourceSpawn*> currentSpawn;
 
@@ -27,6 +28,7 @@ public:
 	ResourceSlot(const ResourceSlot& slot) : Object(), IngredientSlot(slot) {
 		setLoggingName("ResourceSlot");
 		quantity = slot.quantity;
+		generatedQuality = slot.generatedQuality;
 		parents.setAllowDuplicateInsertPlan();
 		parents = slot.parents;
 		currentSpawn = slot.currentSpawn;
@@ -157,6 +159,10 @@ public:
 		quantity = 0;
 		return true;
 	}
+
+	// Explicit synthetic input; no live ResourceSpawn or inventory is involved.
+	void setGeneratedQuality() { generatedQuality = true; quantity = requiredQuantity; }
+	bool hasGeneratedQuality() const { return generatedQuality; }
 
 	int getSlotQuantity() {
 		return quantity;

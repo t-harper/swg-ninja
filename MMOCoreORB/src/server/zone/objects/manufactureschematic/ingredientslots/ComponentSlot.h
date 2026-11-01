@@ -36,6 +36,23 @@ public:
 		return new ComponentSlot(*this);
 	}
 
+	// Internal generation only: caller owns a distinct normalized unit in its
+	// hidden satchel. No inventory consumption, clones, or packets here.
+	bool addGeneratedIngredient(TangibleObject* item) {
+		if (item == nullptr || item->isPersistent() || item->getUseCount() < 0 || item->getUseCount() > 1 ||
+			item->getSerialNumber().isEmpty() ||
+			getSlotQuantity() >= requiredQuantity || item->getObjectTemplate() == nullptr ||
+			!item->getObjectTemplate()->isDerivedFrom(contentType))
+			return false;
+		if (requiresIdentical() && !contents.isEmpty() &&
+			contents.get(0)->getSerialNumber() != item->getSerialNumber())
+			return false;
+		for (int i = 0; i < contents.size(); ++i)
+			if (contents.get(i).get() == item) return false;
+		contents.add(item);
+		return true;
+	}
+
 	bool add(CreatureObject* player, SceneObject* satchel, ManagedReference<TangibleObject*> incomingTano) {
 		int currentQuantity = getSlotQuantity();
 		FactoryCrate* crate = nullptr;

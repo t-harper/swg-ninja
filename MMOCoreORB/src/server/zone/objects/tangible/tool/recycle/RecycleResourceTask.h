@@ -33,7 +33,7 @@ public:
 
 	void run() {
 		ManagedReference<SceneObject* > sceno = recycler->getParentRecursively(SceneObjectType::PLAYERCREATURE);
-		if (!sceno->isPlayerCreature() || sceno == nullptr) {
+		if (sceno == nullptr || !sceno->isPlayerCreature()) {
 			return;
 		} else {
 			player = cast <CreatureObject*>(sceno.get());

@@ -1,3 +1,4 @@
+#include "server/zone/managers/crafting/PerfectCraftingRecipe.h"
 /*
 				Copyright <SWGEmu>
 		See file COPYING for copying conditions. */
@@ -1179,7 +1180,7 @@ void TangibleObjectImplementation::updateCraftingValues(CraftingValues* values,
 	}
 }
 
-Reference<FactoryCrate*> TangibleObjectImplementation::createFactoryCrate(int maxSize, String& factoryCrateType, bool insertSelf ) {
+Reference<FactoryCrate*> TangibleObjectImplementation::createFactoryCrate(int maxSize, String& factoryCrateType, bool insertSelf, bool makeTransient) {
 	ObjectManager* objectManager = ObjectManager::instance();
 
 	String crateType = factoryCrateType;
@@ -1206,10 +1207,11 @@ Reference<FactoryCrate*> TangibleObjectImplementation::createFactoryCrate(int ma
         	crateType = "object/factory/factory_crate_generic_items.iff";
 	}
 
-	Reference<FactoryCrate*> crate = (getZoneServer()->createObject(crateType.hashCode(), 2)).castTo<FactoryCrate*>();
+	Reference<FactoryCrate*> crate = (getZoneServer()->createObject(crateType.hashCode(), makeTransient ? 0 : 2)).castTo<FactoryCrate*>();
 
 	if (crate == nullptr)
 		return nullptr;
+	if (makeTransient && PerfectCraftingContext::current() != nullptr) PerfectCraftingContext::current()->own(crate);
 
 	Locker locker(crate);
 
@@ -1220,14 +1222,14 @@ Reference<FactoryCrate*> TangibleObjectImplementation::createFactoryCrate(int ma
 
 	if (insertSelf) {
 		if (!crate->transferObject(asTangibleObject(), -1, false)) {
-			crate->destroyObjectFromDatabase(true);
+			if (!makeTransient || PerfectCraftingContext::current() == nullptr) crate->destroyObjectFromDatabase(true);
 			return nullptr;
 		}
 	} else {
-		ManagedReference<TangibleObject*> protoclone = cast<TangibleObject*>( objectManager->cloneObject(asTangibleObject()));
+		ManagedReference<TangibleObject*> protoclone = cast<TangibleObject*>( objectManager->cloneObject(asTangibleObject(), makeTransient));
 
 		if (protoclone == nullptr) {
-			crate->destroyObjectFromDatabase(true);
+			if (!makeTransient || PerfectCraftingContext::current() == nullptr) crate->destroyObjectFromDatabase(true);
 			return nullptr;
 		}
 
@@ -1242,8 +1244,8 @@ Reference<FactoryCrate*> TangibleObjectImplementation::createFactoryCrate(int ma
 
 		protoclone->setParent(nullptr);
 		if (!crate->transferObject(protoclone, -1, false)) {
-			protoclone->destroyObjectFromDatabase(true);
-			crate->destroyObjectFromDatabase(true);
+			if (!makeTransient || PerfectCraftingContext::current() == nullptr) protoclone->destroyObjectFromDatabase(true);
+			if (!makeTransient || PerfectCraftingContext::current() == nullptr) crate->destroyObjectFromDatabase(true);
 			return nullptr;
 		}
 	}

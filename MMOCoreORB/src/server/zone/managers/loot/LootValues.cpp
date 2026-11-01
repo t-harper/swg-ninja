@@ -3,7 +3,7 @@
 #include "server/zone/managers/loot/LootAttributeType.h"
 #include "templates/LootItemTemplate.h"
 
-LootValues::LootValues(const LootItemTemplate* lootTemplate, int lootLevel, float lootModifier) : CraftingValues(lootTemplate->getAttributesMapCopy()) {
+LootValues::LootValues(const LootItemTemplate* lootTemplate, int lootLevel, float lootModifier, bool maximum) : CraftingValues(lootTemplate->getAttributesMapCopy()), normalMaximum(maximum) {
 	setLoggingName("LootValues: " + lootTemplate->getTemplateName());
 
 	staticValues = lootTemplate->getAttributesMapCopy();
@@ -14,7 +14,7 @@ LootValues::LootValues(const LootItemTemplate* lootTemplate, int lootLevel, floa
 	level = 0;
 
 	setLevel(lootTemplate, lootLevel);
-	setModifier(lootTemplate, lootModifier);
+	setModifier(lootTemplate, normalMaximum ? (float)EXPERIMENTAL : lootModifier);
 
 	recalculateValues(true);
 
@@ -91,6 +91,22 @@ void LootValues::setRandomValues() {
 			setStaticValue(attribute);
 			continue;
 		}
+
+  // pre9 local: maximum legal ordinary endpoint. Dynamic attributes remain
+  // static when normal loot disables them (level/modifier zero). At level350,
+  // modifier1's normal random subset can contain every dynamic attribute.
+  if (normalMaximum && (randomType == RandomType::UNIFORM || randomType == RandomType::NORMAL ||
+      (randomType == RandomType::DYNAMIC && modifier == EXPERIMENTAL && level > 0))) {
+   // Ordinary precision0 random paths cast both bounds to int before rolling.
+   if (precision == 0) { min = (int)min; max = (int)max; }
+   setCurrentValue(attribute, max, min, max);
+   setCurrentPercentage(attribute, getValuePercentage(min, max, max), 1.f);
+   if (randomType == RandomType::DYNAMIC) {
+    ++dynamicValues;
+    setModifierValue(attribute, 1.f);
+   }
+   continue;
+  }
 
 		if (randomType == RandomType::DYNAMIC) {
 			attributeIndex.add(attribute);

@@ -1,3 +1,5 @@
+#include <map>
+#include "server/zone/managers/crafting/PerfectCraftingRecipe.h"
 /*
  * ObjectManager.cpp
  *
@@ -602,6 +604,11 @@ SceneObject* ObjectManager::cloneObject(SceneObject* object, bool makeTransient)
 
 
 	clonedObject = instantiateSceneObject(serverCRC, oid, false);
+	// Generated delivery requests own EVERY allocation, even when a later
+	// recursive clone or class hook throws before cloneObject can return.
+	if (PerfectCraftingContext::current() != nullptr)
+		makeTransient = true;
+
 
 	if (makeTransient || !object->isPersistent()) {
 		//clonedObject = createObject(serverCRC, 0, databaseName);
@@ -620,6 +627,11 @@ SceneObject* ObjectManager::cloneObject(SceneObject* object, bool makeTransient)
 	VectorMap<String, ManagedReference<SceneObject*> > slottedObjects;
 	clonedObject->getSlottedObjects(slottedObjects);
 
+	// childObjects can index the same physical children as the slot/container
+	// maps (saber inventory and crafting-station hopper). Remap only references
+	// to children actually deep-cloned below; independent world children retain
+	// their existing semantics. Recursive calls perform the same local remap.
+	std::map<SceneObject*, SceneObject*> containedClones;
 	SortedVector<SceneObject*> inserted;
 	inserted.setNoDuplicateInsertPlan();
 
@@ -631,7 +643,8 @@ SceneObject* ObjectManager::cloneObject(SceneObject* object, bool makeTransient)
 		if (inserted.put(obj) != -1) {
 			Reference<SceneObject*> clonedChild = cloneObject(obj, makeTransient);
 
-			clonedObject->transferObject(clonedChild, 4, false);
+			if (clonedObject->transferObject(clonedChild, 4, false))
+				containedClones[obj.get()] = clonedChild.get();
 		}
 	}
 
@@ -645,8 +658,19 @@ SceneObject* ObjectManager::cloneObject(SceneObject* object, bool makeTransient)
 
 		Reference<SceneObject*> clonedChild = cloneObject(obj, makeTransient);
 
-		clonedObject->transferObject(clonedChild, -1, false);
+		if (clonedObject->transferObject(clonedChild, -1, false))
+			containedClones[obj.get()] = clonedChild.get();
 	}
+
+	auto indexedChildren = clonedObject->getChildObjects();
+	SortedVector<ManagedReference<SceneObject*> > remappedChildren;
+	for (int i = 0; i < indexedChildren->size(); ++i) {
+		auto sourceChild = indexedChildren->get(i);
+		auto replacement = containedClones.find(sourceChild.get());
+		remappedChildren.put(replacement == containedClones.end() ? sourceChild.get() : replacement->second);
+	}
+	indexedChildren->removeAll();
+	for (int i = 0; i < remappedChildren.size(); ++i) indexedChildren->put(remappedChildren.get(i));
 
 	clonedObject->onCloneObject(object);
 
@@ -836,6 +860,11 @@ void ObjectManager::deSerializeObject(ManagedObject* object, ObjectInputStream* 
 
 SceneObject* ObjectManager::instantiateSceneObject(uint32 objectCRC, uint64 oid, bool createComponents) {
 	SceneObject* object = nullptr;
+	if (auto context = PerfectCraftingContext::current()) {
+		context->checkpoint();
+		if (context->allocationCount() >= context->allocationLimit())
+			throw Exception("Generated allocation ceiling exceeded before allocation");
+	}
 
 	Locker _locker(this);
 
@@ -843,6 +872,10 @@ SceneObject* ObjectManager::instantiateSceneObject(uint32 objectCRC, uint64 oid,
 
 	if (object == nullptr)
 		return nullptr;
+
+	// Register before component/transient initialization can throw. No active
+	// generated request means the ordinary object lifecycle is unchanged.
+	if (auto context = PerfectCraftingContext::current()) context->own(object);
 
 	object->setZoneProcessServer(server);
 
@@ -880,6 +913,8 @@ SceneObject* ObjectManager::createObject(uint32 objectCRC, int persistenceLevel,
 		error() << "could not create object CRC = 0x" << hex << objectCRC << " template:" << templateManager->getTemplateFile(objectCRC);
 		return nullptr;
 	}
+
+	if (PerfectCraftingContext::current() != nullptr) persistenceLevel = 0;
 
 	object->setPersistent(persistenceLevel);
 

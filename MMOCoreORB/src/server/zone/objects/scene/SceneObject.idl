@@ -402,7 +402,7 @@ class SceneObject extends TreeEntry implements Logger, Metrics {
 	}
 
 	@reference
-	public native abstract SceneObject getCraftedComponentsSatchel();
+	public native abstract SceneObject getCraftedComponentsSatchel(boolean makeTransient = false);
 
 	/**
 	 * Calls the appropriate UI Listener Function

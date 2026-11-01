@@ -15,8 +15,9 @@ include server.zone.objects.player.sui.SuiWindowType;
 class SuiCharacterBuilderBox extends SuiListBox {
 	protected transient final CharacterBuilderMenuNode rootNode;
 	protected transient final CharacterBuilderMenuNode currentNode;
+	protected transient unsigned long catalogGeneration;
 
-	public SuiCharacterBuilderBox(CreatureObject player, final CharacterBuilderMenuNode root) {
+	public SuiCharacterBuilderBox(CreatureObject player, final CharacterBuilderMenuNode root, unsigned long generation = 0) {
 		super(player, SuiWindowType.CHARACTER_BUILDER_LIST, SuiListBox.HANDLETHREEBUTTON);
 
 		Logger.setLoggingName("SuiCharacterBuilderBox");
@@ -28,6 +29,12 @@ class SuiCharacterBuilderBox extends SuiListBox {
 		rootNode = root;
 
 		currentNode = root;
+		catalogGeneration = generation;
+	}
+
+	@local
+	public unsigned long getCatalogGeneration() {
+		return catalogGeneration;
 	}
 
 	@local

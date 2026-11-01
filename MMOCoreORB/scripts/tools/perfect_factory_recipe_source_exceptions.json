@@ -1,0 +1,77 @@
+{
+  "exceptions": [
+    {
+      "draftPath": "object/draft_schematic/space/repair/weapon_repair_kit.iff",
+      "reason": "Ordinary ShipComponentRepairKit never initializes componentSlot, no source calls its setter, and LuaPobShipObject skips a matching slot; normal usable repair-kit state has no implemented provider.",
+      "sourceSupport": "unsupported-incomplete-ship-repair-kit",
+      "targetTemplate": "object/tangible/ship/crafted/repair/repair_kit_weapon.iff"
+    },
+    {
+      "draftPath": "object/draft_schematic/space/repair/plasma_conduit_repair_kit.iff",
+      "reason": "Ordinary ShipComponentRepairKit never initializes componentSlot, no source calls its setter, and LuaPobShipObject skips a matching slot; normal usable repair-kit state has no implemented provider.",
+      "sourceSupport": "unsupported-incomplete-ship-repair-kit",
+      "targetTemplate": "object/tangible/ship/crafted/repair/repair_kit_plasma_conduit.iff"
+    },
+    {
+      "draftPath": "object/draft_schematic/space/repair/generic_repair_kit.iff",
+      "reason": "Ordinary ShipComponentRepairKit never initializes componentSlot, no source calls its setter, and LuaPobShipObject skips a matching slot; normal usable repair-kit state has no implemented provider.",
+      "sourceSupport": "unsupported-incomplete-ship-repair-kit",
+      "targetTemplate": "object/tangible/ship/crafted/repair/repair_kit_ship.iff"
+    },
+    {
+      "draftPath": "object/draft_schematic/space/repair/armor_repair_kit.iff",
+      "reason": "Ordinary ShipComponentRepairKit never initializes componentSlot, no source calls its setter, and LuaPobShipObject skips a matching slot; normal usable repair-kit state has no implemented provider.",
+      "sourceSupport": "unsupported-incomplete-ship-repair-kit",
+      "targetTemplate": "object/tangible/ship/crafted/repair/repair_kit_armor.iff"
+    },
+    {
+      "draftPath": "object/draft_schematic/space/repair/booster_repair_kit.iff",
+      "reason": "Ordinary ShipComponentRepairKit never initializes componentSlot, no source calls its setter, and LuaPobShipObject skips a matching slot; normal usable repair-kit state has no implemented provider.",
+      "sourceSupport": "unsupported-incomplete-ship-repair-kit",
+      "targetTemplate": "object/tangible/ship/crafted/repair/repair_kit_booster.iff"
+    },
+    {
+      "draftPath": "object/draft_schematic/space/repair/capacitor_repair_kit.iff",
+      "reason": "Ordinary ShipComponentRepairKit never initializes componentSlot, no source calls its setter, and LuaPobShipObject skips a matching slot; normal usable repair-kit state has no implemented provider.",
+      "sourceSupport": "unsupported-incomplete-ship-repair-kit",
+      "targetTemplate": "object/tangible/ship/crafted/repair/repair_kit_weapon_capacitor.iff"
+    },
+    {
+      "draftPath": "object/draft_schematic/space/repair/reactor_repair_kit.iff",
+      "reason": "Ordinary ShipComponentRepairKit never initializes componentSlot, no source calls its setter, and LuaPobShipObject skips a matching slot; normal usable repair-kit state has no implemented provider.",
+      "sourceSupport": "unsupported-incomplete-ship-repair-kit",
+      "targetTemplate": "object/tangible/ship/crafted/repair/repair_kit_reactor.iff"
+    },
+    {
+      "draftPath": "object/draft_schematic/space/repair/droid_interface_repair_kit.iff",
+      "reason": "Ordinary ShipComponentRepairKit never initializes componentSlot, no source calls its setter, and LuaPobShipObject skips a matching slot; normal usable repair-kit state has no implemented provider.",
+      "sourceSupport": "unsupported-incomplete-ship-repair-kit",
+      "targetTemplate": "object/tangible/ship/crafted/repair/repair_kit_droid_interface.iff"
+    },
+    {
+      "draftPath": "object/draft_schematic/space/repair/shield_repair_kit.iff",
+      "reason": "Ordinary ShipComponentRepairKit never initializes componentSlot, no source calls its setter, and LuaPobShipObject skips a matching slot; normal usable repair-kit state has no implemented provider.",
+      "sourceSupport": "unsupported-incomplete-ship-repair-kit",
+      "targetTemplate": "object/tangible/ship/crafted/repair/repair_kit_shield_generator.iff"
+    },
+    {
+      "draftPath": "object/draft_schematic/space/repair/chassis_repair_kit.iff",
+      "reason": "Ordinary ShipComponentRepairKit never initializes componentSlot, no source calls its setter, and LuaPobShipObject skips a matching slot; normal usable repair-kit state has no implemented provider.",
+      "sourceSupport": "unsupported-incomplete-ship-repair-kit",
+      "targetTemplate": "object/tangible/ship/crafted/repair/repair_kit_chassis.iff"
+    },
+    {
+      "draftPath": "object/draft_schematic/space/repair/engine_repair_kit.iff",
+      "reason": "Ordinary ShipComponentRepairKit never initializes componentSlot, no source calls its setter, and LuaPobShipObject skips a matching slot; normal usable repair-kit state has no implemented provider.",
+      "sourceSupport": "unsupported-incomplete-ship-repair-kit",
+      "targetTemplate": "object/tangible/ship/crafted/repair/repair_kit_engine.iff"
+    }
+  ],
+  "policy": "Explicit root-approved normal source gaps. Retain all seeded draft/target records; never invent a missing slot or advertise incomplete gameplay state as perfect.",
+  "providerSources": [
+    "src/server/zone/objects/tangible/ship/crafted/repair/ShipComponentRepairKit.idl",
+    "src/server/zone/objects/tangible/ship/crafted/repair/ShipComponentRepairKitImplementation.cpp",
+    "src/server/zone/objects/ship/LuaPobShipObject.cpp"
+  ],
+  "schemaVersion": 1
+}

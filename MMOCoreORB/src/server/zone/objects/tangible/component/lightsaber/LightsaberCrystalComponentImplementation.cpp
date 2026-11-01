@@ -61,6 +61,38 @@ void LightsaberCrystalComponentImplementation::notifyLoadFromDatabase() {
 	TangibleObjectImplementation::notifyLoadFromDatabase();
 }
 
+// pre9 local: choose the best endpoint of the normal level350 progression.
+// Equal legacy damage fields and nonzero level prevent migration rerolls on load.
+bool LightsaberCrystalComponentImplementation::initializeNormalMaximum() {
+ auto manager = getZoneServer() == nullptr ? nullptr : getZoneServer()->getLootManager();
+ if (manager == nullptr || getObjectTemplate() == nullptr || ownerID != 0)
+  return false;
+ const CrystalData* data = manager->getCrystalData(getObjectTemplate()->getTemplateFileName());
+ if (data == nullptr)
+  return false;
+ itemLevel = 350;
+ ownerID = 0;
+ ownerName = "";
+ minimumDamage = maximumDamage = 0;
+ forceCost = 0;
+ postTuneName = "";
+ setMaxCondition(data->getMaxHitpoints());
+ setConditionDamage(0, false);
+ damage = sacHealth = sacAction = sacMind = woundChance = 0;
+ attackSpeed = floatForceCost = 0.f;
+ if (color == 31) {
+  damage = data->getMaxDamage();
+  sacHealth = data->getMaxHealthSac();
+  sacAction = data->getMaxActionSac();
+  sacMind = data->getMaxMindSac();
+  woundChance = data->getMaxWoundChance();
+  attackSpeed = Math::getPrecision(data->getMaxAttackSpeed(), 2);
+  floatForceCost = data->getMaxForceCost();
+ }
+ quality = getCrystalQuality();
+ return true;
+}
+
 void LightsaberCrystalComponentImplementation::generateCrystalStats() {
 	ManagedReference<LootManager*> lootManager = getZoneServer()->getLootManager();
 
@@ -135,50 +167,50 @@ void LightsaberCrystalComponentImplementation::validateCrystalStats() {
 	int minStat = crystalData->getMinHitpoints();
 	int maxStat = crystalData->getMaxHitpoints();
 
-	if (getMaxCondition() > maxStat || getMaxCondition() < minStat)
+	if (!CrystalData::containsNormalStat(getMaxCondition(), minStat, maxStat))
 		setMaxCondition(getRandomizedStat(minStat, maxStat, itemLevel));
 
 	if (color == 31) {
 		minStat = crystalData->getMinDamage();
 		maxStat = crystalData->getMaxDamage();
 
-		if (damage > maxStat || damage < minStat)
+		if (!CrystalData::containsNormalStat(damage, minStat, maxStat))
 			damage = getRandomizedStat(minStat, maxStat, itemLevel);
 
 		minStat = crystalData->getMinHealthSac();
 		maxStat = crystalData->getMaxHealthSac();
 
-		if (sacHealth > maxStat || sacHealth < minStat)
+		if (!CrystalData::containsNormalStat(sacHealth, minStat, maxStat))
 			sacHealth = getRandomizedStat(minStat, maxStat, itemLevel);
 
 		minStat = crystalData->getMinActionSac();
 		maxStat = crystalData->getMaxActionSac();
 
-		if (sacAction > maxStat || sacAction < minStat)
+		if (!CrystalData::containsNormalStat(sacAction, minStat, maxStat))
 			sacAction = getRandomizedStat(minStat, maxStat, itemLevel);
 
 		minStat = crystalData->getMinMindSac();
 		maxStat = crystalData->getMaxMindSac();
 
-		if (sacMind > maxStat || sacMind < minStat)
+		if (!CrystalData::containsNormalStat(sacMind, minStat, maxStat))
 			sacMind = getRandomizedStat(minStat, maxStat, itemLevel);
 
 		minStat = crystalData->getMinWoundChance();
 		maxStat = crystalData->getMaxWoundChance();
 
-		if (woundChance > maxStat || woundChance < minStat)
+		if (!CrystalData::containsNormalStat(woundChance, minStat, maxStat))
 			woundChance = getRandomizedStat(minStat, maxStat, itemLevel);
 
 		float minFloatStat = crystalData->getMinForceCost();
 		float maxFloatStat = crystalData->getMaxForceCost();
 
-		if (floatForceCost > maxFloatStat || floatForceCost < minFloatStat)
+		if (!CrystalData::containsNormalStat(floatForceCost, minFloatStat, maxFloatStat))
 			floatForceCost = getRandomizedStat(minFloatStat, maxFloatStat, itemLevel);
 
 		minFloatStat = crystalData->getMinAttackSpeed();
 		maxFloatStat = crystalData->getMaxAttackSpeed();
 
-		if (attackSpeed > maxFloatStat || attackSpeed < minFloatStat)
+		if (!CrystalData::containsNormalStat(attackSpeed, minFloatStat, maxFloatStat))
 			attackSpeed = Math::getPrecision(getRandomizedStat(minFloatStat, maxFloatStat, itemLevel), 2);
 	}
 }

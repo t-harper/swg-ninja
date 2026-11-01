@@ -22,6 +22,8 @@ public:
 
 	static void parse(Packet* pack, String& username, String& password, String& version) {
 		pack->parseAscii(username);
+		// Use one identity for authentication and auto registration, before SQL escaping.
+		username = username.trim();
 		pack->parseAscii(password);
 
 		pack->parseAscii(version);

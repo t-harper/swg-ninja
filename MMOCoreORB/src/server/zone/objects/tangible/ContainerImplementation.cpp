@@ -3,6 +3,7 @@
 		See file COPYING for copying conditions. */
 
 #include "server/zone/objects/tangible/Container.h"
+#include "server/zone/managers/crafting/PerfectCraftingRecipe.h"
 #include "server/zone/packets/object/ObjectMenuResponse.h"
 #include "server/zone/objects/creature/CreatureObject.h"
 #include "server/zone/objects/building/BuildingObject.h"
@@ -38,7 +39,8 @@ void ContainerImplementation::notifyLoadFromDatabase() {
 void ContainerImplementation::loadTemplateData(SharedObjectTemplate* templateData) {
 	TangibleObjectImplementation::loadTemplateData(templateData);
 
-	containerObjects.setDelayedLoadOperationMode();
+	if (PerfectCraftingContext::current() == nullptr)
+		containerObjects.setDelayedLoadOperationMode();
 
 	ContainerTemplate* containerTemplate = dynamic_cast<ContainerTemplate*>(templateData);
 

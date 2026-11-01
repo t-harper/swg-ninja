@@ -12,6 +12,7 @@
 #include "server/zone/objects/creature/CreatureObject.h"
 #include "server/zone/objects/creature/ai/Creature.h"
 #include "server/zone/objects/tangible/deed/pet/PetDeed.h"
+#include "server/zone/objects/tangible/component/dna/DnaComponent.h"
 
 namespace server {
 namespace zone {
@@ -59,7 +60,16 @@ public:
 		REG_LEVEL = 5
 	};
 
-	void generateSample(Creature* creature, CreatureObject* player, int quality);
+ struct SampleSource {
+  int level, health, action, mind, armor;
+  float effectiveResist, hitChance, averageDamage;
+  bool ranged;
+ };
+ // Pure calculation/copy shared by ordinary sampling and generated inputs.
+ static void populateSample(DnaComponent* output, const CreatureTemplate* source, const SampleSource& state,
+                            int quality, bool maximumRoll = false);
+ static bool initializeNormalMaximumSample(DnaComponent* output, const CreatureTemplate* source, String& error);
+ void generateSample(Creature* creature, CreatureObject* player, int quality);
 	void generationalSample(PetDeed* deed, CreatureObject* player, int quality);
 	int levelForScore(int type, float value);
 	float valueForLevel(int type, int level);

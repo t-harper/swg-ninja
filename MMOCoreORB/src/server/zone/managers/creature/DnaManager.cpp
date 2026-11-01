@@ -6,6 +6,7 @@
  */
 
 #include "DnaManager.h"
+#include "templates/manager/TemplateManager.h"
 #include "server/zone/ZoneServer.h"
 #include "server/zone/objects/creature/CreatureObject.h"
 #include "server/zone/objects/creature/ai/CreatureTemplate.h"
@@ -335,6 +336,122 @@ void DnaManager::generationalSample(PetDeed* deed, CreatureObject* player, int q
 	}
 }
 
+void DnaManager::populateSample(DnaComponent* prototype, const CreatureTemplate* creatureTemplate,
+ const SampleSource& state, int quality, bool maximumRoll) {
+ const int hardiness = Genetics::hamToValue(state.health, quality, maximumRoll);
+ const int fortitude = Genetics::resistanceToValue(state.effectiveResist, state.armor, quality, maximumRoll);
+ const int dexterity = Genetics::hamToValue(state.action, quality, maximumRoll);
+ const int endurance = Genetics::randomizeValue(500, quality, maximumRoll);
+ const int intellect = Genetics::hamToValue(state.mind, quality, maximumRoll);
+ const int cleverness = Genetics::hitChanceToValue(state.hitChance, quality, maximumRoll);
+ const int dependability = Genetics::dietToValue(creatureTemplate->getDiet(), quality, maximumRoll);
+ const int courage = Genetics::meatTypeToValue(creatureTemplate->getMeatType(), quality, maximumRoll);
+ const int fierceness = Genetics::ferocityToValue(creatureTemplate->getFerocity(), quality, maximumRoll);
+ const int power = Genetics::damageToValue(state.averageDamage, quality, maximumRoll);
+ prototype->setQuality(quality);
+ prototype->setLevel(state.level);
+ prototype->setStats(cleverness, endurance, fierceness, power, intellect, courage, dependability, dexterity, fortitude, hardiness);
+	prototype->setStun(creatureTemplate->getStun());
+	prototype->setKinetic(creatureTemplate->getKinetic());
+	prototype->setEnergy(creatureTemplate->getEnergy());
+	prototype->setBlast(creatureTemplate->getBlast());
+	prototype->setHeat(creatureTemplate->getHeat());
+	prototype->setCold(creatureTemplate->getCold());
+	prototype->setElectric(creatureTemplate->getElectricity());
+	prototype->setAcid(creatureTemplate->getAcid());
+	prototype->setSaber(creatureTemplate->getLightSaber());
+	prototype->setArmorRating(creatureTemplate->getArmor());
+
+	prototype->setRanged(state.ranged);
+
+	if (creatureTemplate->isSpecialProtection(SharedWeaponObjectTemplate::STUN))
+		prototype->setSpecialResist(SharedWeaponObjectTemplate::STUN);
+	if (creatureTemplate->isSpecialProtection(SharedWeaponObjectTemplate::KINETIC))
+		prototype->setSpecialResist(SharedWeaponObjectTemplate::KINETIC);
+	if (creatureTemplate->isSpecialProtection(SharedWeaponObjectTemplate::ENERGY))
+		prototype->setSpecialResist(SharedWeaponObjectTemplate::ENERGY);
+	if (creatureTemplate->isSpecialProtection(SharedWeaponObjectTemplate::BLAST))
+		prototype->setSpecialResist(SharedWeaponObjectTemplate::BLAST);
+	if (creatureTemplate->isSpecialProtection(SharedWeaponObjectTemplate::HEAT))
+		prototype->setSpecialResist(SharedWeaponObjectTemplate::HEAT);
+	if (creatureTemplate->isSpecialProtection(SharedWeaponObjectTemplate::COLD))
+		prototype->setSpecialResist(SharedWeaponObjectTemplate::COLD);
+	if (creatureTemplate->isSpecialProtection(SharedWeaponObjectTemplate::ELECTRICITY))
+		prototype->setSpecialResist(SharedWeaponObjectTemplate::ELECTRICITY);
+	if (creatureTemplate->isSpecialProtection(SharedWeaponObjectTemplate::ACID))
+		prototype->setSpecialResist(SharedWeaponObjectTemplate::ACID);
+	if (creatureTemplate->isSpecialProtection(SharedWeaponObjectTemplate::LIGHTSABER))
+		prototype->setSpecialResist(SharedWeaponObjectTemplate::LIGHTSABER);
+
+	auto attackMap = creatureTemplate->getPrimaryAttacks();
+
+	if (attackMap->size() > 0) {
+		prototype->setSpecialAttackOne(String(attackMap->getCommand(0)));
+		if(attackMap->size() > 1) {
+			prototype->setSpecialAttackTwo(String(attackMap->getCommand(1)));
+		}
+	}
+
+}
+
+bool DnaManager::initializeNormalMaximumSample(DnaComponent* output, const CreatureTemplate* source, String& error) {
+ // Creature::hasDNA() requires hasOrganics(); a carnivore template alone does
+ // not make quest creatures with no harvestable material sampleable.
+ if (source != nullptr && source->getHideMax() + source->getBoneMax() + source->getMeatMax() <= 0.f) {
+  error = "DNA source has no harvestable organics";
+  return false;
+ }
+ if (output == nullptr || source == nullptr || source->getLevel() < 1 || source->getLevel() > 75 ||
+     !(source->getPvpBitmask() & ObjectFlag::ATTACKABLE) || source->getBaseHAMmax() < source->getBaseHAM() ||
+     source->getDiet() == ObjectFlag::NONE ||
+     (source->getCreatureBitmask() & ObjectFlag::BABY)) {
+  error = "DNA source is not a legal level1..75 organic adult specimen";
+  return false;
+ }
+ // The three HAM pools independently roll their source maximum. Resolve the
+ // actual primary/secondary weapon choices without creating a world creature.
+ // Sampling in either normal equipped state is legal; prefer the larger damage.
+ bool ranged = false;
+ int bestDamage = -1;
+ for (const auto& weapon : {source->getPrimaryWeapon(), source->getSecondaryWeapon()}) {
+  if (weapon.isEmpty() || weapon == "none") continue;
+  int armorPiercing = 0;
+  if (weapon != "unarmed") {
+   auto loaded = dynamic_cast<SharedWeaponObjectTemplate*>(TemplateManager::instance()->getTemplate(weapon.hashCode()));
+   if (loaded == nullptr) { error = "DNA source weapon is not a loaded explicit weapon template"; return false; }
+   armorPiercing = loaded->getArmorPiercing();
+   ranged = ranged || loaded->getAttackType() == SharedWeaponObjectTemplate::RANGEDATTACK;
+  }
+  const float modifier = 1.f - 0.1f * armorPiercing;
+  const int low = source->getDamageMin() * modifier;
+  const int high = source->getDamageMax() * modifier;
+  bestDamage = Math::max(bestDamage, (low + high) / 2);
+ }
+ if (bestDamage < 0) bestDamage = (source->getDamageMin() + source->getDamageMax()) / 2;
+ bool creature = false;
+ for (int i = 0; i < source->getTemplates().size(); ++i) {
+  auto loaded = TemplateManager::instance()->getTemplate(source->getTemplates().get(i).hashCode());
+  if (loaded != nullptr && loaded->getGameObjectType() == SceneObjectType::CREATURE) creature = true;
+ }
+ if (!creature) { error = "DNA source has no loaded sampleable creature template"; return false; }
+ float effective = 0.f;
+ const int types[] = {SharedWeaponObjectTemplate::ACID, SharedWeaponObjectTemplate::BLAST, SharedWeaponObjectTemplate::COLD,
+  SharedWeaponObjectTemplate::ELECTRICITY, SharedWeaponObjectTemplate::ENERGY, SharedWeaponObjectTemplate::HEAT,
+  SharedWeaponObjectTemplate::KINETIC, SharedWeaponObjectTemplate::LIGHTSABER, SharedWeaponObjectTemplate::STUN};
+ const float resists[] = {source->getAcid(), source->getBlast(), source->getCold(), source->getElectricity(), source->getEnergy(),
+  source->getHeat(), source->getKinetic(), source->getLightSaber(), source->getStun()};
+ for (int i = 0; i < 9; ++i) {
+  if (!source->isSpecialProtection(types[i]) && resists[i] > 0.f) { effective = resists[i]; break; }
+ }
+ const int ham = source->getBaseHAMmax();
+ // Preserve the ordinary integer division in generateSample.
+ const SampleSource state{source->getLevel(), ham, ham, ham, (int)source->getArmor(), effective,
+  source->getChanceHit(), (float)bestDamage, ranged};
+ output->setSource(source->getObjectName());
+ populateSample(output, source, state, 1, true);
+ return true;
+}
+
 void DnaManager::generateSample(Creature* creature, CreatureObject* player, int quality){
 	if (quality < 0 || quality > 7) {
 		return;
@@ -374,20 +491,6 @@ void DnaManager::generateSample(Creature* creature, CreatureObject* player, int 
 	if (creatureTemplate == nullptr)
 		return;
 
-	int ferocity = creatureTemplate->getFerocity();
-	int creatureLevel = creature->getLevel();
-
-	int hardiness = Genetics::hamToValue(creature->getMaxHAM(0), quality);
-	int fortitude = Genetics::resistanceToValue(creature->getEffectiveResist(), creature->getArmor(), quality);
-	int dexterity = Genetics::hamToValue(creature->getMaxHAM(3), quality);
-	int endurance = Genetics::randomizeValue(500, quality);
-	int intellect = Genetics::hamToValue(creature->getMaxHAM(6), quality);
-	int cleverness = Genetics::hitChanceToValue(creature->getChanceHit(), quality);
-	int dependability = Genetics::dietToValue(creatureTemplate->getDiet(), quality);
-	int courage = Genetics::meatTypeToValue(creatureTemplate->getMeatType(), quality);
-	int fierceness = Genetics::ferocityToValue(ferocity, quality);
-	int power = Genetics::damageToValue((creature->getDamageMin() + creature->getDamageMax()) / 2, quality);
-
 	// We should now have enough to generate a sample
 	ManagedReference<DnaComponent*> prototype = zoneServer->createObject(qualityTemplates.get(quality), 1).castTo<DnaComponent*>();
 
@@ -406,62 +509,11 @@ void DnaManager::generateSample(Creature* creature, CreatureObject* player, int 
 		prototype->setSource(nameId->getFullPath());
 	}
 
-	prototype->setQuality(quality);
-	prototype->setLevel(creatureLevel);
-
-	String serial = craftingManager->generateSerial();
-
-	prototype->setSerialNumber(serial);
-	prototype->setStats(cleverness, endurance, fierceness, power, intellect, courage, dependability, dexterity, fortitude, hardiness);
-	prototype->setStun(creatureTemplate->getStun());
-	prototype->setKinetic(creatureTemplate->getKinetic());
-	prototype->setEnergy(creatureTemplate->getEnergy());
-	prototype->setBlast(creatureTemplate->getBlast());
-	prototype->setHeat(creatureTemplate->getHeat());
-	prototype->setCold(creatureTemplate->getCold());
-	prototype->setElectric(creatureTemplate->getElectricity());
-	prototype->setAcid(creatureTemplate->getAcid());
-	prototype->setSaber(creatureTemplate->getLightSaber());
-	prototype->setArmorRating(creatureTemplate->getArmor());
-
-	bool hasRanged = false;
-
-	if (creature->isAiAgent()) {
-		auto agent = creature->asAiAgent();
-
-		if (agent != nullptr)
-			hasRanged = agent->hasRangedWeapon();
-	}
-
-	prototype->setRanged(hasRanged);
-
-	if (creatureTemplate->isSpecialProtection(SharedWeaponObjectTemplate::STUN))
-		prototype->setSpecialResist(SharedWeaponObjectTemplate::STUN);
-	if (creatureTemplate->isSpecialProtection(SharedWeaponObjectTemplate::KINETIC))
-		prototype->setSpecialResist(SharedWeaponObjectTemplate::KINETIC);
-	if (creatureTemplate->isSpecialProtection(SharedWeaponObjectTemplate::ENERGY))
-		prototype->setSpecialResist(SharedWeaponObjectTemplate::ENERGY);
-	if (creatureTemplate->isSpecialProtection(SharedWeaponObjectTemplate::BLAST))
-		prototype->setSpecialResist(SharedWeaponObjectTemplate::BLAST);
-	if (creatureTemplate->isSpecialProtection(SharedWeaponObjectTemplate::HEAT))
-		prototype->setSpecialResist(SharedWeaponObjectTemplate::HEAT);
-	if (creatureTemplate->isSpecialProtection(SharedWeaponObjectTemplate::COLD))
-		prototype->setSpecialResist(SharedWeaponObjectTemplate::COLD);
-	if (creatureTemplate->isSpecialProtection(SharedWeaponObjectTemplate::ELECTRICITY))
-		prototype->setSpecialResist(SharedWeaponObjectTemplate::ELECTRICITY);
-	if (creatureTemplate->isSpecialProtection(SharedWeaponObjectTemplate::ACID))
-		prototype->setSpecialResist(SharedWeaponObjectTemplate::ACID);
-	if (creatureTemplate->isSpecialProtection(SharedWeaponObjectTemplate::LIGHTSABER))
-		prototype->setSpecialResist(SharedWeaponObjectTemplate::LIGHTSABER);
-
-	auto attackMap = creatureTemplate->getPrimaryAttacks();
-
-	if (attackMap->size() > 0) {
-		prototype->setSpecialAttackOne(String(attackMap->getCommand(0)));
-		if(attackMap->size() > 1) {
-			prototype->setSpecialAttackTwo(String(attackMap->getCommand(1)));
-		}
-	}
+ const SampleSource state{creature->getLevel(), creature->getMaxHAM(0), creature->getMaxHAM(3), creature->getMaxHAM(6),
+  (int)creature->getArmor(), creature->getEffectiveResist(), creature->getChanceHit(),
+  (float)((creature->getDamageMin() + creature->getDamageMax()) / 2), creature->isAiAgent() && creature->asAiAgent()->hasRangedWeapon()};
+ prototype->setSerialNumber(craftingManager->generateSerial());
+ populateSample(prototype, creatureTemplate, state, quality);
 
 	Locker locker(inventory);
 

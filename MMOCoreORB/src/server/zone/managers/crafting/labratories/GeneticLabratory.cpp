@@ -185,6 +185,53 @@ void GeneticLabratory::recalculateResistances(CraftingValues* craftingValues, fl
 }
 
 void GeneticLabratory::setInitialCraftingValues(TangibleObject* prototype, ManufactureSchematic* manufactureSchematic, int assemblySuccess) {
+ initializeValues(prototype, manufactureSchematic, assemblySuccess, false);
+}
+
+String GeneticLabratory::selectNormalSpecial(String a, String b, String c, String d, String e, int odds, String other) {
+ if (odds > 750) return "defaultattack";
+ String selected = a;
+ if (a.isEmpty() || a == other) {
+  selected = "defaultattack";
+  const String candidates[] = {b, c, d, e};
+  for (const auto& candidate : candidates) {
+   if (!candidate.isEmpty() && candidate != other && !candidate.contains("creature")) {
+    selected = candidate;
+    break;
+   }
+  }
+ }
+ return selected.isEmpty() || selected.contains("creature") ? String("defaultattack") : selected;
+}
+
+bool GeneticLabratory::setNormalMaximumCraftingValues(TangibleObject* prototype, ManufactureSchematic* schematic) {
+ if (prototype == nullptr || schematic == nullptr) return false;
+ initializeValues(prototype, schematic, CraftingManager::AMAZINGSUCCESS, true);
+ auto values = schematic->getCraftingValues();
+ if (values == nullptr || !values->hasExperimentalAttribute("fortitude")) return false;
+ // Repeat ordinary amazing experimentation so fortitude crossing500 and its
+ // subsequent resistance gains occur in the same order as normal crafting.
+ for (int row = 0; row < values->getTotalVisibleAttributeGroups(); ++row) {
+  for (int round = 0; round < 32; ++round) {
+   bool complete = true;
+   for (int i = 0; i < values->getTotalExperimentalAttributes(); ++i) {
+    const String& attribute = values->getAttribute(i);
+    if (!values->isHidden(attribute) && values->getAttributeGroup(attribute) == values->getVisibleAttributeGroup(row) &&
+        values->getCurrentPercentage(attribute) < values->getMaxPercentage(attribute)) complete = false;
+   }
+   if (complete) break;
+   experimentRow(values, row, 1, 0.f, CraftingManager::AMAZINGSUCCESS);
+   values->recalculateValues(false);
+  }
+ }
+ for (int i = 0; i < values->getTotalExperimentalAttributes(); ++i) {
+  const String& attribute = values->getAttribute(i);
+  if (!values->isHidden(attribute) && values->getCurrentPercentage(attribute) != values->getMaxPercentage(attribute)) return false;
+ }
+ return true;
+}
+
+void GeneticLabratory::initializeValues(TangibleObject* prototype, ManufactureSchematic* manufactureSchematic, int assemblySuccess, bool deterministic) {
 	if (prototype == nullptr || manufactureSchematic == nullptr)
 		return;
 
@@ -518,7 +565,7 @@ void GeneticLabratory::setInitialCraftingValues(TangibleObject* prototype, Manuf
 	float psyQual = psychological->getQuality() - 1;
 
 	if (mental->isRanged() || psychological->isRanged()) {
-		int chance = System::random(100 - (assemblySuccess * 10)); // so amazing success 100, critical falure is 20
+		int chance = deterministic ? (100 - (assemblySuccess * 10)) : System::random(100 - (assemblySuccess * 10)); // so amazing success 100, critical falure is 20
 
 		// did you roll exceed (7 - Quality) * 10 (VHQ is 0) so always works
 		if (chance >= (menQual * 10) || chance >= (psyQual * 10))
@@ -529,8 +576,8 @@ void GeneticLabratory::setInitialCraftingValues(TangibleObject* prototype, Manuf
 	int odds = quality * 100;
 
 	// update crafting values, and/or experimentRow should handle resist calc changes. update crafting values should determine armor setup
-	String special1 = pickSpecialAttack(aggression->getSpecialAttackOne(), psychological->getSpecialAttackOne(), physique->getSpecialAttackOne(), mental->getSpecialAttackOne(), prowess->getSpecialAttackOne(), odds, "defaultattack");
-	String special2 = pickSpecialAttack(psychological->getSpecialAttackTwo(), prowess->getSpecialAttackTwo(), aggression->getSpecialAttackTwo(), mental->getSpecialAttackTwo(), physique->getSpecialAttackTwo(), odds, special1);
+	String special1 = deterministic ? selectNormalSpecial(aggression->getSpecialAttackOne(), psychological->getSpecialAttackOne(), physique->getSpecialAttackOne(), mental->getSpecialAttackOne(), prowess->getSpecialAttackOne(), odds, "defaultattack") : pickSpecialAttack(aggression->getSpecialAttackOne(), psychological->getSpecialAttackOne(), physique->getSpecialAttackOne(), mental->getSpecialAttackOne(), prowess->getSpecialAttackOne(), odds, "defaultattack");
+	String special2 = deterministic ? selectNormalSpecial(psychological->getSpecialAttackTwo(), prowess->getSpecialAttackTwo(), aggression->getSpecialAttackTwo(), mental->getSpecialAttackTwo(), physique->getSpecialAttackTwo(), odds, special1) : pickSpecialAttack(psychological->getSpecialAttackTwo(), prowess->getSpecialAttackTwo(), aggression->getSpecialAttackTwo(), mental->getSpecialAttackTwo(), physique->getSpecialAttackTwo(), odds, special1);
 
 	genetic->setSpecialAttackOne(special1);
 	genetic->setSpecialAttackTwo(special2);

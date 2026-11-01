@@ -292,7 +292,9 @@ void FrsManagerImplementation::setupEnclaves() {
 }
 
 FrsRank* FrsManagerImplementation::getFrsRank(short councilType, int rank) {
-	if (rank < 0)
+	// Rank 0 is enrollment only. There is no roster below 1 or above 11;
+	// removing the highest rank can legitimately query its next petition rank.
+	if (rank <= 0 || rank > 11 || managerData == nullptr)
 		return nullptr;
 
 	ManagedReference<FrsRank*> frsRank = nullptr;
@@ -302,9 +304,15 @@ FrsRank* FrsManagerImplementation::getFrsRank(short councilType, int rank) {
 	if (councilType == COUNCIL_LIGHT) {
 		Vector<ManagedReference<FrsRank*> >* rankData = managerData->getLightRanks();
 
+		if (rank > rankData->size())
+			return nullptr;
+
 		frsRank = rankData->get(rank - 1);
 	} else if (councilType == COUNCIL_DARK) {
 		Vector<ManagedReference<FrsRank*> >* rankData = managerData->getDarkRanks();
+
+		if (rank > rankData->size())
+			return nullptr;
 
 		frsRank = rankData->get(rank - 1);
 	}

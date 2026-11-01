@@ -35,6 +35,15 @@ class DroidComponent extends Component {
 		Logger.setLoggingName("DroidComponent");
 		quality = 0;
 		durability = 0;
+		// Detached deed modules are constructed and copied without a crafting
+		// update. Every persisted typed field needs a defined initial value.
+		autoRepairPower = 0;
+		combatRating = 0;
+		detonationRating = 0;
+		harvestBonus = 0;
+		stimpackSpeed = 0;
+		stimpackCapacity = 0;
+		trapBonus = 0;
 		surveyDroid = false;
 		autoRepairDroid = false;
 		combatDroid = false;

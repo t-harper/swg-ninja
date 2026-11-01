@@ -83,6 +83,7 @@ class WeaponObject extends TangibleObject {
 	protected VectorMap<string, int> wearableSkillMods;
 
 	public WeaponObject() {
+		bladeColor = 0;
 		certified = false;
 		armorPiercing = 0;
 

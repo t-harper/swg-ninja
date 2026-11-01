@@ -37,6 +37,25 @@ void ResourceLabratory::initialize(ZoneServer* server) {
 
 }
 void ResourceLabratory::setInitialCraftingValues(TangibleObject* prototype, ManufactureSchematic* manufactureSchematic, int assemblySuccess) {
+	initializeValues(prototype, manufactureSchematic, assemblySuccess, false);
+}
+
+void ResourceLabratory::setPerfectCraftingValues(TangibleObject* prototype, ManufactureSchematic* manufactureSchematic) {
+	initializeValues(prototype, manufactureSchematic, 0, true);
+	if (manufactureSchematic == nullptr) return;
+	auto values = manufactureSchematic->getCraftingValues();
+	// Ingredient percentage-combine rules can alter current percentages. Finish
+	// with the same cap/recalculation used by experimentation, preserving hidden
+	// values that the ordinary laboratory derived from those ingredients.
+	for (int i = 0; i < values->getTotalExperimentalAttributes(); ++i) {
+		const String& attribute = values->getAttribute(i);
+		if (!values->isHidden(attribute))
+			values->setCurrentPercentage(attribute, values->getMaxPercentage(attribute));
+	}
+	values->recalculateValues(false);
+}
+
+void ResourceLabratory::initializeValues(TangibleObject* prototype, ManufactureSchematic* manufactureSchematic, int assemblySuccess, bool perfect) {
 #ifdef DEBUG_RESOURCE_LAB
 	info(true) << "---------- ResourceLabratory::setInitialCraftingValues --------";
 #endif // DEBUG_RESOURCE_LAB
@@ -93,7 +112,7 @@ void ResourceLabratory::setInitialCraftingValues(TangibleObject* prototype, Manu
 			maxPercentage = ((weightedSum / 10.0f) * .01f);
 
 			// Based on the weighted sum, we can get the initial %
-			currentPercentage = getAssemblyPercentage(weightedSum) * modifier;
+			currentPercentage = perfect ? maxPercentage : getAssemblyPercentage(weightedSum) * modifier;
 			craftingValues->setCurrentPercentage(attribute, currentPercentage, maxPercentage);
 		}
 	}

@@ -62,6 +62,9 @@ void DroidHarvestModuleDataComponent::initializeTransientMembers() {
 
 void DroidHarvestModuleDataComponent::updateCraftingValues(CraftingValues* values, bool firstUpdate) {
 	harvestBonus = values->getCurrentValue("harvest_power");
+	// Component crafting rebuilds its property map. Restore the normal module
+	// defaults now, so extraction/reload does not add previously missing state.
+	initializeTransientMembers();
 }
 
 void DroidHarvestModuleDataComponent::fillAttributeList(AttributeListMessage* alm, CreatureObject* droid) {

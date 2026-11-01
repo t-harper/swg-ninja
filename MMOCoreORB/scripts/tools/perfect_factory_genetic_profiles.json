@@ -1,0 +1,53 @@
+{
+  "default": "balanced",
+  "presets": [
+    {
+      "id": "balanced",
+      "label": "Balanced",
+      "policy": "Normal quality1 maximum per donor. Trades some defense for herbivore dependability and a legal blind special; no universal simultaneous optimum claim.",
+      "provenance": [
+        "bin/scripts/mobile/dathomir/mutant_rancor.lua",
+        "bin/scripts/mobile/dantooine/enraged_defender.lua"
+      ],
+      "roles": {
+        "aggression_profile": "mutant_rancor",
+        "mental_profile": "mutant_rancor",
+        "physique_profile": "mutant_rancor",
+        "prowess_profile": "mutant_rancor",
+        "psychological_profile": "enraged_defender"
+      }
+    },
+    {
+      "id": "tank",
+      "label": "Tank",
+      "policy": "Normal quality1 maximum per donor; preserve all eight normal resistance channels and actual DNA-dependent caps.",
+      "provenance": [
+        "bin/scripts/mobile/dathomir/mutant_rancor.lua"
+      ],
+      "roles": {
+        "aggression_profile": "mutant_rancor",
+        "mental_profile": "mutant_rancor",
+        "physique_profile": "mutant_rancor",
+        "prowess_profile": "mutant_rancor",
+        "psychological_profile": "mutant_rancor"
+      }
+    },
+    {
+      "id": "damage",
+      "label": "Damage",
+      "policy": "Normal quality1 maximum per donor; stronger hit and damage with legitimate vulnerabilities and lower fierceness.",
+      "provenance": [
+        "bin/scripts/mobile/lok/kusak_hunter.lua"
+      ],
+      "roles": {
+        "aggression_profile": "kusak_hunter",
+        "mental_profile": "kusak_hunter",
+        "physique_profile": "kusak_hunter",
+        "prowess_profile": "kusak_hunter",
+        "psychological_profile": "kusak_hunter"
+      }
+    }
+  ],
+  "schemaVersion": 1,
+  "validation": "source-reviewed; native sample eligibility, joint normal spawn/quality1 bounds, phenotype and clone/reload verification still required"
+}

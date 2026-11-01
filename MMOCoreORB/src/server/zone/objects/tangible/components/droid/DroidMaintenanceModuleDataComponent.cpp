@@ -41,11 +41,17 @@ void DroidMaintenanceModuleDataComponent::initializeTransientMembers() {
 
 	if( droidComponent->hasKey( "struct_module") ){
 		moduleRating = droidComponent->getAttributeValue( "struct_module");
+		// Reconstruct the same capacity as copy/addToStack after clone or reload.
+		if (moduleRating < 6) maxStructures = 3;
+		else if (moduleRating < 12) maxStructures = 6;
+		else if (moduleRating < 15) maxStructures = 9;
+		else maxStructures = 10;
 	}
 }
 
 void DroidMaintenanceModuleDataComponent::updateCraftingValues(CraftingValues* values, bool firstUpdate) {
 	moduleRating = values->getCurrentValue("struct_module");
+	initializeTransientMembers();
 }
 
 void DroidMaintenanceModuleDataComponent::fillAttributeList(AttributeListMessage* alm, CreatureObject* droid) {

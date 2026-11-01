@@ -10,6 +10,8 @@
 #include "server/zone/managers/director/DirectorManager.h"
 #include "server/zone/objects/tangible/component/dna/DnaComponent.h"
 #include "server/zone/managers/crafting/CraftingManager.h"
+#include "server/zone/managers/crafting/PerfectCraftedItemFactory.h"
+#include "server/zone/managers/frs/FrsGmEditor.h"
 
 void CharacterBuilderTerminalImplementation::loadTemplateData(SharedObjectTemplate* templateData) {
 	TangibleObjectImplementation::loadTemplateData(templateData);
@@ -53,11 +55,27 @@ void CharacterBuilderTerminalImplementation::sendInitialChoices(CreatureObject* 
 		return;
 	}
 
-	ManagedReference<SuiCharacterBuilderBox*> sui = new SuiCharacterBuilderBox(player, rootNode);
-	sui->setUsingObject(_this.getReferenceUnsafeStaticCast());
+	// pre9 local: native runtime audit controls availability. The SUI's
+	// existing strong root reference owns this immutable dialog snapshot.
+	for (int attempt = 0; attempt < 3; ++attempt) {
+		uint64 generation = PerfectCraftedItemFactory::getCatalogGeneration();
+		auto snapshot = rootNode->filteredCopy([](const String& id) {
+			return PerfectCraftedItemFactory::isAvailable(id);
+		}, FrsGmEditor::isAuthorized(player));
+		if (generation != PerfectCraftedItemFactory::getCatalogGeneration())
+			continue;
+		if (snapshot == nullptr) {
+			player->sendSystemMessage("There are no available character builder choices.");
+			return;
+		}
+		ManagedReference<SuiCharacterBuilderBox*> sui = new SuiCharacterBuilderBox(player, snapshot, generation);
+		sui->setUsingObject(_this.getReferenceUnsafeStaticCast());
 
-	player->sendMessage(sui->generateMessage());
-	player->getPlayerObject()->addSuiBox(sui);
+		player->sendMessage(sui->generateMessage());
+		player->getPlayerObject()->addSuiBox(sui);
+		return;
+	}
+	player->sendSystemMessage("The factory catalog is updating. Please reopen the character builder.");
 }
 
 void CharacterBuilderTerminalImplementation::enhanceCharacter(CreatureObject* player) {

@@ -1,0 +1,363 @@
+{
+  "densityWitness": {
+    "density_percent": 95.0295563,
+    "modifier": 0.0006,
+    "multiplier": 0.99,
+    "offset_x": 6440,
+    "offset_y": 5080,
+    "seed": 0
+  },
+  "policy": "Normal village quest survey reward, attainable integer density95 and independent inclusive upper ordinary attribute rolls; native validates exact provider and reward template. No arbitrary final stat maps.",
+  "profiles": [
+    {
+      "lootName": "village_ardanium_ii",
+      "resourceAttributes": [
+        "res_potential_energy",
+        "res_quality"
+      ],
+      "sourceProfile": "survey:village_ardanium_ii:density95",
+      "targetTemplate": "object/tangible/loot/quest/ardanium_ii.iff"
+    },
+    {
+      "lootName": "village_endrine",
+      "resourceAttributes": [
+        "res_malleability",
+        "res_quality",
+        "res_toughness"
+      ],
+      "sourceProfile": "survey:village_endrine:density95",
+      "targetTemplate": "object/tangible/loot/quest/endrine.iff"
+    },
+    {
+      "lootName": "village_ostrine",
+      "resourceAttributes": [
+        "res_malleability",
+        "res_quality"
+      ],
+      "sourceProfile": "survey:village_ostrine:density95",
+      "targetTemplate": "object/tangible/loot/quest/ostrine.iff"
+    },
+    {
+      "lootName": "village_rudic",
+      "resourceAttributes": [
+        "res_conductivity",
+        "res_decay_resist",
+        "res_quality",
+        "res_shock_resistance"
+      ],
+      "sourceProfile": "survey:village_rudic:density95",
+      "targetTemplate": "object/tangible/loot/quest/rudic.iff"
+    },
+    {
+      "lootName": "village_wind_crystal",
+      "resourceAttributes": [
+        "res_potential_energy"
+      ],
+      "sourceProfile": "survey:village_wind_crystal:density95",
+      "targetTemplate": "object/tangible/loot/quest/wind_crystal.iff"
+    }
+  ],
+  "providerSources": [
+    "bin/scripts/screenplays/village/multiple/fs_survey.lua",
+    "src/server/zone/managers/resource/resourcespawner/ResourceSpawner.cpp",
+    "src/server/zone/managers/resource/resourcespawner/SurveyTask.h",
+    "src/server/zone/objects/player/sessions/survey/SurveySessionImplementation.cpp",
+    "src/server/zone/managers/player/PlayerManagerImplementation.cpp"
+  ],
+  "questTableEvidence": {
+    "archive": "ninja_assets_r1.tre",
+    "path": "datatables/player/quests.iff",
+    "questChainRows": [
+      {
+        "ATTACH_SCRIPT": "quest.task.nothing",
+        "NAME": "survey_phase2_main",
+        "PARENT": "",
+        "TARGET": "",
+        "TASK_ON_COMPLETE": "survey_phase2_01",
+        "rowIndex": 129
+      },
+      {
+        "ATTACH_SCRIPT": "quest.task.survey",
+        "NAME": "survey_phase2_01",
+        "PARENT": "survey_phase2_main",
+        "TARGET": "aluminum",
+        "TASK_ON_COMPLETE": "fs_survey_special_resource_01",
+        "rowIndex": 130
+      },
+      {
+        "ATTACH_SCRIPT": "quest.task.survey",
+        "NAME": "survey_phase2_02",
+        "PARENT": "survey_phase2_01",
+        "TARGET": "gemstone",
+        "TASK_ON_COMPLETE": "fs_survey_special_resource_02",
+        "rowIndex": 131
+      },
+      {
+        "ATTACH_SCRIPT": "quest.task.survey",
+        "NAME": "survey_phase2_03",
+        "PARENT": "survey_phase2_02",
+        "TARGET": "energy",
+        "TASK_ON_COMPLETE": "fs_survey_special_resource_03",
+        "rowIndex": 132
+      },
+      {
+        "ATTACH_SCRIPT": "quest.task.survey",
+        "NAME": "survey_phase2_04",
+        "PARENT": "survey_phase2_03",
+        "TARGET": "ore",
+        "TASK_ON_COMPLETE": "fs_survey_special_resource_04",
+        "rowIndex": 133
+      },
+      {
+        "ATTACH_SCRIPT": "quest.task.survey",
+        "NAME": "survey_phase2_05",
+        "PARENT": "survey_phase2_04",
+        "TARGET": "copper",
+        "TASK_ON_COMPLETE": "fs_survey_special_resource_05",
+        "rowIndex": 134
+      },
+      {
+        "ATTACH_SCRIPT": "quest.task.survey",
+        "NAME": "survey_phase2_06",
+        "PARENT": "survey_phase2_05",
+        "TARGET": "steel",
+        "TASK_ON_COMPLETE": "fs_survey_special_resource_06",
+        "rowIndex": 135
+      },
+      {
+        "ATTACH_SCRIPT": "quest.task.survey",
+        "NAME": "survey_phase2_07",
+        "PARENT": "survey_phase2_06",
+        "TARGET": "iron",
+        "TASK_ON_COMPLETE": "fs_survey_special_resource_07",
+        "rowIndex": 136
+      },
+      {
+        "ATTACH_SCRIPT": "quest.task.survey",
+        "NAME": "survey_phase2_08",
+        "PARENT": "survey_phase2_07",
+        "TARGET": "gas",
+        "TASK_ON_COMPLETE": "fs_survey_special_resource_08",
+        "rowIndex": 137
+      },
+      {
+        "ATTACH_SCRIPT": "quest.task.nothing",
+        "NAME": "survey_phase3_main",
+        "PARENT": "",
+        "TARGET": "",
+        "TASK_ON_COMPLETE": "survey_phase3_01",
+        "rowIndex": 138
+      },
+      {
+        "ATTACH_SCRIPT": "quest.task.survey",
+        "NAME": "survey_phase3_01",
+        "PARENT": "survey_phase3_main",
+        "TARGET": "iron",
+        "TASK_ON_COMPLETE": "fs_survey_special_resource_09",
+        "rowIndex": 139
+      },
+      {
+        "ATTACH_SCRIPT": "quest.task.survey",
+        "NAME": "survey_phase3_02",
+        "PARENT": "survey_phase3_01",
+        "TARGET": "gas",
+        "TASK_ON_COMPLETE": "fs_survey_special_resource_10",
+        "rowIndex": 140
+      },
+      {
+        "ATTACH_SCRIPT": "quest.task.survey",
+        "NAME": "survey_phase3_03",
+        "PARENT": "survey_phase3_02",
+        "TARGET": "energy",
+        "TASK_ON_COMPLETE": "fs_survey_special_resource_11",
+        "rowIndex": 141
+      },
+      {
+        "ATTACH_SCRIPT": "quest.task.survey",
+        "NAME": "survey_phase3_04",
+        "PARENT": "survey_phase3_03",
+        "TARGET": "aluminum",
+        "TASK_ON_COMPLETE": "fs_survey_special_resource_12",
+        "rowIndex": 142
+      },
+      {
+        "ATTACH_SCRIPT": "quest.task.survey",
+        "NAME": "survey_phase3_05",
+        "PARENT": "survey_phase3_04",
+        "TARGET": "ore",
+        "TASK_ON_COMPLETE": "fs_survey_special_resource_13",
+        "rowIndex": 143
+      },
+      {
+        "ATTACH_SCRIPT": "quest.task.survey",
+        "NAME": "survey_phase3_06",
+        "PARENT": "survey_phase3_05",
+        "TARGET": "gemstone",
+        "TASK_ON_COMPLETE": "fs_survey_special_resource_14",
+        "rowIndex": 144
+      },
+      {
+        "ATTACH_SCRIPT": "quest.task.survey",
+        "NAME": "survey_phase3_07",
+        "PARENT": "survey_phase3_06",
+        "TARGET": "steel",
+        "TASK_ON_COMPLETE": "fs_survey_special_resource_15",
+        "rowIndex": 145
+      },
+      {
+        "ATTACH_SCRIPT": "quest.task.survey",
+        "NAME": "survey_phase3_08",
+        "PARENT": "survey_phase3_07",
+        "TARGET": "copper",
+        "TASK_ON_COMPLETE": "fs_survey_special_resource_16",
+        "rowIndex": 146
+      },
+      {
+        "ATTACH_SCRIPT": "quest.task.give_object_to_player",
+        "NAME": "fs_survey_special_resource_01",
+        "PARENT": "",
+        "TARGET": "object/tangible/loot/quest/endrine.iff",
+        "TASK_ON_COMPLETE": "survey_phase2_02",
+        "rowIndex": 147
+      },
+      {
+        "ATTACH_SCRIPT": "quest.task.give_object_to_player",
+        "NAME": "fs_survey_special_resource_02",
+        "PARENT": "",
+        "TARGET": "object/tangible/loot/quest/rudic.iff",
+        "TASK_ON_COMPLETE": "survey_phase2_03",
+        "rowIndex": 148
+      },
+      {
+        "ATTACH_SCRIPT": "quest.task.give_object_to_player",
+        "NAME": "fs_survey_special_resource_03",
+        "PARENT": "",
+        "TARGET": "object/tangible/loot/quest/ardanium_ii.iff",
+        "TASK_ON_COMPLETE": "survey_phase2_04",
+        "rowIndex": 149
+      },
+      {
+        "ATTACH_SCRIPT": "quest.task.give_object_to_player",
+        "NAME": "fs_survey_special_resource_04",
+        "PARENT": "",
+        "TARGET": "object/tangible/loot/quest/ostrine.iff",
+        "TASK_ON_COMPLETE": "survey_phase2_05",
+        "rowIndex": 150
+      },
+      {
+        "ATTACH_SCRIPT": "quest.task.give_object_to_player",
+        "NAME": "fs_survey_special_resource_05",
+        "PARENT": "",
+        "TARGET": "object/tangible/loot/quest/endrine.iff",
+        "TASK_ON_COMPLETE": "survey_phase2_06",
+        "rowIndex": 151
+      },
+      {
+        "ATTACH_SCRIPT": "quest.task.give_object_to_player",
+        "NAME": "fs_survey_special_resource_06",
+        "PARENT": "",
+        "TARGET": "object/tangible/loot/quest/rudic.iff",
+        "TASK_ON_COMPLETE": "survey_phase2_07",
+        "rowIndex": 152
+      },
+      {
+        "ATTACH_SCRIPT": "quest.task.give_object_to_player",
+        "NAME": "fs_survey_special_resource_07",
+        "PARENT": "",
+        "TARGET": "object/tangible/loot/quest/ostrine.iff",
+        "TASK_ON_COMPLETE": "survey_phase2_08",
+        "rowIndex": 153
+      },
+      {
+        "ATTACH_SCRIPT": "quest.task.give_object_to_player",
+        "NAME": "fs_survey_special_resource_08",
+        "PARENT": "",
+        "TARGET": "object/tangible/survey_tool/survey_tool_inorganic.iff",
+        "TASK_ON_COMPLETE": "fs_survey_phase2_reward",
+        "rowIndex": 154
+      },
+      {
+        "ATTACH_SCRIPT": "quest.task.give_object_to_player",
+        "NAME": "fs_survey_special_resource_09",
+        "PARENT": "",
+        "TARGET": "object/tangible/loot/quest/endrine.iff",
+        "TASK_ON_COMPLETE": "survey_phase3_02",
+        "rowIndex": 155
+      },
+      {
+        "ATTACH_SCRIPT": "quest.task.give_object_to_player",
+        "NAME": "fs_survey_special_resource_10",
+        "PARENT": "",
+        "TARGET": "object/tangible/loot/quest/wind_crystal.iff",
+        "TASK_ON_COMPLETE": "survey_phase3_03",
+        "rowIndex": 156
+      },
+      {
+        "ATTACH_SCRIPT": "quest.task.give_object_to_player",
+        "NAME": "fs_survey_special_resource_11",
+        "PARENT": "",
+        "TARGET": "object/tangible/loot/quest/ardanium_ii.iff",
+        "TASK_ON_COMPLETE": "survey_phase3_04",
+        "rowIndex": 157
+      },
+      {
+        "ATTACH_SCRIPT": "quest.task.give_object_to_player",
+        "NAME": "fs_survey_special_resource_12",
+        "PARENT": "",
+        "TARGET": "object/tangible/loot/quest/ostrine.iff",
+        "TASK_ON_COMPLETE": "survey_phase3_05",
+        "rowIndex": 158
+      },
+      {
+        "ATTACH_SCRIPT": "quest.task.give_object_to_player",
+        "NAME": "fs_survey_special_resource_13",
+        "PARENT": "",
+        "TARGET": "object/tangible/loot/quest/rudic.iff",
+        "TASK_ON_COMPLETE": "survey_phase3_06",
+        "rowIndex": 159
+      },
+      {
+        "ATTACH_SCRIPT": "quest.task.give_object_to_player",
+        "NAME": "fs_survey_special_resource_14",
+        "PARENT": "",
+        "TARGET": "object/tangible/loot/quest/rudic.iff",
+        "TASK_ON_COMPLETE": "survey_phase3_07",
+        "rowIndex": 160
+      },
+      {
+        "ATTACH_SCRIPT": "quest.task.give_object_to_player",
+        "NAME": "fs_survey_special_resource_15",
+        "PARENT": "",
+        "TARGET": "object/tangible/loot/quest/endrine.iff",
+        "TASK_ON_COMPLETE": "survey_phase3_08",
+        "rowIndex": 161
+      },
+      {
+        "ATTACH_SCRIPT": "quest.task.give_object_to_player",
+        "NAME": "fs_survey_special_resource_16",
+        "PARENT": "",
+        "TARGET": "object/tangible/survey_tool/survey_tool_inorganic.iff",
+        "TASK_ON_COMPLETE": "fs_survey_phase3_reward",
+        "rowIndex": 162
+      },
+      {
+        "ATTACH_SCRIPT": "quest.force_sensitive.fs_task_unlock_branch",
+        "NAME": "fs_survey_phase2_reward",
+        "PARENT": "fs_survey_special_resource_08",
+        "TARGET": "force_sensitive_heightened_senses_surveying",
+        "TASK_ON_COMPLETE": "",
+        "rowIndex": 166
+      },
+      {
+        "ATTACH_SCRIPT": "quest.force_sensitive.fs_task_unlock_branch",
+        "NAME": "fs_survey_phase3_reward",
+        "PARENT": "fs_survey_special_resource_16",
+        "TARGET": "force_sensitive_heightened_senses_luck",
+        "TASK_ON_COMPLETE": "",
+        "rowIndex": 167
+      }
+    ],
+    "sha256": "0e9e6d3d9d94cbdb7e01b4c67f3993c37a868efbdd84c76f1e972da9d58eb5b8"
+  },
+  "schemaVersion": 1
+}

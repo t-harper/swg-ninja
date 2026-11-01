@@ -615,3 +615,10 @@ String ManufactureSchematicImplementation::getFactoryCrateType() {
 
 	return draftSchematic->getFactoryCrateType();
 }
+// Only fresh, transient schematics may enter the no-player generation path.
+bool ManufactureSchematicImplementation::initializeGeneratedIngredientSlots() {
+	if (isPersistent() || initialized || assembled || draftSchematic == nullptr)
+		return false;
+	initializeIngredientSlots();
+	return initialized;
+}

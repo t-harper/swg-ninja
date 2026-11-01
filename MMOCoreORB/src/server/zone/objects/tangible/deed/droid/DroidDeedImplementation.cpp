@@ -1,3 +1,4 @@
+#include "server/zone/managers/crafting/PerfectCraftingRecipe.h"
 /*
  * DroidDeedImplementation.cpp
  *
@@ -65,7 +66,9 @@ void DroidDeedImplementation::onCloneObject(SceneObject* objectToClone) {
 			iterator.getNextKeyAndValue(key, comp);
 
 			if (comp != nullptr) {
-				ManagedReference<DroidComponent*> cloneComponent = cast<DroidComponent*>(ObjectManager::instance()->cloneObject(comp));
+				ManagedReference<DroidComponent*> cloneComponent = cast<DroidComponent*>(ObjectManager::instance()->cloneObject(comp, PerfectCraftingContext::current() != nullptr));
+				if (cloneComponent == nullptr) throw Exception("Failed to clone droid module");
+				if (PerfectCraftingContext::current() != nullptr) PerfectCraftingContext::current()->ownGraph(cloneComponent);
 				cloneComponent->setParent(nullptr);
 				modules.put(key, cloneComponent);
 			}
@@ -155,7 +158,9 @@ void DroidDeedImplementation::processModule(BaseDroidModuleComponent* module, ui
 			if (bmodule != nullptr)
 				bmodule->addToStack(module);
 		} else {
-			ManagedReference<DroidComponent*> dcomp = (this->getZoneServer()->createObject(crc, 1)).castTo<DroidComponent*>();
+			ManagedReference<DroidComponent*> dcomp = (this->getZoneServer()->createObject(crc, PerfectCraftingContext::current() != nullptr ? 0 : 1)).castTo<DroidComponent*>();
+			if (dcomp == nullptr) throw Exception("Failed to create droid module");
+			if (PerfectCraftingContext::current() != nullptr) PerfectCraftingContext::current()->own(dcomp);
 			dcomp->setParent(nullptr);
 
 			BaseDroidModuleComponent* bmodule = cast<BaseDroidModuleComponent*>(dcomp->getDataObjectComponent()->get());
@@ -168,8 +173,10 @@ void DroidDeedImplementation::processModule(BaseDroidModuleComponent* module, ui
 			modules.put(module->getModuleName(), dcomp);
 		}
 	} else {
-		ManagedReference<DroidComponent*> dcomp = (this->getZoneServer()->createObject(crc, 1)).castTo<DroidComponent*>();
-		dcomp->setParent(nullptr);
+		ManagedReference<DroidComponent*> dcomp = (this->getZoneServer()->createObject(crc, PerfectCraftingContext::current() != nullptr ? 0 : 1)).castTo<DroidComponent*>();
+		if (dcomp == nullptr) throw Exception("Failed to create droid module");
+			if (PerfectCraftingContext::current() != nullptr) PerfectCraftingContext::current()->own(dcomp);
+			dcomp->setParent(nullptr);
 
 		BaseDroidModuleComponent* bmodule = cast<BaseDroidModuleComponent*>(dcomp->getDataObjectComponent()->get());
 

@@ -20,10 +20,12 @@ public:
 	ResourceLabratory();
 	virtual ~ResourceLabratory();
 	void setInitialCraftingValues(TangibleObject* prototype, ManufactureSchematic* manufactureSchematic, int assemblySuccess);
+	void setPerfectCraftingValues(TangibleObject*, ManufactureSchematic*);
 	void experimentRow(CraftingValues* craftingValues,int rowEffected, int pointsAttempted, float failure, int experimentationResult);
 	void initialize(ZoneServer* server);
 	int getCreationCount(ManufactureSchematic* manufactureSchematic);
 protected:
+	void initializeValues(TangibleObject*, ManufactureSchematic*, int, bool);
 	SortedVector<String> bioMods;
 	bool applyComponentStats(TangibleObject* prototype, ManufactureSchematic* manufactureSchematic);
 	String checkBioSkillMods(const String& property);

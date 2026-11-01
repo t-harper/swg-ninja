@@ -318,6 +318,10 @@ void FactoryCrateImplementation::split(int newStackSize) {
 
 	Locker nlocker(newCrate);
 
+	// Split stacks retain the original crate's capacity, including1000-item
+	// delivery crates. The constructor's default is only100.
+	newCrate->setMaxCapacity(getMaxCapacity());
+
 	if (!newCrate->transferObject(protoclone, -1, true)) {
 		protoclone->destroyObjectFromDatabase(true);
 		newCrate->destroyObjectFromDatabase(true);

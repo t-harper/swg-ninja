@@ -1,3 +1,4 @@
+#include "server/zone/managers/crafting/PerfectCraftedItemFactory.h"
 /*
 				Copyright <SWGEmu>
 		See file COPYING for copying conditions.*/
@@ -369,6 +370,7 @@ void ZoneServerImplementation::startManagers() {
 	frsManager->initialize();
 
 	info(true) << "ZoneServerImplementation -- Managers Started.";
+	PerfectCraftedItemFactory::startAudit(_this.getReferenceUnsafeStaticCast());
 }
 
 void ZoneServerImplementation::start(int p, int mconn) {

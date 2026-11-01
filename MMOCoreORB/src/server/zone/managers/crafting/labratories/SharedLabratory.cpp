@@ -118,6 +118,14 @@ float SharedLabratory::getWeightedValue(ManufactureSchematic* manufactureSchemat
 		if(resSlot == nullptr)
 			continue;
 
+		if (resSlot->hasGeneratedQuality()) {
+			if (type < CraftingManager::CR || type > CraftingManager::UT) continue;
+			n = draftslot->getQuantity();
+			nsum += n;
+			weightedAverage += 1000.f * n;
+			continue;
+		}
+
 		ManagedReference<ResourceSpawn* > spawn = resSlot->getCurrentSpawn();
 
 		if (spawn == nullptr) {

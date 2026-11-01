@@ -1,0 +1,980 @@
+{
+  "nativeAlgorithmSources": [
+    "src/templates/manager/TemplateManager.cpp:465",
+    "src/templates/SharedObjectTemplate.cpp:304",
+    "src/templates/SharedObjectTemplate.cpp:483"
+  ],
+  "overrides": {
+    "object/tangible/component/armor/armor_segment_mandalorian.iff": {
+      "ancestors": [
+        "object/object/base/shared_base_object.iff",
+        "object/tangible/base/shared_tangible_base.iff",
+        "object/tangible/base/shared_tangible_craftable.iff",
+        "object/tangible/component/armor/armor_segment_mandalorian.iff",
+        "object/tangible/component/armor/shared_armor_segment_mandalorian.iff",
+        "object/tangible/component/base/shared_base_component.iff"
+      ],
+      "clientLuaSource": "bin/scripts/custom_scripts/object/pre9_stardust_schematics.lua",
+      "clientTemplate": "object/tangible/component/armor/shared_armor_segment_mandalorian.iff",
+      "iffEvidence": [
+        {
+          "ancestors": [],
+          "archive": "patch_05.tre",
+          "iffPath": "object/object/base/shared_base_object.iff",
+          "parents": [],
+          "sha256": "ecf2850867f55e135c94f01f869870cb079943fd0bdfe52eb619ae09e55a9eca"
+        },
+        {
+          "ancestors": [
+            "object/object/base/shared_base_object.iff"
+          ],
+          "archive": "patch_09.tre",
+          "iffPath": "object/tangible/base/shared_tangible_base.iff",
+          "parents": [
+            "object/object/base/shared_base_object.iff",
+            "object/object/base/shared_base_object.iff"
+          ],
+          "sha256": "2c15f794282685fbf47274e379222e6fc22887741851693b2bb9bcc495b6927e"
+        },
+        {
+          "ancestors": [
+            "object/object/base/shared_base_object.iff",
+            "object/tangible/base/shared_tangible_base.iff"
+          ],
+          "archive": "data_other_00.tre",
+          "iffPath": "object/tangible/base/shared_tangible_craftable.iff",
+          "parents": [
+            "object/tangible/base/shared_tangible_base.iff",
+            "object/tangible/base/shared_tangible_base.iff"
+          ],
+          "sha256": "97f54a2ff346d586eeded6455eec86bf55aa5455ada5c82e2d86afe4a771759f"
+        },
+        {
+          "ancestors": [
+            "object/object/base/shared_base_object.iff",
+            "object/tangible/base/shared_tangible_base.iff",
+            "object/tangible/base/shared_tangible_craftable.iff",
+            "object/tangible/component/base/shared_base_component.iff"
+          ],
+          "archive": "ninja_assets_r1.tre",
+          "iffPath": "object/tangible/component/armor/shared_armor_segment_mandalorian.iff",
+          "parents": [
+            "object/tangible/component/base/shared_base_component.iff",
+            "object/tangible/component/base/shared_base_component.iff"
+          ],
+          "sha256": "357e303cda7c9d706c87a808e11d1a42201a0512fcecf62ada1170af67df4f0b"
+        },
+        {
+          "ancestors": [
+            "object/object/base/shared_base_object.iff",
+            "object/tangible/base/shared_tangible_base.iff",
+            "object/tangible/base/shared_tangible_craftable.iff"
+          ],
+          "archive": "data_other_00.tre",
+          "iffPath": "object/tangible/component/base/shared_base_component.iff",
+          "parents": [
+            "object/tangible/base/shared_tangible_craftable.iff",
+            "object/tangible/base/shared_tangible_craftable.iff"
+          ],
+          "sha256": "2c9a44df2266079cabb1ac5a48e7bc05a2d283290edcb45f2b2c3fd65f8c146e"
+        }
+      ],
+      "predicateCorrection": {
+        "falseSourceHints": [
+          "object/tangible/component/armor/shared_armor_segment.iff"
+        ],
+        "missingFromSource": []
+      }
+    },
+    "object/tangible/component/bio/bio_component_clothing_casual_charisma.iff": {
+      "ancestors": [
+        "object/object/base/shared_base_object.iff",
+        "object/tangible/base/shared_tangible_base.iff",
+        "object/tangible/base/shared_tangible_craftable.iff",
+        "object/tangible/component/bio/bio_component_clothing_casual_charisma.iff",
+        "object/tangible/component/bio/shared_base_bio_component_clothing_field.iff",
+        "object/tangible/component/bio/shared_bio_component_clothing_casual_charisma.iff"
+      ],
+      "clientLuaSource": "bin/scripts/object/tangible/component/bio/bio_component_clothing_casual_charisma.lua",
+      "clientTemplate": "object/tangible/component/bio/shared_bio_component_clothing_casual_charisma.iff",
+      "iffEvidence": [
+        {
+          "ancestors": [],
+          "archive": "patch_05.tre",
+          "iffPath": "object/object/base/shared_base_object.iff",
+          "parents": [],
+          "sha256": "ecf2850867f55e135c94f01f869870cb079943fd0bdfe52eb619ae09e55a9eca"
+        },
+        {
+          "ancestors": [
+            "object/object/base/shared_base_object.iff"
+          ],
+          "archive": "patch_09.tre",
+          "iffPath": "object/tangible/base/shared_tangible_base.iff",
+          "parents": [
+            "object/object/base/shared_base_object.iff",
+            "object/object/base/shared_base_object.iff"
+          ],
+          "sha256": "2c15f794282685fbf47274e379222e6fc22887741851693b2bb9bcc495b6927e"
+        },
+        {
+          "ancestors": [
+            "object/object/base/shared_base_object.iff",
+            "object/tangible/base/shared_tangible_base.iff"
+          ],
+          "archive": "data_other_00.tre",
+          "iffPath": "object/tangible/base/shared_tangible_craftable.iff",
+          "parents": [
+            "object/tangible/base/shared_tangible_base.iff",
+            "object/tangible/base/shared_tangible_base.iff"
+          ],
+          "sha256": "97f54a2ff346d586eeded6455eec86bf55aa5455ada5c82e2d86afe4a771759f"
+        },
+        {
+          "ancestors": [
+            "object/object/base/shared_base_object.iff",
+            "object/tangible/base/shared_tangible_base.iff",
+            "object/tangible/base/shared_tangible_craftable.iff"
+          ],
+          "archive": "patch_03.tre",
+          "iffPath": "object/tangible/component/bio/shared_base_bio_component_clothing_field.iff",
+          "parents": [
+            "object/tangible/base/shared_tangible_craftable.iff",
+            "object/tangible/base/shared_tangible_craftable.iff"
+          ],
+          "sha256": "128be1aa0019484b5279790fc819ca6277168b2b2f292bd752991559d8be4bc0"
+        },
+        {
+          "ancestors": [
+            "object/object/base/shared_base_object.iff",
+            "object/tangible/base/shared_tangible_base.iff",
+            "object/tangible/base/shared_tangible_craftable.iff",
+            "object/tangible/component/bio/shared_base_bio_component_clothing_field.iff"
+          ],
+          "archive": "ninja_assets_r1.tre",
+          "iffPath": "object/tangible/component/bio/shared_bio_component_clothing_casual_charisma.iff",
+          "parents": [
+            "object/tangible/component/bio/shared_base_bio_component_clothing_field.iff",
+            "object/tangible/component/bio/shared_base_bio_component_clothing_field.iff"
+          ],
+          "sha256": "1d68b3c93b711e4d1c34fd0871b9b7eca24c56cb0463d1ef38e92e53b1385bcb"
+        }
+      ],
+      "predicateCorrection": {
+        "falseSourceHints": [
+          "object/tangible/component/bio/shared_base_bio_component_clothing_casual.iff"
+        ],
+        "missingFromSource": [
+          "object/tangible/component/bio/shared_base_bio_component_clothing_field.iff"
+        ]
+      }
+    },
+    "object/tangible/component/bio/bio_component_clothing_casual_charisma_2.iff": {
+      "ancestors": [
+        "object/object/base/shared_base_object.iff",
+        "object/tangible/base/shared_tangible_base.iff",
+        "object/tangible/base/shared_tangible_craftable.iff",
+        "object/tangible/component/bio/bio_component_clothing_casual_charisma_2.iff",
+        "object/tangible/component/bio/shared_base_bio_component_clothing_field.iff",
+        "object/tangible/component/bio/shared_bio_component_clothing_casual_charisma_2.iff"
+      ],
+      "clientLuaSource": "bin/scripts/object/tangible/component/bio/bio_component_clothing_casual_charisma_2.lua",
+      "clientTemplate": "object/tangible/component/bio/shared_bio_component_clothing_casual_charisma_2.iff",
+      "iffEvidence": [
+        {
+          "ancestors": [],
+          "archive": "patch_05.tre",
+          "iffPath": "object/object/base/shared_base_object.iff",
+          "parents": [],
+          "sha256": "ecf2850867f55e135c94f01f869870cb079943fd0bdfe52eb619ae09e55a9eca"
+        },
+        {
+          "ancestors": [
+            "object/object/base/shared_base_object.iff"
+          ],
+          "archive": "patch_09.tre",
+          "iffPath": "object/tangible/base/shared_tangible_base.iff",
+          "parents": [
+            "object/object/base/shared_base_object.iff",
+            "object/object/base/shared_base_object.iff"
+          ],
+          "sha256": "2c15f794282685fbf47274e379222e6fc22887741851693b2bb9bcc495b6927e"
+        },
+        {
+          "ancestors": [
+            "object/object/base/shared_base_object.iff",
+            "object/tangible/base/shared_tangible_base.iff"
+          ],
+          "archive": "data_other_00.tre",
+          "iffPath": "object/tangible/base/shared_tangible_craftable.iff",
+          "parents": [
+            "object/tangible/base/shared_tangible_base.iff",
+            "object/tangible/base/shared_tangible_base.iff"
+          ],
+          "sha256": "97f54a2ff346d586eeded6455eec86bf55aa5455ada5c82e2d86afe4a771759f"
+        },
+        {
+          "ancestors": [
+            "object/object/base/shared_base_object.iff",
+            "object/tangible/base/shared_tangible_base.iff",
+            "object/tangible/base/shared_tangible_craftable.iff"
+          ],
+          "archive": "patch_03.tre",
+          "iffPath": "object/tangible/component/bio/shared_base_bio_component_clothing_field.iff",
+          "parents": [
+            "object/tangible/base/shared_tangible_craftable.iff",
+            "object/tangible/base/shared_tangible_craftable.iff"
+          ],
+          "sha256": "128be1aa0019484b5279790fc819ca6277168b2b2f292bd752991559d8be4bc0"
+        },
+        {
+          "ancestors": [
+            "object/object/base/shared_base_object.iff",
+            "object/tangible/base/shared_tangible_base.iff",
+            "object/tangible/base/shared_tangible_craftable.iff",
+            "object/tangible/component/bio/shared_base_bio_component_clothing_field.iff"
+          ],
+          "archive": "ninja_assets_r1.tre",
+          "iffPath": "object/tangible/component/bio/shared_bio_component_clothing_casual_charisma_2.iff",
+          "parents": [
+            "object/tangible/component/bio/shared_base_bio_component_clothing_field.iff",
+            "object/tangible/component/bio/shared_base_bio_component_clothing_field.iff"
+          ],
+          "sha256": "a9275b3536256e6ffd0b784b95efa6d377e6381e88b7d9e0d0af8b634855b34e"
+        }
+      ],
+      "predicateCorrection": {
+        "falseSourceHints": [
+          "object/tangible/component/bio/shared_base_bio_component_clothing_casual.iff"
+        ],
+        "missingFromSource": [
+          "object/tangible/component/bio/shared_base_bio_component_clothing_field.iff"
+        ]
+      }
+    },
+    "object/tangible/component/bio/bio_component_clothing_casual_entertainer.iff": {
+      "ancestors": [
+        "object/object/base/shared_base_object.iff",
+        "object/tangible/base/shared_tangible_base.iff",
+        "object/tangible/base/shared_tangible_craftable.iff",
+        "object/tangible/component/bio/bio_component_clothing_casual_entertainer.iff",
+        "object/tangible/component/bio/shared_base_bio_component_clothing_field.iff",
+        "object/tangible/component/bio/shared_bio_component_clothing_casual_entertainer.iff"
+      ],
+      "clientLuaSource": "bin/scripts/object/tangible/component/bio/bio_component_clothing_casual_entertainer.lua",
+      "clientTemplate": "object/tangible/component/bio/shared_bio_component_clothing_casual_entertainer.iff",
+      "iffEvidence": [
+        {
+          "ancestors": [],
+          "archive": "patch_05.tre",
+          "iffPath": "object/object/base/shared_base_object.iff",
+          "parents": [],
+          "sha256": "ecf2850867f55e135c94f01f869870cb079943fd0bdfe52eb619ae09e55a9eca"
+        },
+        {
+          "ancestors": [
+            "object/object/base/shared_base_object.iff"
+          ],
+          "archive": "patch_09.tre",
+          "iffPath": "object/tangible/base/shared_tangible_base.iff",
+          "parents": [
+            "object/object/base/shared_base_object.iff",
+            "object/object/base/shared_base_object.iff"
+          ],
+          "sha256": "2c15f794282685fbf47274e379222e6fc22887741851693b2bb9bcc495b6927e"
+        },
+        {
+          "ancestors": [
+            "object/object/base/shared_base_object.iff",
+            "object/tangible/base/shared_tangible_base.iff"
+          ],
+          "archive": "data_other_00.tre",
+          "iffPath": "object/tangible/base/shared_tangible_craftable.iff",
+          "parents": [
+            "object/tangible/base/shared_tangible_base.iff",
+            "object/tangible/base/shared_tangible_base.iff"
+          ],
+          "sha256": "97f54a2ff346d586eeded6455eec86bf55aa5455ada5c82e2d86afe4a771759f"
+        },
+        {
+          "ancestors": [
+            "object/object/base/shared_base_object.iff",
+            "object/tangible/base/shared_tangible_base.iff",
+            "object/tangible/base/shared_tangible_craftable.iff"
+          ],
+          "archive": "patch_03.tre",
+          "iffPath": "object/tangible/component/bio/shared_base_bio_component_clothing_field.iff",
+          "parents": [
+            "object/tangible/base/shared_tangible_craftable.iff",
+            "object/tangible/base/shared_tangible_craftable.iff"
+          ],
+          "sha256": "128be1aa0019484b5279790fc819ca6277168b2b2f292bd752991559d8be4bc0"
+        },
+        {
+          "ancestors": [
+            "object/object/base/shared_base_object.iff",
+            "object/tangible/base/shared_tangible_base.iff",
+            "object/tangible/base/shared_tangible_craftable.iff",
+            "object/tangible/component/bio/shared_base_bio_component_clothing_field.iff"
+          ],
+          "archive": "ninja_assets_r1.tre",
+          "iffPath": "object/tangible/component/bio/shared_bio_component_clothing_casual_entertainer.iff",
+          "parents": [
+            "object/tangible/component/bio/shared_base_bio_component_clothing_field.iff",
+            "object/tangible/component/bio/shared_base_bio_component_clothing_field.iff"
+          ],
+          "sha256": "92e9afba92ef428421be699198327575954e763f6bfbc48cfb5d75310b2e5daf"
+        }
+      ],
+      "predicateCorrection": {
+        "falseSourceHints": [
+          "object/tangible/component/bio/shared_base_bio_component_clothing_casual.iff"
+        ],
+        "missingFromSource": [
+          "object/tangible/component/bio/shared_base_bio_component_clothing_field.iff"
+        ]
+      }
+    },
+    "object/tangible/component/bio/bio_component_clothing_casual_entertainer_2.iff": {
+      "ancestors": [
+        "object/object/base/shared_base_object.iff",
+        "object/tangible/base/shared_tangible_base.iff",
+        "object/tangible/base/shared_tangible_craftable.iff",
+        "object/tangible/component/bio/bio_component_clothing_casual_entertainer_2.iff",
+        "object/tangible/component/bio/shared_base_bio_component_clothing_field.iff",
+        "object/tangible/component/bio/shared_bio_component_clothing_casual_entertainer_2.iff"
+      ],
+      "clientLuaSource": "bin/scripts/object/tangible/component/bio/bio_component_clothing_casual_entertainer_2.lua",
+      "clientTemplate": "object/tangible/component/bio/shared_bio_component_clothing_casual_entertainer_2.iff",
+      "iffEvidence": [
+        {
+          "ancestors": [],
+          "archive": "patch_05.tre",
+          "iffPath": "object/object/base/shared_base_object.iff",
+          "parents": [],
+          "sha256": "ecf2850867f55e135c94f01f869870cb079943fd0bdfe52eb619ae09e55a9eca"
+        },
+        {
+          "ancestors": [
+            "object/object/base/shared_base_object.iff"
+          ],
+          "archive": "patch_09.tre",
+          "iffPath": "object/tangible/base/shared_tangible_base.iff",
+          "parents": [
+            "object/object/base/shared_base_object.iff",
+            "object/object/base/shared_base_object.iff"
+          ],
+          "sha256": "2c15f794282685fbf47274e379222e6fc22887741851693b2bb9bcc495b6927e"
+        },
+        {
+          "ancestors": [
+            "object/object/base/shared_base_object.iff",
+            "object/tangible/base/shared_tangible_base.iff"
+          ],
+          "archive": "data_other_00.tre",
+          "iffPath": "object/tangible/base/shared_tangible_craftable.iff",
+          "parents": [
+            "object/tangible/base/shared_tangible_base.iff",
+            "object/tangible/base/shared_tangible_base.iff"
+          ],
+          "sha256": "97f54a2ff346d586eeded6455eec86bf55aa5455ada5c82e2d86afe4a771759f"
+        },
+        {
+          "ancestors": [
+            "object/object/base/shared_base_object.iff",
+            "object/tangible/base/shared_tangible_base.iff",
+            "object/tangible/base/shared_tangible_craftable.iff"
+          ],
+          "archive": "patch_03.tre",
+          "iffPath": "object/tangible/component/bio/shared_base_bio_component_clothing_field.iff",
+          "parents": [
+            "object/tangible/base/shared_tangible_craftable.iff",
+            "object/tangible/base/shared_tangible_craftable.iff"
+          ],
+          "sha256": "128be1aa0019484b5279790fc819ca6277168b2b2f292bd752991559d8be4bc0"
+        },
+        {
+          "ancestors": [
+            "object/object/base/shared_base_object.iff",
+            "object/tangible/base/shared_tangible_base.iff",
+            "object/tangible/base/shared_tangible_craftable.iff",
+            "object/tangible/component/bio/shared_base_bio_component_clothing_field.iff"
+          ],
+          "archive": "ninja_assets_r1.tre",
+          "iffPath": "object/tangible/component/bio/shared_bio_component_clothing_casual_entertainer_2.iff",
+          "parents": [
+            "object/tangible/component/bio/shared_base_bio_component_clothing_field.iff",
+            "object/tangible/component/bio/shared_base_bio_component_clothing_field.iff"
+          ],
+          "sha256": "f6400e7490dd499a23a8580e1df13477cd2569f0e508b70e7e28a75516834240"
+        }
+      ],
+      "predicateCorrection": {
+        "falseSourceHints": [
+          "object/tangible/component/bio/shared_base_bio_component_clothing_casual.iff"
+        ],
+        "missingFromSource": [
+          "object/tangible/component/bio/shared_base_bio_component_clothing_field.iff"
+        ]
+      }
+    },
+    "object/tangible/component/bio/bio_component_clothing_casual_medic.iff": {
+      "ancestors": [
+        "object/object/base/shared_base_object.iff",
+        "object/tangible/base/shared_tangible_base.iff",
+        "object/tangible/base/shared_tangible_craftable.iff",
+        "object/tangible/component/bio/bio_component_clothing_casual_medic.iff",
+        "object/tangible/component/bio/shared_base_bio_component_clothing_field.iff",
+        "object/tangible/component/bio/shared_bio_component_clothing_casual_medic.iff"
+      ],
+      "clientLuaSource": "bin/scripts/object/tangible/component/bio/bio_component_clothing_casual_medic.lua",
+      "clientTemplate": "object/tangible/component/bio/shared_bio_component_clothing_casual_medic.iff",
+      "iffEvidence": [
+        {
+          "ancestors": [],
+          "archive": "patch_05.tre",
+          "iffPath": "object/object/base/shared_base_object.iff",
+          "parents": [],
+          "sha256": "ecf2850867f55e135c94f01f869870cb079943fd0bdfe52eb619ae09e55a9eca"
+        },
+        {
+          "ancestors": [
+            "object/object/base/shared_base_object.iff"
+          ],
+          "archive": "patch_09.tre",
+          "iffPath": "object/tangible/base/shared_tangible_base.iff",
+          "parents": [
+            "object/object/base/shared_base_object.iff",
+            "object/object/base/shared_base_object.iff"
+          ],
+          "sha256": "2c15f794282685fbf47274e379222e6fc22887741851693b2bb9bcc495b6927e"
+        },
+        {
+          "ancestors": [
+            "object/object/base/shared_base_object.iff",
+            "object/tangible/base/shared_tangible_base.iff"
+          ],
+          "archive": "data_other_00.tre",
+          "iffPath": "object/tangible/base/shared_tangible_craftable.iff",
+          "parents": [
+            "object/tangible/base/shared_tangible_base.iff",
+            "object/tangible/base/shared_tangible_base.iff"
+          ],
+          "sha256": "97f54a2ff346d586eeded6455eec86bf55aa5455ada5c82e2d86afe4a771759f"
+        },
+        {
+          "ancestors": [
+            "object/object/base/shared_base_object.iff",
+            "object/tangible/base/shared_tangible_base.iff",
+            "object/tangible/base/shared_tangible_craftable.iff"
+          ],
+          "archive": "patch_03.tre",
+          "iffPath": "object/tangible/component/bio/shared_base_bio_component_clothing_field.iff",
+          "parents": [
+            "object/tangible/base/shared_tangible_craftable.iff",
+            "object/tangible/base/shared_tangible_craftable.iff"
+          ],
+          "sha256": "128be1aa0019484b5279790fc819ca6277168b2b2f292bd752991559d8be4bc0"
+        },
+        {
+          "ancestors": [
+            "object/object/base/shared_base_object.iff",
+            "object/tangible/base/shared_tangible_base.iff",
+            "object/tangible/base/shared_tangible_craftable.iff",
+            "object/tangible/component/bio/shared_base_bio_component_clothing_field.iff"
+          ],
+          "archive": "ninja_assets_r1.tre",
+          "iffPath": "object/tangible/component/bio/shared_bio_component_clothing_casual_medic.iff",
+          "parents": [
+            "object/tangible/component/bio/shared_base_bio_component_clothing_field.iff",
+            "object/tangible/component/bio/shared_base_bio_component_clothing_field.iff"
+          ],
+          "sha256": "bc2e41315199cb9cff8d3253c46fa47ed8ef7b4b544587733025603b12901ce1"
+        }
+      ],
+      "predicateCorrection": {
+        "falseSourceHints": [
+          "object/tangible/component/bio/shared_base_bio_component_clothing_casual.iff"
+        ],
+        "missingFromSource": [
+          "object/tangible/component/bio/shared_base_bio_component_clothing_field.iff"
+        ]
+      }
+    },
+    "object/tangible/component/bio/bio_component_clothing_casual_medic_2.iff": {
+      "ancestors": [
+        "object/object/base/shared_base_object.iff",
+        "object/tangible/base/shared_tangible_base.iff",
+        "object/tangible/base/shared_tangible_craftable.iff",
+        "object/tangible/component/bio/bio_component_clothing_casual_medic_2.iff",
+        "object/tangible/component/bio/shared_base_bio_component_clothing_field.iff",
+        "object/tangible/component/bio/shared_bio_component_clothing_casual_medic_2.iff"
+      ],
+      "clientLuaSource": "bin/scripts/object/tangible/component/bio/bio_component_clothing_casual_medic_2.lua",
+      "clientTemplate": "object/tangible/component/bio/shared_bio_component_clothing_casual_medic_2.iff",
+      "iffEvidence": [
+        {
+          "ancestors": [],
+          "archive": "patch_05.tre",
+          "iffPath": "object/object/base/shared_base_object.iff",
+          "parents": [],
+          "sha256": "ecf2850867f55e135c94f01f869870cb079943fd0bdfe52eb619ae09e55a9eca"
+        },
+        {
+          "ancestors": [
+            "object/object/base/shared_base_object.iff"
+          ],
+          "archive": "patch_09.tre",
+          "iffPath": "object/tangible/base/shared_tangible_base.iff",
+          "parents": [
+            "object/object/base/shared_base_object.iff",
+            "object/object/base/shared_base_object.iff"
+          ],
+          "sha256": "2c15f794282685fbf47274e379222e6fc22887741851693b2bb9bcc495b6927e"
+        },
+        {
+          "ancestors": [
+            "object/object/base/shared_base_object.iff",
+            "object/tangible/base/shared_tangible_base.iff"
+          ],
+          "archive": "data_other_00.tre",
+          "iffPath": "object/tangible/base/shared_tangible_craftable.iff",
+          "parents": [
+            "object/tangible/base/shared_tangible_base.iff",
+            "object/tangible/base/shared_tangible_base.iff"
+          ],
+          "sha256": "97f54a2ff346d586eeded6455eec86bf55aa5455ada5c82e2d86afe4a771759f"
+        },
+        {
+          "ancestors": [
+            "object/object/base/shared_base_object.iff",
+            "object/tangible/base/shared_tangible_base.iff",
+            "object/tangible/base/shared_tangible_craftable.iff"
+          ],
+          "archive": "patch_03.tre",
+          "iffPath": "object/tangible/component/bio/shared_base_bio_component_clothing_field.iff",
+          "parents": [
+            "object/tangible/base/shared_tangible_craftable.iff",
+            "object/tangible/base/shared_tangible_craftable.iff"
+          ],
+          "sha256": "128be1aa0019484b5279790fc819ca6277168b2b2f292bd752991559d8be4bc0"
+        },
+        {
+          "ancestors": [
+            "object/object/base/shared_base_object.iff",
+            "object/tangible/base/shared_tangible_base.iff",
+            "object/tangible/base/shared_tangible_craftable.iff",
+            "object/tangible/component/bio/shared_base_bio_component_clothing_field.iff"
+          ],
+          "archive": "ninja_assets_r1.tre",
+          "iffPath": "object/tangible/component/bio/shared_bio_component_clothing_casual_medic_2.iff",
+          "parents": [
+            "object/tangible/component/bio/shared_base_bio_component_clothing_field.iff",
+            "object/tangible/component/bio/shared_base_bio_component_clothing_field.iff"
+          ],
+          "sha256": "85215e2aeec093d7275d56497e65ef60b4575b588c704c31c4fb8eb26145628a"
+        }
+      ],
+      "predicateCorrection": {
+        "falseSourceHints": [
+          "object/tangible/component/bio/shared_base_bio_component_clothing_casual.iff"
+        ],
+        "missingFromSource": [
+          "object/tangible/component/bio/shared_base_bio_component_clothing_field.iff"
+        ]
+      }
+    },
+    "object/tangible/component/bio/bio_component_clothing_casual_taming.iff": {
+      "ancestors": [
+        "object/object/base/shared_base_object.iff",
+        "object/tangible/base/shared_tangible_base.iff",
+        "object/tangible/base/shared_tangible_craftable.iff",
+        "object/tangible/component/bio/bio_component_clothing_casual_taming.iff",
+        "object/tangible/component/bio/shared_base_bio_component_clothing_field.iff",
+        "object/tangible/component/bio/shared_bio_component_clothing_casual_taming.iff"
+      ],
+      "clientLuaSource": "bin/scripts/object/tangible/component/bio/bio_component_clothing_casual_taming.lua",
+      "clientTemplate": "object/tangible/component/bio/shared_bio_component_clothing_casual_taming.iff",
+      "iffEvidence": [
+        {
+          "ancestors": [],
+          "archive": "patch_05.tre",
+          "iffPath": "object/object/base/shared_base_object.iff",
+          "parents": [],
+          "sha256": "ecf2850867f55e135c94f01f869870cb079943fd0bdfe52eb619ae09e55a9eca"
+        },
+        {
+          "ancestors": [
+            "object/object/base/shared_base_object.iff"
+          ],
+          "archive": "patch_09.tre",
+          "iffPath": "object/tangible/base/shared_tangible_base.iff",
+          "parents": [
+            "object/object/base/shared_base_object.iff",
+            "object/object/base/shared_base_object.iff"
+          ],
+          "sha256": "2c15f794282685fbf47274e379222e6fc22887741851693b2bb9bcc495b6927e"
+        },
+        {
+          "ancestors": [
+            "object/object/base/shared_base_object.iff",
+            "object/tangible/base/shared_tangible_base.iff"
+          ],
+          "archive": "data_other_00.tre",
+          "iffPath": "object/tangible/base/shared_tangible_craftable.iff",
+          "parents": [
+            "object/tangible/base/shared_tangible_base.iff",
+            "object/tangible/base/shared_tangible_base.iff"
+          ],
+          "sha256": "97f54a2ff346d586eeded6455eec86bf55aa5455ada5c82e2d86afe4a771759f"
+        },
+        {
+          "ancestors": [
+            "object/object/base/shared_base_object.iff",
+            "object/tangible/base/shared_tangible_base.iff",
+            "object/tangible/base/shared_tangible_craftable.iff"
+          ],
+          "archive": "patch_03.tre",
+          "iffPath": "object/tangible/component/bio/shared_base_bio_component_clothing_field.iff",
+          "parents": [
+            "object/tangible/base/shared_tangible_craftable.iff",
+            "object/tangible/base/shared_tangible_craftable.iff"
+          ],
+          "sha256": "128be1aa0019484b5279790fc819ca6277168b2b2f292bd752991559d8be4bc0"
+        },
+        {
+          "ancestors": [
+            "object/object/base/shared_base_object.iff",
+            "object/tangible/base/shared_tangible_base.iff",
+            "object/tangible/base/shared_tangible_craftable.iff",
+            "object/tangible/component/bio/shared_base_bio_component_clothing_field.iff"
+          ],
+          "archive": "ninja_assets_r1.tre",
+          "iffPath": "object/tangible/component/bio/shared_bio_component_clothing_casual_taming.iff",
+          "parents": [
+            "object/tangible/component/bio/shared_base_bio_component_clothing_field.iff",
+            "object/tangible/component/bio/shared_base_bio_component_clothing_field.iff"
+          ],
+          "sha256": "91f8caff6c69aef820c1f3d74fc4ca419d6577553cd10c5b244b12d5fffa0a49"
+        }
+      ],
+      "predicateCorrection": {
+        "falseSourceHints": [
+          "object/tangible/component/bio/shared_base_bio_component_clothing_casual.iff"
+        ],
+        "missingFromSource": [
+          "object/tangible/component/bio/shared_base_bio_component_clothing_field.iff"
+        ]
+      }
+    },
+    "object/tangible/component/bio/bio_component_clothing_casual_taming_2.iff": {
+      "ancestors": [
+        "object/object/base/shared_base_object.iff",
+        "object/tangible/base/shared_tangible_base.iff",
+        "object/tangible/base/shared_tangible_craftable.iff",
+        "object/tangible/component/bio/bio_component_clothing_casual_taming_2.iff",
+        "object/tangible/component/bio/shared_base_bio_component_clothing_field.iff",
+        "object/tangible/component/bio/shared_bio_component_clothing_casual_taming_2.iff"
+      ],
+      "clientLuaSource": "bin/scripts/object/tangible/component/bio/bio_component_clothing_casual_taming_2.lua",
+      "clientTemplate": "object/tangible/component/bio/shared_bio_component_clothing_casual_taming_2.iff",
+      "iffEvidence": [
+        {
+          "ancestors": [],
+          "archive": "patch_05.tre",
+          "iffPath": "object/object/base/shared_base_object.iff",
+          "parents": [],
+          "sha256": "ecf2850867f55e135c94f01f869870cb079943fd0bdfe52eb619ae09e55a9eca"
+        },
+        {
+          "ancestors": [
+            "object/object/base/shared_base_object.iff"
+          ],
+          "archive": "patch_09.tre",
+          "iffPath": "object/tangible/base/shared_tangible_base.iff",
+          "parents": [
+            "object/object/base/shared_base_object.iff",
+            "object/object/base/shared_base_object.iff"
+          ],
+          "sha256": "2c15f794282685fbf47274e379222e6fc22887741851693b2bb9bcc495b6927e"
+        },
+        {
+          "ancestors": [
+            "object/object/base/shared_base_object.iff",
+            "object/tangible/base/shared_tangible_base.iff"
+          ],
+          "archive": "data_other_00.tre",
+          "iffPath": "object/tangible/base/shared_tangible_craftable.iff",
+          "parents": [
+            "object/tangible/base/shared_tangible_base.iff",
+            "object/tangible/base/shared_tangible_base.iff"
+          ],
+          "sha256": "97f54a2ff346d586eeded6455eec86bf55aa5455ada5c82e2d86afe4a771759f"
+        },
+        {
+          "ancestors": [
+            "object/object/base/shared_base_object.iff",
+            "object/tangible/base/shared_tangible_base.iff",
+            "object/tangible/base/shared_tangible_craftable.iff"
+          ],
+          "archive": "patch_03.tre",
+          "iffPath": "object/tangible/component/bio/shared_base_bio_component_clothing_field.iff",
+          "parents": [
+            "object/tangible/base/shared_tangible_craftable.iff",
+            "object/tangible/base/shared_tangible_craftable.iff"
+          ],
+          "sha256": "128be1aa0019484b5279790fc819ca6277168b2b2f292bd752991559d8be4bc0"
+        },
+        {
+          "ancestors": [
+            "object/object/base/shared_base_object.iff",
+            "object/tangible/base/shared_tangible_base.iff",
+            "object/tangible/base/shared_tangible_craftable.iff",
+            "object/tangible/component/bio/shared_base_bio_component_clothing_field.iff"
+          ],
+          "archive": "ninja_assets_r1.tre",
+          "iffPath": "object/tangible/component/bio/shared_bio_component_clothing_casual_taming_2.iff",
+          "parents": [
+            "object/tangible/component/bio/shared_base_bio_component_clothing_field.iff",
+            "object/tangible/component/bio/shared_base_bio_component_clothing_field.iff"
+          ],
+          "sha256": "78f71e39efc634ff6cbd55b5fb39b192bd844ffc2e64f1f53566f52932ca3642"
+        }
+      ],
+      "predicateCorrection": {
+        "falseSourceHints": [
+          "object/tangible/component/bio/shared_base_bio_component_clothing_casual.iff"
+        ],
+        "missingFromSource": [
+          "object/tangible/component/bio/shared_base_bio_component_clothing_field.iff"
+        ]
+      }
+    },
+    "object/tangible/component/bio/bio_component_clothing_casual_training.iff": {
+      "ancestors": [
+        "object/object/base/shared_base_object.iff",
+        "object/tangible/base/shared_tangible_base.iff",
+        "object/tangible/base/shared_tangible_craftable.iff",
+        "object/tangible/component/bio/bio_component_clothing_casual_training.iff",
+        "object/tangible/component/bio/shared_base_bio_component_clothing_field.iff",
+        "object/tangible/component/bio/shared_bio_component_clothing_casual_training.iff"
+      ],
+      "clientLuaSource": "bin/scripts/object/tangible/component/bio/bio_component_clothing_casual_training.lua",
+      "clientTemplate": "object/tangible/component/bio/shared_bio_component_clothing_casual_training.iff",
+      "iffEvidence": [
+        {
+          "ancestors": [],
+          "archive": "patch_05.tre",
+          "iffPath": "object/object/base/shared_base_object.iff",
+          "parents": [],
+          "sha256": "ecf2850867f55e135c94f01f869870cb079943fd0bdfe52eb619ae09e55a9eca"
+        },
+        {
+          "ancestors": [
+            "object/object/base/shared_base_object.iff"
+          ],
+          "archive": "patch_09.tre",
+          "iffPath": "object/tangible/base/shared_tangible_base.iff",
+          "parents": [
+            "object/object/base/shared_base_object.iff",
+            "object/object/base/shared_base_object.iff"
+          ],
+          "sha256": "2c15f794282685fbf47274e379222e6fc22887741851693b2bb9bcc495b6927e"
+        },
+        {
+          "ancestors": [
+            "object/object/base/shared_base_object.iff",
+            "object/tangible/base/shared_tangible_base.iff"
+          ],
+          "archive": "data_other_00.tre",
+          "iffPath": "object/tangible/base/shared_tangible_craftable.iff",
+          "parents": [
+            "object/tangible/base/shared_tangible_base.iff",
+            "object/tangible/base/shared_tangible_base.iff"
+          ],
+          "sha256": "97f54a2ff346d586eeded6455eec86bf55aa5455ada5c82e2d86afe4a771759f"
+        },
+        {
+          "ancestors": [
+            "object/object/base/shared_base_object.iff",
+            "object/tangible/base/shared_tangible_base.iff",
+            "object/tangible/base/shared_tangible_craftable.iff"
+          ],
+          "archive": "patch_03.tre",
+          "iffPath": "object/tangible/component/bio/shared_base_bio_component_clothing_field.iff",
+          "parents": [
+            "object/tangible/base/shared_tangible_craftable.iff",
+            "object/tangible/base/shared_tangible_craftable.iff"
+          ],
+          "sha256": "128be1aa0019484b5279790fc819ca6277168b2b2f292bd752991559d8be4bc0"
+        },
+        {
+          "ancestors": [
+            "object/object/base/shared_base_object.iff",
+            "object/tangible/base/shared_tangible_base.iff",
+            "object/tangible/base/shared_tangible_craftable.iff",
+            "object/tangible/component/bio/shared_base_bio_component_clothing_field.iff"
+          ],
+          "archive": "ninja_assets_r1.tre",
+          "iffPath": "object/tangible/component/bio/shared_bio_component_clothing_casual_training.iff",
+          "parents": [
+            "object/tangible/component/bio/shared_base_bio_component_clothing_field.iff",
+            "object/tangible/component/bio/shared_base_bio_component_clothing_field.iff"
+          ],
+          "sha256": "2fab5d84559dc135dc206eaa6414f36d1d4c90f6f0cd0d78d073480ae133c537"
+        }
+      ],
+      "predicateCorrection": {
+        "falseSourceHints": [
+          "object/tangible/component/bio/shared_base_bio_component_clothing_casual.iff"
+        ],
+        "missingFromSource": [
+          "object/tangible/component/bio/shared_base_bio_component_clothing_field.iff"
+        ]
+      }
+    },
+    "object/tangible/component/bio/bio_component_clothing_casual_training_2.iff": {
+      "ancestors": [
+        "object/object/base/shared_base_object.iff",
+        "object/tangible/base/shared_tangible_base.iff",
+        "object/tangible/base/shared_tangible_craftable.iff",
+        "object/tangible/component/bio/bio_component_clothing_casual_training_2.iff",
+        "object/tangible/component/bio/shared_base_bio_component_clothing_field.iff",
+        "object/tangible/component/bio/shared_bio_component_clothing_casual_training_2.iff"
+      ],
+      "clientLuaSource": "bin/scripts/object/tangible/component/bio/bio_component_clothing_casual_training_2.lua",
+      "clientTemplate": "object/tangible/component/bio/shared_bio_component_clothing_casual_training_2.iff",
+      "iffEvidence": [
+        {
+          "ancestors": [],
+          "archive": "patch_05.tre",
+          "iffPath": "object/object/base/shared_base_object.iff",
+          "parents": [],
+          "sha256": "ecf2850867f55e135c94f01f869870cb079943fd0bdfe52eb619ae09e55a9eca"
+        },
+        {
+          "ancestors": [
+            "object/object/base/shared_base_object.iff"
+          ],
+          "archive": "patch_09.tre",
+          "iffPath": "object/tangible/base/shared_tangible_base.iff",
+          "parents": [
+            "object/object/base/shared_base_object.iff",
+            "object/object/base/shared_base_object.iff"
+          ],
+          "sha256": "2c15f794282685fbf47274e379222e6fc22887741851693b2bb9bcc495b6927e"
+        },
+        {
+          "ancestors": [
+            "object/object/base/shared_base_object.iff",
+            "object/tangible/base/shared_tangible_base.iff"
+          ],
+          "archive": "data_other_00.tre",
+          "iffPath": "object/tangible/base/shared_tangible_craftable.iff",
+          "parents": [
+            "object/tangible/base/shared_tangible_base.iff",
+            "object/tangible/base/shared_tangible_base.iff"
+          ],
+          "sha256": "97f54a2ff346d586eeded6455eec86bf55aa5455ada5c82e2d86afe4a771759f"
+        },
+        {
+          "ancestors": [
+            "object/object/base/shared_base_object.iff",
+            "object/tangible/base/shared_tangible_base.iff",
+            "object/tangible/base/shared_tangible_craftable.iff"
+          ],
+          "archive": "patch_03.tre",
+          "iffPath": "object/tangible/component/bio/shared_base_bio_component_clothing_field.iff",
+          "parents": [
+            "object/tangible/base/shared_tangible_craftable.iff",
+            "object/tangible/base/shared_tangible_craftable.iff"
+          ],
+          "sha256": "128be1aa0019484b5279790fc819ca6277168b2b2f292bd752991559d8be4bc0"
+        },
+        {
+          "ancestors": [
+            "object/object/base/shared_base_object.iff",
+            "object/tangible/base/shared_tangible_base.iff",
+            "object/tangible/base/shared_tangible_craftable.iff",
+            "object/tangible/component/bio/shared_base_bio_component_clothing_field.iff"
+          ],
+          "archive": "ninja_assets_r1.tre",
+          "iffPath": "object/tangible/component/bio/shared_bio_component_clothing_casual_training_2.iff",
+          "parents": [
+            "object/tangible/component/bio/shared_base_bio_component_clothing_field.iff",
+            "object/tangible/component/bio/shared_base_bio_component_clothing_field.iff"
+          ],
+          "sha256": "0123678c001f34caf402e7b580b8f8aa483d9bf5374e5e3282624d01eb448616"
+        }
+      ],
+      "predicateCorrection": {
+        "falseSourceHints": [
+          "object/tangible/component/bio/shared_base_bio_component_clothing_casual.iff"
+        ],
+        "missingFromSource": [
+          "object/tangible/component/bio/shared_base_bio_component_clothing_field.iff"
+        ]
+      }
+    }
+  },
+  "policy": "Authoritative effective Pre-CU IFF DERV ancestry replaces deprecated Lua hints only for proven mismatches. Native isDerivedFrom remains mandatory.",
+  "schemaVersion": 1,
+  "treFiles": [
+    "pre9_jedi_r33.tre",
+    "pre9_planets_r4.tre",
+    "swgninja_species_r3.tre",
+    "ninja_worlds_r1.tre",
+    "ninja_assets_r1.tre",
+    "default_patch.tre",
+    "patch_sku1_14_00.tre",
+    "patch_14_00.tre",
+    "patch_sku1_13_00.tre",
+    "patch_13_00.tre",
+    "patch_sku1_12_00.tre",
+    "patch_12_00.tre",
+    "patch_11_03.tre",
+    "data_sku1_07.tre",
+    "patch_11_02.tre",
+    "data_sku1_06.tre",
+    "patch_11_01.tre",
+    "patch_11_00.tre",
+    "data_sku1_05.tre",
+    "data_sku1_04.tre",
+    "data_sku1_03.tre",
+    "data_sku1_02.tre",
+    "data_sku1_01.tre",
+    "data_sku1_00.tre",
+    "patch_10.tre",
+    "patch_09.tre",
+    "patch_08.tre",
+    "patch_07.tre",
+    "patch_06.tre",
+    "patch_05.tre",
+    "patch_04.tre",
+    "patch_03.tre",
+    "patch_02.tre",
+    "patch_01.tre",
+    "patch_00.tre",
+    "data_other_00.tre",
+    "data_static_mesh_01.tre",
+    "data_static_mesh_00.tre",
+    "data_texture_07.tre",
+    "data_texture_06.tre",
+    "data_texture_05.tre",
+    "data_texture_04.tre",
+    "data_texture_03.tre",
+    "data_texture_02.tre",
+    "data_texture_01.tre",
+    "data_texture_00.tre",
+    "data_skeletal_mesh_01.tre",
+    "data_skeletal_mesh_00.tre",
+    "data_animation_00.tre",
+    "data_sample_04.tre",
+    "data_sample_03.tre",
+    "data_sample_02.tre",
+    "data_sample_01.tre",
+    "data_sample_00.tre",
+    "data_music_00.tre",
+    "bottom.tre"
+  ]
+}

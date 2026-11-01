@@ -84,6 +84,9 @@ class CraftingManager extends ZoneManager {
 	
 	private native void configureLabratories();
 	
+	@local
+	public native boolean setPerfectCraftingValues(TangibleObject prototype, ManufactureSchematic manufactureSchematic);
+
 	public native void setInitialCraftingValues(TangibleObject prototype, ManufactureSchematic manufactureSchematic, int assemblySuccess);
 	public native int getCreationCount(ManufactureSchematic manufactureSchematic);
 }

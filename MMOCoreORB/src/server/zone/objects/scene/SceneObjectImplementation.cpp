@@ -1,3 +1,4 @@
+#include "server/zone/managers/crafting/PerfectCraftingRecipe.h"
 /*
 				Copyright <SWGEmu>
 		See file COPYING for copying conditions. */
@@ -212,7 +213,9 @@ void SceneObjectImplementation::loadTemplateData(SharedObjectTemplate* templateD
 		}
 	}
 
-	if (templateObject->getDelayedContainerLoad()) {
+	// Request-owned graphs must not enqueue delayed-load callbacks after their
+	// transient journal has destroyed them. Normal objects keep template policy.
+	if (templateObject->getDelayedContainerLoad() && PerfectCraftingContext::current() == nullptr) {
 		containerObjects.setDelayedLoadOperationMode();
 	}
 }
@@ -2066,7 +2069,7 @@ void SceneObjectImplementation::onContainerLoaded() {
 	updateSavedRootParentRecursive(getRootParent());
 }
 
-Reference<SceneObject*> SceneObjectImplementation::getCraftedComponentsSatchel() {
+Reference<SceneObject*> SceneObjectImplementation::getCraftedComponentsSatchel(bool makeTransient) {
 	Reference<SceneObject*> sceno = asSceneObject();
 	if (sceno == nullptr)
 		return nullptr;
@@ -2084,12 +2087,17 @@ Reference<SceneObject*> SceneObjectImplementation::getCraftedComponentsSatchel()
 
 		/// Add Components to crafted object
 		String craftingComponentsPath = "object/tangible/crafting/crafting_components_container.iff";
-		craftingComponents = zServer->createObject(craftingComponentsPath.hashCode(), 1);
+		craftingComponents = zServer->createObject(craftingComponentsPath.hashCode(), makeTransient ? 0 : 1);
+		if (craftingComponents == nullptr) return nullptr;
+		if (makeTransient && PerfectCraftingContext::current() != nullptr) PerfectCraftingContext::current()->own(craftingComponents);
 
 		Locker componentsLocker(craftingComponents);
 
 		craftingComponents->setSendToClient(false);
-		sceno->transferObject(craftingComponents, 4, false);
+		if (!sceno->transferObject(craftingComponents, 4, false)) {
+			if (!makeTransient || PerfectCraftingContext::current() == nullptr) craftingComponents->destroyObjectFromDatabase(true);
+			return nullptr;
+		}
 
 		craftingComponents->setContainerDefaultDenyPermission(ContainerPermissions::OPEN + ContainerPermissions::MOVEIN + ContainerPermissions::MOVEOUT + ContainerPermissions::MOVECONTAINER);
 		craftingComponents->setContainerDefaultAllowPermission(0);
@@ -2101,7 +2109,9 @@ Reference<SceneObject*> SceneObjectImplementation::getCraftedComponentsSatchel()
 
 		//String craftingComponentsSatchelPath = "object/tangible/container/base/base_container_volume.iff";
 		String craftingComponentsSatchelPath = "object/tangible/hopper/crafting_station_hopper/crafting_station_ingredient_hopper_large.iff";
-		craftingComponentsSatchel = zServer->createObject(craftingComponentsSatchelPath.hashCode(), 1);
+		craftingComponentsSatchel = zServer->createObject(craftingComponentsSatchelPath.hashCode(), makeTransient ? 0 : 1);
+		if (craftingComponentsSatchel == nullptr) return nullptr;
+		if (makeTransient && PerfectCraftingContext::current() != nullptr) PerfectCraftingContext::current()->own(craftingComponentsSatchel);
 
 		Locker satchelLocker(craftingComponentsSatchel, craftingComponents);
 
@@ -2113,7 +2123,10 @@ Reference<SceneObject*> SceneObjectImplementation::getCraftedComponentsSatchel()
 		craftingComponentsSatchel->setContainerAllowPermission("owner", 0);
 		craftingComponentsSatchel->setContainerDenyPermission("owner", ContainerPermissions::OPEN + ContainerPermissions::MOVEIN + ContainerPermissions::MOVEOUT + ContainerPermissions::MOVECONTAINER);
 
-		craftingComponents->transferObject(craftingComponentsSatchel, -1, false);
+		if (!craftingComponents->transferObject(craftingComponentsSatchel, -1, false)) {
+			if (!makeTransient || PerfectCraftingContext::current() == nullptr) craftingComponentsSatchel->destroyObjectFromDatabase(true);
+			return nullptr;
+		}
 
 	} else {
 		craftingComponentsSatchel = craftingComponents->getContainerObject(0);

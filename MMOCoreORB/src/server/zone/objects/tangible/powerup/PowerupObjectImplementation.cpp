@@ -1,3 +1,4 @@
+#include <cmath>
 /*
  * PowerupObjectImplementation.cpp
  *
@@ -225,6 +226,10 @@ void PowerupObjectImplementation::updateCraftingValues(CraftingValues* values, b
 	info(true) << "Starting stat updates:";
 #endif // DEBUG_POWERUPS
 
+	updateModifierValues(effect, maxEffect);
+}
+
+void PowerupObjectImplementation::updateModifierValues(float effect, float maxEffect) {
 	float lastSecondary = 0.0f;
 
 	for (int i = 0; i < modifiers.size(); ++i) {
@@ -270,9 +275,47 @@ void PowerupObjectImplementation::updateCraftingValues(CraftingValues* values, b
 		stat->setValue(lastSecondary);
 	}
 
-#ifdef DEBUG_POWERUPS
-	info(true) << "========== END -  PowerupObjectImplementation::updateCraftingValues ==========";
-#endif // DEBUG_POWERUPS
+}
+
+bool PowerupObjectImplementation::setPerfectCraftingValues(CraftingValues* values, int primaryIndex, Vector<int>* secondaryIndices) {
+	auto templ = dynamic_cast<PowerupTemplate*>(templateObject.get());
+	if (values == nullptr || templ == nullptr || secondaryIndices == nullptr || isPersistent()) return false;
+	const auto& primary = templ->getPrimaryAttributes();
+	auto secondary = templ->getSecondaryAttributes();
+	float effect = values->getCurrentValue("effect"), maximum = values->getMaxValue("effect");
+	if (!std::isfinite(effect) || !std::isfinite(maximum) || maximum <= 0 || effect < 0 || effect > maximum || primaryIndex < 0 || primaryIndex >= primary.size()) return false;
+	int eligible = effect >= 90.f ? 4 : effect >= 70.f ? 3 : effect >= 50.f ? 2 : effect >= 25.f ? 1 : 0;
+	int distinct = 0;
+	SortedVector<String> allowed;
+	allowed.setNoDuplicateInsertPlan();
+	for (int i = 0; i < secondary.size(); ++i) {
+		const String& attribute = secondary.get(i).getAttributeToModify();
+		if (attribute != primary.get(primaryIndex).getAttributeToModify() && allowed.put(attribute) != -1) ++distinct;
+	}
+	if (secondaryIndices->size() != Math::min(eligible, distinct)) return false;
+	SortedVector<String> selectedAttributes;
+	selectedAttributes.setNoDuplicateInsertPlan();
+	selectedAttributes.put(primary.get(primaryIndex).getAttributeToModify());
+	SortedVector<int> selected;
+	selected.setNoDuplicateInsertPlan();
+	for (int i = 0; i < secondaryIndices->size(); ++i) {
+		int index = secondaryIndices->get(i);
+		if (index < 0 || index >= secondary.size() || selected.put(index) == -1) return false;
+		if (selectedAttributes.put(secondary.get(index).getAttributeToModify()) == -1) return false;
+	}
+	modifiers.removeAll();
+	modifiers.add(primary.get(primaryIndex));
+	type = templ->getType().toLowerCase();
+	uses = 100; // Same fixed dose count as ordinary assembly.
+	updateModifierValues(effect, maximum);
+	// Successful normal experiment outcomes can add one secondary at a time.
+	// Recompute after EACH insertion so the ordinary first-secondary freeze
+	// rule and the normal capped half-strength progression are preserved.
+	for (int i = 0; i < secondaryIndices->size(); ++i) {
+		modifiers.add(secondary.get(secondaryIndices->get(i)));
+		updateModifierValues(effect, maximum);
+	}
+	return true;
 }
 
 float PowerupObjectImplementation::getPowerupStat(const String& attribName) const {

@@ -68,6 +68,7 @@ class Consumable extends TangibleObject {
 		filling = 0;
 
 		nutrition = 0;
+		newNutrition = 0.f;
 		nutritionMin = 1.f;
 		nutritionMax = 1.f;
 

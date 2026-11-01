@@ -247,42 +247,42 @@ public:
 	 * New Genetics Code - washu 03/08/15
 	 */
 	// convert creature hit chance to cleverness value
-	static int hitChanceToValue(float input, int quality) {
+	static int hitChanceToValue(float input, int quality, bool maximumRoll = false) {
 		int base = round(((input - 0.19) / (0.66)) * 1000.0);
-		return randomizeValue(base, quality);
+		return randomizeValue(base, quality, maximumRoll);
 	}
 
 	// convert creature damage range to power score
-	static int damageToValue(float dps, int quality) {
+	static int damageToValue(float dps, int quality, bool maximumRoll = false) {
 		int base = round(((dps - 15.0) / (725.0)) * 1000.0);
-		return randomizeValue(base, quality);
+		return randomizeValue(base, quality, maximumRoll);
 	}
 
 	// convert ham value to score
-	static int hamToValue(float ham, int quality) {
+	static int hamToValue(float ham, int quality, bool maximumRoll = false) {
 		int base = round(((ham - 50.0) / (17950)) * 1000.0);
-		return randomizeValue(base, quality);
+		return randomizeValue(base, quality, maximumRoll);
 	}
 
 	// convert ferocity value
-	static int ferocityToValue(int level, int quality) {
+	static int ferocityToValue(int level, int quality, bool maximumRoll = false) {
 		int base = (level * 45) + 90;
-		return randomizeValue(base, quality);
+		return randomizeValue(base, quality, maximumRoll);
 	}
 
 	// convert acceletation
-	static int accelerationToValue(float speed, int quality) {
+	static int accelerationToValue(float speed, int quality, bool maximumRoll = false) {
 		int base = round(((speed - 1.0) / (4.0)) * 1000.0);
-		return randomizeValue(base, quality);
+		return randomizeValue(base, quality, maximumRoll);
 	}
 
 	// convert meat type to value
-	static int meatTypeToValue(String type, int quality) {
-		return randomizeValue(500, quality);
+	static int meatTypeToValue(String type, int quality, bool maximumRoll = false) {
+		return randomizeValue(500, quality, maximumRoll);
 	}
 
 	// convert diet to value
-	static int dietToValue(int diet, int quality) {
+	static int dietToValue(int diet, int quality, bool maximumRoll = false) {
 		/*int min = 0.1;
 		int max = 9.3;*///these are not used, also 9.3 is not an int
 		int base = 0;
@@ -300,14 +300,14 @@ public:
 
 		base = round(((level - 0.1) / (9.2)) * 1000.0);
 
-		return randomizeValue(base, quality);
+		return randomizeValue(base, quality, maximumRoll);
 	}
 
 	// convert resistance to value
-	static float resistanceToValue(float effective, int armor, int quality) {
+	static float resistanceToValue(float effective, int armor, int quality, bool maximumRoll = false) {
 		// find effective resist
 		int base = effective * 10;
-		int rand = randomizeValue(base, quality);
+		int rand = randomizeValue(base, quality, maximumRoll);
 
 		if (rand < 0)
 			rand = 0;
@@ -325,11 +325,11 @@ public:
 		return rand;
 	}
 
-	static int randomizeValue(int value, int quality) {
+	static int randomizeValue(int value, int quality, bool maximumRoll = false) {
 		int wQuality = 8 - quality; // reverse range this is not the first time.
 		int min = (value) + ((wQuality - 5) * 5);
 		int max = (value) + ((wQuality - 3) * 5);
-		return (int)(System::random(max - min) + min);
+		return maximumRoll ? max : (int)(System::random(max - min) + min);
 	}
 
 	// Calculate the creatures overall level as a pet.

@@ -37,28 +37,42 @@ class RevivePack extends PharmaceuticalObject {
 	@local
 	public void updateCraftingValues(CraftingValues values, boolean firstUpdate) {
 		float effectiveness = values.getCurrentValue("power");
+		// Keep ordinary independent RNG calls and their original order.
+		float actionBudget = 2 * effectiveness;
+		float mindBudget = 1.5 * effectiveness;
+		int actionRoll = System.random(actionBudget / 4);
+		int mindRoll = System.random(mindBudget / 4);
+		applyCraftingValues(values, actionRoll, mindRoll);
+	}
+
+	// The two attainable normal endpoints trade wound healing against damage
+	// healing. This is opt-in; ordinary crafting continues to roll above.
+	@local
+	public void setPerfectCraftingValues(CraftingValues values, boolean woundsMaximum) {
+		float effectiveness = values.getCurrentValue("power");
+		int actionRoll = 0;
+		int mindRoll = 0;
+		if (woundsMaximum) {
+			float actionBudget = 2 * effectiveness;
+			float mindBudget = 1.5 * effectiveness;
+			actionRoll = (int)(actionBudget / 4);
+			mindRoll = (int)(mindBudget / 4);
+		}
+		applyCraftingValues(values, actionRoll, mindRoll);
+	}
+
+	@local
+	private void applyCraftingValues(CraftingValues values, int actionRoll, int mindRoll) {
+		float effectiveness = values.getCurrentValue("power");
 		super.medicineUseRequired = values.getCurrentValue("skillmodmin");
 		setUseCount(values.getCurrentValue("charges"));
-
 		values.setHidden("power");
-
-		float health = 2 * effectiveness;
-		healthWoundHealed = health;
-		healthHealed = 2 * effectiveness - health;
-
-		float action = 2 * effectiveness;
-		action = System.random(action / 4);
-		action = action + effectiveness / 2;
-
-		actionWoundHealed = action;
-		actionHealed = 2 * effectiveness - action;
-
-		float mind = 1.5 * effectiveness;
-		mind = System.random(mind / 4);
-		mind = mind + effectiveness / 2;
-
-		mindWoundHealed = mind;
-		mindHealed = 1.5 * effectiveness - mind;
+		healthWoundHealed = 2 * effectiveness;
+		healthHealed = 0;
+		actionWoundHealed = actionRoll + effectiveness / 2;
+		actionHealed = 2 * effectiveness - actionWoundHealed;
+		mindWoundHealed = mindRoll + effectiveness / 2;
+		mindHealed = 1.5 * effectiveness - mindWoundHealed;
 	}
 
 	/**

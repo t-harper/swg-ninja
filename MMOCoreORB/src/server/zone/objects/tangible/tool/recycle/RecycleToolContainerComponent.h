@@ -8,6 +8,11 @@
 class RecycleToolContainerComponent : public ContainerComponent {
 public:
 	int notifyObjectInserted(SceneObject* sceneObject, SceneObject* object) const {
+		// Recycling accepts volume contents (-1), not internal slots such as
+		// crafted_components (4), including during ordinary crate extraction.
+		if (object != nullptr && object->getContainmentType() != static_cast<uint32>(-1))
+			return ContainerComponent::notifyObjectInserted(sceneObject, object);
+
 		RecycleTool* recycler = cast <RecycleTool* >(sceneObject);
 
 		TangibleObject* tano = cast <TangibleObject* >(object);

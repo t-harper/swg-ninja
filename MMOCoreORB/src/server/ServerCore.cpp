@@ -3,6 +3,7 @@
 		See file COPYING for copying conditions. */
 
 #include "ServerCore.h"
+#include "FifoConsoleReader.h"
 
 #include <type_traits>
 #include <sys/stat.h>
@@ -59,50 +60,43 @@ namespace coredetail {
 		void run() override;
 	};
 
-	// pre9 local: host-writable command FIFO at log/console.fifo — the
-	// stdin console dies permanently on its first EOF under podman
-	// (any closed `podman attach` delivers one), so host scripts
-	// (swg-restart, unit ExecStop) use this channel for
-	// save/broadcast/shutdown instead. Lines feed the same
-	// queueConsoleCommand pipeline as the stdin reader.
+	// Host command FIFO has its own cancellable transport. The service and
+	// callback's Core owner must outlive the reader thread, including errors.
 	class FifoConsoleService final : public ServiceThread {
 		ServerCore* core;
+		FifoConsoleReader input{"log/console.fifo"};
+		bool started = false;
 
 	public:
-		FifoConsoleService(ServerCore* serverCoreInstance) : ServiceThread("FifoConsoleService") {
-			core = serverCoreInstance;
+		explicit FifoConsoleService(ServerCore* instance) : ServiceThread("FifoConsoleService"), core(instance) {}
+
+		~FifoConsoleService() override {
+			stopAndJoin();
+		}
+
+		void start(bool waitForStartup = true) {
+			ServiceThread::start(waitForStartup);
+			started = true;
+		}
+
+		void stopAndJoin() {
+			input.requestStop();
+			if (started) {
+				join();
+				started = false;
+			}
 		}
 
 		void run() override {
-			const char* fifoPath = "log/console.fifo";
-
-			unlink(fifoPath);
-
-			if (mkfifo(fifoPath, 0660) != 0) {
-				System::out << "[FifoConsoleService] mkfifo failed, channel disabled" << endl;
-				return;
-			}
-
-			while (core->isConsoleHandlingCommands()) {
-				FILE* fifo = fopen(fifoPath, "r"); // blocks until a writer opens
-
-				if (fifo == nullptr) {
-					Thread::sleep(1000);
-					continue;
+			std::string error;
+			if (!input.run([this](const std::string& line) {
+				String cmd = String(line.c_str()).trim();
+				if (!cmd.isEmpty()) {
+					System::out << "[console.fifo] " << cmd << endl;
+					core->queueConsoleCommand(cmd);
 				}
-
-				char line[256];
-
-				while (fgets(line, sizeof(line), fifo) != nullptr) {
-					String cmd = String(line).trim();
-
-					if (!cmd.isEmpty()) {
-						System::out << "[console.fifo] " << cmd << endl;
-						core->queueConsoleCommand(cmd);
-					}
-				}
-
-				fclose(fifo); // writer side closed; reopen for the next sender
+			}, error)) {
+				System::out << "[FifoConsoleService] " << error.c_str() << ", channel disabled" << endl;
 			}
 		}
 	};
@@ -1162,7 +1156,7 @@ void ServerCore::handleCommands() {
 	reader.start(true);
 
 	// pre9 local: reliable host command channel (see FifoConsoleService)
-	auto fifoReader = coredetail::FifoConsoleService(instance);
+	coredetail::FifoConsoleService fifoReader(instance);
 	fifoReader.start(true);
 
 	while (handleCmds) {
@@ -1198,6 +1192,9 @@ void ServerCore::handleCommands() {
 		System::flushStream(stdout);
 	}
 
+	// Stop before either stack-local service or Core can leave scope. The
+	// service destructor also joins if command processing throws.
+	fifoReader.stopAndJoin();
 	reader.setRunning(false);
 
 	Thread::yield();

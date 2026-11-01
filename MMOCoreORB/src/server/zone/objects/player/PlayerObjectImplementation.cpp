@@ -735,6 +735,9 @@ int PlayerObjectImplementation::addExperience(TransactionLog& trx, const String&
 	}
 
 	int valueToAdd = xp;
+	// Exact GM totals may reach INT_MAX. Sum before applying the ordinary cap
+	// without wrapping a later positive award into a negative balance.
+	int64 totalExperience = xp;
 
 	Locker locker(asPlayerObject());
 
@@ -744,14 +747,14 @@ int PlayerObjectImplementation::addExperience(TransactionLog& trx, const String&
 	}
 
 	if (experienceList.contains(xpType)) {
-		xp += experienceList.get(xpType);
+		totalExperience += experienceList.get(xpType);
 
-		if (xp <= 0 && xpType != "jedi_general") {
+		if (totalExperience <= 0 && xpType != "jedi_general") {
 			removeExperience(trx, xpType, notifyClient);
 			return 0;
 		// -10 million experience cap for Jedi experience loss
-		} else if(xp < -10000000 && xpType == "jedi_general") {
-			xp = -10000000;
+		} else if(totalExperience < -10000000 && xpType == "jedi_general") {
+			totalExperience = -10000000;
 		}
 	}
 
@@ -766,10 +769,11 @@ int PlayerObjectImplementation::addExperience(TransactionLog& trx, const String&
 		xpCap = 2000;
 	}
 
-	if (xp > xpCap) {
-		valueToAdd = xpCap - (xp - valueToAdd);
-		xp = xpCap;
+	if (totalExperience > xpCap) {
+		valueToAdd = xpCap - (totalExperience - valueToAdd);
+		totalExperience = xpCap;
 	}
+	xp = totalExperience;
 
 	if (notifyClient) {
 		PlayerObjectDeltaMessage8* dplay8 = new PlayerObjectDeltaMessage8(this);

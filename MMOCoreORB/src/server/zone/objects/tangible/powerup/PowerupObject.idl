@@ -6,6 +6,7 @@ package server.zone.objects.tangible.powerup;
 
 import server.zone.objects.creature.CreatureObject;
 import server.zone.objects.tangible.TangibleObject;
+import system.util.Vector;
 include server.zone.objects.tangible.powerup.PowerupStatVector;
 import server.zone.objects.tangible.weapon.WeaponObject;
 include templates.SharedObjectTemplate;
@@ -91,6 +92,12 @@ class PowerupObject extends TangibleObject {
 
 	@local
 	public native void updateCraftingValues(CraftingValues values, boolean firstUpdate);
+
+	@local
+	public native boolean setPerfectCraftingValues(CraftingValues values, int primaryIndex, Vector<int> secondaryIndices);
+
+	@local
+	private native void updateModifierValues(float effect, float maxEffect);
 
 	@local
 	@dirty

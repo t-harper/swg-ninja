@@ -1,3 +1,4 @@
+#include "server/zone/managers/crafting/PerfectCraftedItemFactory.h"
 /*
  * CraftingSessionImplementation.cpp
  *
@@ -788,55 +789,7 @@ void CraftingSessionImplementation::initialAssembly(int clientCounter) {
 	craftingValues->setManufactureSchematic(manufactureSchematic);
 	craftingValues->setPlayer(crafter);
 
-	if (prototype->isWeaponObject()) {
-		unsigned int type = prototype->getClientGameObjectType();
-
-		if (type == SceneObjectType::PISTOL || type == SceneObjectType::CARBINE || type == SceneObjectType::RIFLE) {
-			uint32 tanoCRC = prototype->getClientObjectCRC();
-
-			for (int i = 0; i < manufactureSchematic->getSlotCount(); ++i) {
-				ComponentSlot* compSlot = cast<ComponentSlot*>(manufactureSchematic->getSlot(i));
-
-				if (compSlot == nullptr) {
-					continue;
-				}
-
-				ManagedReference<TangibleObject*> compTano = compSlot->getPrototype();
-
-				if (compTano == nullptr) {
-					continue;
-				}
-
-				const String& slotName = compSlot->getSlotName();
-
-				if (slotName.isEmpty()) {
-					continue;
-				}
-
-				const auto& ids = ComponentMap::instance()->getVisibleCRC(tanoCRC, slotName.hashCode());
-
-				if (ids.size() == 0) {
-					continue;
-				}
-
-				uint32 compCrc = compTano->getClientObjectCRC();
-
-				for (int ii = 0; ii < ids.size(); ++ii) {
-					uint32 key = ids.elementAt(ii).getKey();
-					uint32 val = ids.elementAt(ii).getValue();
-
-					if (key == 0 || val == 0) {
-						continue;
-					}
-
-					if (slotName == "stock" || compCrc == key) {
-						prototype->addVisibleComponent(val, false);
-						break;
-					}
-				}
-			}
-		}
-	}
+	PerfectCraftedItemFactory::applyVisibleComponents(prototype, manufactureSchematic);
 
 	if (prototype->getVisibleComponents() != nullptr && prototype->getVisibleComponents()->size() > 0) {
 		prototype->sendDestroyTo(crafter);
@@ -1511,70 +1464,13 @@ void CraftingSessionImplementation::createManufactureSchematic(int clientCounter
 }
 
 void CraftingSessionImplementation::addSkillMods() {
-	ManagedReference<ManufactureSchematic*> manufactureSchematic = this->manufactureSchematic.get();
-	ManagedReference<TangibleObject*> prototype = this->prototype.get();
-
-	ManagedReference<DraftSchematic*> draftSchematic = manufactureSchematic->getDraftSchematic();
-
-	const VectorMap<String, int>* skillMods = draftSchematic->getDraftSchematicTemplate()->getSkillMods();
-
-	for (int i = 0; i < skillMods->size(); i++) {
-		const auto& mod = skillMods->elementAt(i);
-
-		if (prototype->isWearableObject()) {
-			WearableObject* wearable = prototype.castTo<WearableObject*>();
-			VectorMap<String, int>* wearableMods = wearable->getWearableSkillMods();
-
-			if (wearableMods->contains(mod.getKey())) {
-				int oldValue = wearableMods->get(mod.getKey());
-				int newValue = mod.getValue() + oldValue;
-
-				if (newValue > 25)
-					newValue = 25;
-
-				wearableMods->put(mod.getKey(), newValue);
-				continue;
-			}
-		}
-
-		prototype->addSkillMod(SkillModManager::WEARABLE, mod.getKey(), mod.getValue(), false);
-	}
+	auto schematic = manufactureSchematic.get();
+	PerfectCraftedItemFactory::applySkillMods(prototype.get(), schematic->getDraftSchematic());
 }
 
 void CraftingSessionImplementation::addWeaponDots() {
-	ManagedReference<TangibleObject*> prototype = this->prototype.get();
-
-	if (!(prototype->isWeaponObject()))
-		return;
-
-	ManagedReference<WeaponObject*> weapon = cast<WeaponObject*>(prototype.get());
-
-	ManagedReference<ManufactureSchematic*> manufactureSchematic = this->manufactureSchematic.get();
-	ManagedReference<DraftSchematic*> draftSchematic = manufactureSchematic->getDraftSchematic();
-
-	const Vector<VectorMap<String, int>>* weaponDots = draftSchematic->getDraftSchematicTemplate()->getWeaponDots();
-
-	for (int i = 0; i < weaponDots->size(); i++) {
-		const auto& dot = weaponDots->elementAt(i);
-
-		for (int j = 0; j < dot.size(); j++) {
-			const String& property = dot.elementAt(j).getKey();
-			int value = dot.elementAt(j).getValue();
-
-			if (property == "type")
-				weapon->addDotType(value);
-			else if (property == "attribute")
-				weapon->addDotAttribute(value);
-			else if (property == "strength")
-				weapon->addDotStrength(value);
-			else if (property == "duration")
-				weapon->addDotDuration(value);
-			else if (property == "potency")
-				weapon->addDotPotency(value);
-			else if (property == "uses")
-				weapon->addDotUses(value);
-		}
-	}
+	auto schematic = manufactureSchematic.get();
+	PerfectCraftedItemFactory::applyWeaponDots(prototype.get(), schematic->getDraftSchematic());
 }
 
 bool CraftingSessionImplementation::checkPrototype() {

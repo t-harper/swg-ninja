@@ -1,0 +1,10 @@
+{
+  "sourceReviewedNamedGenotypes": {
+    "genetics-balanced": "r_3bfc0c8afc5be5f0394a050b2a5393d3",
+    "genetics-tank": "r_488e0a4e90f7296a4706f7e8c81d903d",
+    "genetics-damage": "r_c11c1f1f69fb3260720a09076e8172ed"
+  },
+  "standardMatchesBalancedDonorRoles": true,
+  "petTemplatesWithAllThreeNamedGenotypes": 69,
+  "powerupOutcomeCount": 853
+}

@@ -23,6 +23,8 @@ public:
 	GeneticLabratory();
 	virtual ~GeneticLabratory();
 
+	static String selectNormalSpecial(String a, String b, String c, String d, String e, int odds, String other);
+	bool setNormalMaximumCraftingValues(TangibleObject* prototype, ManufactureSchematic* schematic);
 	void initialize(ZoneServer* server);
 	void setInitialCraftingValues(TangibleObject* prototype, ManufactureSchematic* manufactureSchematic, int assemblySuccess);
 	void experimentRow(CraftingValues* craftingValues,int rowEffected, int pointsAttempted, float failure, int experimentationResult);
@@ -30,6 +32,7 @@ public:
 	int getCreationCount(ManufactureSchematic* manufactureSchematic);
 
 protected:
+	void initializeValues(TangibleObject* prototype, ManufactureSchematic* schematic, int assemblySuccess, bool deterministic);
 	float calcResistMin(float input,float mod) {
 		if (input < 0)
 			input = -1;

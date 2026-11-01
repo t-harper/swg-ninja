@@ -27,7 +27,7 @@ SpaceLokSpawner = SpaceSpawnerScreenPlay:new {
 			patrolsToAssign = 5, fixedPatrolPoints = {"nyms_rebel_run_1_00", "nyms_rebel_run_1_01", "nyms_rebel_run_1_02", "nyms_rebel_run_1_03", "nyms_rebel_run_1_04", "nyms_rebel_run_1_05", "nyms_rebel_run_1_06", "nyms_rebel_run_1_07", "nyms_rebel_run_1_08", "nyms_rebel_run_1_09", "nyms_rebel_run_1_10", "nyms_rebel_run_1_11", "nyms_rebel_run_1_12", "nyms_rebel_run_1_13", "nyms_rebel_run_1_14", "nyms_rebel_run_1_15", "nyms_rebel_run_1_16", "nyms_rebel_run_1_17", "nyms_rebel_run_1_18", "nyms_rebel_run_1_19", "nyms_rebel_run_1_20", "nyms_rebel_run_1_21", "nyms_rebel_run_1_22", "nyms_rebel_run_1_23", "nyms_rebel_run_1_24", "nyms_rebel_run_1_25"},
 			shipSpawns = {"nym_cannon_ship_tier2", "nym_enforcer_tier2", "nym_enforcer_tier3", "nym_fighter_tier2", "nym_star_kimogila_boss", "nym_enforcer_tier3", "nym_enforcer_tier3", "nym_enforcer_tier3", "nym_enforcer_tier3", "nym_enforcer_tier3", "nym_enforcer_tier2", "nym_enforcer_tier2", "nym_enforcer_tier2", "nym_enforcer_tier2", "nym_enforcer_tier2"}
 		},
-		{spawnName = "lok_base_guard_1", spawnType = SHIP_SPAWN_SINGLE, x = -3170, z = 842, y = 3067, patrolType = SHIP_AI_RANDOM_PATROL, minRespawn = 60, maxRespawn = 20, minSpawnDistance = 20, maxSpawnDistance = 40, minPatrol = 50, maxPatrol = 400, totalSpawns = 2,
+		{spawnName = "lok_base_guard_1", spawnType = SHIP_SPAWN_SINGLE, x = -3170, z = 842, y = 3067, patrolType = SHIP_AI_RANDOM_PATROL, minRespawn = 60, maxRespawn = 120, minSpawnDistance = 20, maxSpawnDistance = 40, minPatrol = 50, maxPatrol = 400, totalSpawns = 2,
 			shipSpawns = {"nym_cannon_ship_tier2", "nym_enforcer_tier3", "nym_fighter_tier2", "nym_fighter_tier2", "nym_fighter_tier2", "nym_fighter_tier3"}
 		},
 		{spawnName = "bloodrazor_static_watch_3", spawnType = SHIP_SPAWN_SINGLE, x = -5254, z = 5479, y = 2273, patrolType = SHIP_AI_RANDOM_PATROL, minRespawn = 30, maxRespawn = 60, minSpawnDistance = 10, maxSpawnDistance = 30, minPatrol = 150, maxPatrol = 300, totalSpawns = 3,
@@ -118,7 +118,7 @@ SpaceLokSpawner = SpaceSpawnerScreenPlay:new {
 			patrolsToAssign = 5, fixedPatrolPoints = {"static_to_station_1_00", "static_to_station_1_01", "static_to_station_1_02", "static_to_station_1_03", "static_to_station_1_04", "static_to_station_1_05", "static_to_station_1_06"},
 			shipSpawns = {"freighterheavy_tier3_story", "nebula_scientist_researcher_tier3", "smuggler_freighterlight_tier3"}
 		},
-		{spawnName = "corsair_nebula_4", spawnType = SHIP_SPAWN_SINGLE, x = 2996, z = 2032, y = -2178, patrolType = SHIP_AI_RANDOM_PATROL, minRespawn = 60, maxRespawn = 18, minSpawnDistance = 8, maxSpawnDistance = 32, minPatrol = 50, maxPatrol = 350, totalSpawns = 3,
+		{spawnName = "corsair_nebula_4", spawnType = SHIP_SPAWN_SINGLE, x = 2996, z = 2032, y = -2178, patrolType = SHIP_AI_RANDOM_PATROL, minRespawn = 60, maxRespawn = 120, minSpawnDistance = 8, maxSpawnDistance = 32, minPatrol = 50, maxPatrol = 350, totalSpawns = 3,
 			shipSpawns = {"corsair_behemoth_tier2", "corsair_raider_tier2"}
 		},
 		{spawnName = "corsair_nebula_2", spawnType = SHIP_SPAWN_SINGLE, x = 2049, z = 3681, y = -1914, patrolType = SHIP_AI_RANDOM_PATROL, minRespawn = 60, maxRespawn = 120, minSpawnDistance = 8, maxSpawnDistance = 32, minPatrol = 50, maxPatrol = 350, totalSpawns = 3,
@@ -156,7 +156,7 @@ SpaceLokSpawner = SpaceSpawnerScreenPlay:new {
 			patrolsToAssign = 5, fixedPatrolPoints = {"imp_gunboat_to_nym_00", "imp_gunboat_to_nym_01", "imp_gunboat_to_nym_02", "imp_gunboat_to_nym_03", "imp_gunboat_to_nym_04", "imp_gunboat_to_nym_05", "imp_gunboat_to_nym_06", "imp_gunboat_to_nym_07", "imp_gunboat_to_nym_08", "imp_gunboat_to_nym_09", "imp_gunboat_to_nym_10", "imp_gunboat_to_nym_11", "imp_gunboat_to_nym_12", "imp_gunboat_to_nym_13", "imp_gunboat_to_nym_14", "imp_gunboat_to_nym_15", "imp_gunboat_to_nym_16", "imp_gunboat_to_nym_17", "imp_gunboat_to_nym_18", "imp_gunboat_to_nym_19"},
 			shipSpawns = {"imp_imperial_gunboat_tier3"}
 		},
-		{spawnName = "nym_mining_freighters_1", spawnType = SHIP_SPAWN_SINGLE, x = 2153, z = -3725, y = -1491, patrolType = SHIP_AI_RANDOM_PATROL, minRespawn = 60, maxRespawn = 40, minSpawnDistance = 10, maxSpawnDistance = 100, minPatrol = 50, maxPatrol = 400, totalSpawns = 3,
+		{spawnName = "nym_mining_freighters_1", spawnType = SHIP_SPAWN_SINGLE, x = 2153, z = -3725, y = -1491, patrolType = SHIP_AI_RANDOM_PATROL, minRespawn = 60, maxRespawn = 120, minSpawnDistance = 10, maxSpawnDistance = 100, minPatrol = 50, maxPatrol = 400, totalSpawns = 3,
 			shipSpawns = {"nym_bomber_tier2", "nym_enforcer_tier2"}
 		},
 		{spawnName = "nym_mining_field_guard", spawnType = SHIP_SPAWN_SINGLE, x = 2131, z = -3707, y = -1471, patrolType = SHIP_AI_RANDOM_PATROL, minRespawn = 60, maxRespawn = 120, minSpawnDistance = 10, maxSpawnDistance = 100, minPatrol = 50, maxPatrol = 300, totalSpawns = 3,

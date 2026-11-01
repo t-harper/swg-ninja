@@ -33,7 +33,7 @@ SpaceYavin4Spawner = SpaceSpawnerScreenPlay:new {
 			patrolsToAssign = 5, fixedPatrolPoints = {"nice_mining_path_a_00", "nice_mining_path_a_01", "nice_mining_path_a_02", "nice_mining_path_a_03", "nice_mining_path_a_04"},
 			shipSpawns = {"nebula_scientist_researcher_tier3", "junk_dealer_trader", "junk_dealer_collector"}
 		},
-		{spawnName = "rebel_gun_boat_1", spawnType = SHIP_SPAWN_SQUADRON, x = -5845, z = -1069, y = 840, patrolType = SHIP_AI_FIXED_PATROL, minRespawn = 3600, maxRespawn = 240, minSpawnDistance = 5, maxSpawnDistance = 10, totalSpawns = 1,
+		{spawnName = "rebel_gun_boat_1", spawnType = SHIP_SPAWN_SQUADRON, x = -5845, z = -1069, y = 840, patrolType = SHIP_AI_FIXED_PATROL, minRespawn = 3600, maxRespawn = 5400, minSpawnDistance = 5, maxSpawnDistance = 10, totalSpawns = 1,
 			patrolsToAssign = 5, fixedPatrolPoints = {"rebel_gun_boat_1_00", "rebel_gun_boat_1_01", "rebel_gun_boat_1_02", "rebel_gun_boat_1_03", "rebel_gun_boat_1_04", "rebel_gun_boat_1_05", "rebel_gun_boat_1_06", "rebel_gun_boat_1_07", "rebel_gun_boat_1_08", "rebel_gun_boat_1_09", "rebel_gun_boat_1_10", "rebel_gun_boat_1_11", "rebel_gun_boat_1_12", "rebel_gun_boat_1_13"},
 			shipSpawns = {"squad_rebel_gunboat_tier3"}
 		},
@@ -232,7 +232,7 @@ SpaceYavin4Spawner = SpaceSpawnerScreenPlay:new {
 			patrolsToAssign = 5, fixedPatrolPoints = {"imperial_patrol_route_1_00", "imperial_patrol_route_1_01", "imperial_patrol_route_1_02", "imperial_patrol_route_1_03", "imperial_patrol_route_1_04", "imperial_patrol_route_1_05", "imperial_patrol_route_1_06", "imperial_patrol_route_1_07", "imperial_patrol_route_1_08", "imperial_patrol_route_1_09", "imperial_patrol_route_1_10", "imperial_patrol_route_1_11", "imperial_patrol_route_1_12", "imperial_patrol_route_1_13", "imperial_patrol_route_1_14", "imperial_patrol_route_1_15", "imperial_patrol_route_1_16", "imperial_patrol_route_1_17", "imperial_patrol_route_1_18", "imperial_patrol_route_1_19", "imperial_patrol_route_1_20", "imperial_patrol_route_1_21", "imperial_patrol_route_1_22", "imperial_patrol_route_1_23", "imperial_patrol_route_1_24", "imperial_patrol_route_1_25", "imperial_patrol_route_1_26", "imperial_patrol_route_1_27"},
 			shipSpawns = {"imp_interceptor_boss", "imp_tie_advanced_tier3", "imp_tie_bomber_tier2", "imp_tie_fighter_tier3", "imp_tie_bomber_tier3", "imp_tie_aggressor_tier3", "imp_tie_interceptor_tier3", "imp_tie_oppressor_tier3"}
 		},
-		{spawnName = "tier3_vylukh_rally_alpha", spawnType = SHIP_SPAWN_SINGLE, x = 932, z = -2060, y = 1873, patrolType = SHIP_AI_RANDOM_PATROL, minRespawn = 60, maxRespawn = 18, minSpawnDistance = 12, maxSpawnDistance = 48, minPatrol = 100, maxPatrol = 340, totalSpawns = 2,
+		{spawnName = "tier3_vylukh_rally_alpha", spawnType = SHIP_SPAWN_SINGLE, x = 932, z = -2060, y = 1873, patrolType = SHIP_AI_RANDOM_PATROL, minRespawn = 60, maxRespawn = 120, minSpawnDistance = 12, maxSpawnDistance = 48, minPatrol = 100, maxPatrol = 340, totalSpawns = 2,
 			shipSpawns = {"vylukh_clan_elite_tier2", "vylukh_clan_soldier_tier2"}
 		},
 		{spawnName = "imperial_recovery_guard_loiter_1", spawnType = SHIP_SPAWN_SINGLE, x = -1640, z = 693, y = 760, patrolType = SHIP_AI_RANDOM_PATROL, minRespawn = 60, maxRespawn = 120, minSpawnDistance = 30, maxSpawnDistance = 60, minPatrol = 50, maxPatrol = 400, totalSpawns = 6,

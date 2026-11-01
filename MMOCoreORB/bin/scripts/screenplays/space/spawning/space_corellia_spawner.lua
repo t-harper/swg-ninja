@@ -160,7 +160,7 @@ SpaceCorelliaSpawner = SpaceSpawnerScreenPlay:new {
 			patrolsToAssign = 5, fixedPatrolPoints = {"corelliatotalus_transport_00", "corelliatotalus_transport_01", "corelliatotalus_transport_02", "corelliatotalus_transport_03", "corelliatotalus_transport_04", "corelliatotalus_transport_05", "corelliatotalus_transport_06", "corelliatotalus_transport_07", "corelliatotalus_transport_08", "corelliatotalus_transport_09", "corelliatotalus_transport_10"},
 			shipSpawns = {"freighterlight_tier1", "freighterheavy_tier3_story", "freighterheavy_tier3_story"}
 		},
-		{spawnName = "corellia_guard_1", spawnType = SHIP_SPAWN_SINGLE, x = -5868, z = -4844, y = -4600, patrolType = SHIP_AI_RANDOM_PATROL, minRespawn = 60, maxRespawn = 14, minSpawnDistance = 30, maxSpawnDistance = 120, minPatrol = 100, maxPatrol = 400, totalSpawns = 3,
+		{spawnName = "corellia_guard_1", spawnType = SHIP_SPAWN_SINGLE, x = -5868, z = -4844, y = -4600, patrolType = SHIP_AI_RANDOM_PATROL, minRespawn = 60, maxRespawn = 120, minSpawnDistance = 30, maxSpawnDistance = 120, minPatrol = 100, maxPatrol = 400, totalSpawns = 3,
 			shipSpawns = {"corsec_interceptor_tier1", "corsec_lancer_tier1"}
 		},
 		{spawnName = "corl_cmrs_way", spawnType = SHIP_SPAWN_SINGLE, x = -5628, z = -5335, y = -4672, patrolType = SHIP_AI_SINGLE_PATROL_ROTATION, minRespawn = 120, maxRespawn = 240, minSpawnDistance = 3, maxSpawnDistance = 24, totalSpawns = 3,

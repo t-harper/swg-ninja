@@ -121,7 +121,7 @@ SpaceNabooSpawner = SpaceSpawnerScreenPlay:new {
 		{spawnName = "stn_dantooine_shiftyprince_inspect_01", spawnType = SHIP_SPAWN_SINGLE, x = -6032, z = -2176, y = -5816, patrolType = SHIP_AI_RANDOM_PATROL, minRespawn = 15, maxRespawn = 45, minSpawnDistance = 32, maxSpawnDistance = 128, minPatrol = 100, maxPatrol = 400, totalSpawns = 1,
 			shipSpawns = {"shifty_prince_tier3"}
 		},
-		{spawnName = "naboo_imperial_2", spawnType = SHIP_SPAWN_SINGLE, x = -1915, z = -2006, y = -1455, patrolType = SHIP_AI_RANDOM_PATROL, minRespawn = 60, maxRespawn = 14, minSpawnDistance = 8, maxSpawnDistance = 120, minPatrol = 100, maxPatrol = 300, totalSpawns = 3,
+		{spawnName = "naboo_imperial_2", spawnType = SHIP_SPAWN_SINGLE, x = -1915, z = -2006, y = -1455, patrolType = SHIP_AI_RANDOM_PATROL, minRespawn = 60, maxRespawn = 120, minSpawnDistance = 8, maxSpawnDistance = 120, minPatrol = 100, maxPatrol = 300, totalSpawns = 3,
 			shipSpawns = {"imp_tie_bomber_tier1", "imp_tie_bomber_tier1_naboo", "imp_tie_fighter_tier1", "imp_tie_fighter_tier1", "imp_tie_fighter_tier1", "imp_tie_fighter_tier1", "imp_tie_fighter_tier1", "imp_tie_fighter_tier1", "imp_tie_fighter_tier1", "imp_tie_fighter_tier1_naboo"}
 		},
 		{spawnName = "imperial_fluff_spawns_3", spawnType = SHIP_SPAWN_SINGLE, x = -2024, z = -3820, y = -3131, patrolType = SHIP_AI_RANDOM_PATROL, minRespawn = 60, maxRespawn = 120, minSpawnDistance = 10, maxSpawnDistance = 30, minPatrol = 100, maxPatrol = 300, totalSpawns = 3,

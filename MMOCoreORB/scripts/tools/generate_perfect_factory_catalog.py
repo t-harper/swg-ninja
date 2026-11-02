@@ -478,7 +478,7 @@ def build_catalog(root):
             seen.add(target)
             if target not in inventory.registered: raise ValueError('Missing output registration: '+target)
             label = recipe.get('customObjectName') or readable(target)
-            if index >= 0: label += ' — ' + readable(target)
+            if index >= 0: label += ' - ' + readable(target)
             provenance = {'evidence':'source recipe and output; runtime target/ancestry/bounds audit required',
                           'sources':inventory.evidence(inventory.sources[path], inventory.sources[target])}
             entry = new_entry('recipe',path,target,index,'standard',recipe['professions'],label,'recipe.normal100',provenance,recipe.get('factoryCrateSize',25)>0)
@@ -502,7 +502,7 @@ def build_catalog(root):
                 provenance = {'evidence':'registered normal loot profile; runtime normal endpoints audit required',
                               'lootName':profile['name'],'sources':inventory.evidence(profile['source'],inventory.sources[target])}
                 source_profile='loot:'+profile['name']
-                label=readable(target)+' — '+readable(profile['name'])
+                label=readable(target)+' - '+readable(profile['name'])
                 if profile['name'] in survey_profiles:
                     survey=survey_profiles[profile['name']]
                     if survey['targetTemplate']!=target:raise ValueError('Village survey/loot target mismatch: '+profile['name'])
@@ -512,7 +512,7 @@ def build_catalog(root):
                         sourceSupport='verified-village-survey-provider',resourceAttributes=survey['resourceAttributes'],
                         questTableEvidence=survey_config.get('questTableEvidence',{}))
                     provenance['sources']+=inventory.evidence(*survey_source_paths)
-                    label+=' — Survey density95 maximum'
+                    label+=' - Survey density95 maximum'
                 entry = new_entry('loot','',target,-1,profile['name'],professions,label,source_profile,provenance)
                 for pred in matches: producer_ids[pred].append(entry['id'])
         else:
@@ -544,7 +544,7 @@ def build_catalog(root):
         if source.get('organicAmounts') and sum(source['organicAmounts'].values())<=0:
             provenance.update(sourceSupport='unsupported-unsampleable-dna',organicAmounts=source['organicAmounts'],
                 sourceSupportReason='Explicit zero organic harvest amounts violate CreatureImplementation::hasOrganics(), required by normal hasDNA().')
-        entry = new_entry('dna','',dna_target,-1,source['name'],['Bio-Engineer'],'DNA sample — '+readable(source['name']), 'dna:'+source['name']+':quality1-max',provenance)
+        entry = new_entry('dna','',dna_target,-1,source['name'],['Bio-Engineer'],'DNA sample - '+readable(source['name']), 'dna:'+source['name']+':quality1-max',provenance)
         producer_ids[dna_predicate].append(entry['id'])
     if not producer_ids[dna_predicate]: raise ValueError('No source-backed sampleable DNA candidates')
 
@@ -553,7 +553,7 @@ def build_catalog(root):
         for color in colors:
             provenance = {'evidence':'normal crystal progression/loot profile; native coherent level/untuned endpoint validation required',
                           'lootName':loot_name, 'color':color, 'sources':inventory.evidence(source['source'])}
-            new_entry('crystal','',source['target'],-1,loot_name+'-'+str(color),['Jedi'],readable(loot_name)+((' — Color '+str(color)) if color!=31 else ''),'crystal:'+loot_name+':color-'+str(color),provenance)
+            new_entry('crystal','',source['target'],-1,loot_name+'-'+str(color),['Jedi'],readable(loot_name)+((' - Color '+str(color)) if color!=31 else ''),'crystal:'+loot_name+':color-'+str(color),provenance)
 
     # Rank sources without consulting labels/OIDs/RNG. Exact recipe output first;
     # keep every competing choice below as a named legal profile.
@@ -612,7 +612,7 @@ def build_catalog(root):
         entry['ingredientChoices'] = choices
         if self_refactor:
             old_id = entry['id'];entry['variantId']='base'
-            entry['label'] += ' — Base'
+            entry['label'] += ' - Base'
             entry['id']=stable_id('recipe','|'.join([entry['draftPath'],entry['targetTemplate'],str(entry['variantIndex']),'base',entry['sourceProfile']]))
             del entries[old_id];entries[entry['id']]=entry
             for ids in producer_ids.values():
@@ -642,13 +642,13 @@ def build_catalog(root):
             default_preset=next(p for p in presets if p['id']==genetics_config['default'])
             for c in genetic_base['ingredientChoices']:
                 c['childId']=default_preset['childIds'][c['slotIndex']]
-            genetic_base['label']+=' — '+default_preset['label']
+            genetic_base['label']+=' - '+default_preset['label']
             for preset in presets:
                 provenance=dict(genetic_base['provenance'])
                 provenance['geneticPreset']=preset['id']
                 provenance['sources']=provenance['sources']+inventory.evidence(GENETICS_PROFILES)
                 e=new_entry('recipe',genetic_base['draftPath'],genetic_base['targetTemplate'],genetic_base['variantIndex'],
-                    'genetics-'+preset['id'],genetic_base['professions'],readable(genetic_base['targetTemplate'])+' — '+preset['label'],
+                    'genetics-'+preset['id'],genetic_base['professions'],readable(genetic_base['targetTemplate'])+' - '+preset['label'],
                     genetic_base['sourceProfile'],provenance,genetic_base['expectedFactoryEligible'])
                 e['ingredientChoices']=[dict(c,childId=preset['childIds'][c['slotIndex']]) for c in genetic_base['ingredientChoices']]
                 for predicate in inventory.ancestry(e['targetTemplate']) & predicates:producer_ids[predicate].append(e['id'])
@@ -685,10 +685,10 @@ def build_catalog(root):
                 profile=[dict(c) for c in base['ingredientChoices']]
                 for c in profile:
                     if c['predicate']==pred:c.pop('omit',None);c.pop('unresolved',None);c['childId']=child_id
-                name = readable(group[0]['title'])+' — '+child['label']
+                name = readable(group[0]['title'])+' - '+child['label']
                 variants.append(('choice-'+digest([pred,child_id])[:16],name,profile))
         for variant,name,choices in variants:
-            entry=new_entry('recipe',base['draftPath'],base['targetTemplate'],base['variantIndex'],variant,base['professions'],base['label']+' — '+name,base['sourceProfile'],base['provenance'],base['expectedFactoryEligible'])
+            entry=new_entry('recipe',base['draftPath'],base['targetTemplate'],base['variantIndex'],variant,base['professions'],base['label']+' - '+name,base['sourceProfile'],base['provenance'],base['expectedFactoryEligible'])
             entry['ingredientChoices']=choices
 
     powerup_replacements={}
@@ -705,7 +705,7 @@ def build_catalog(root):
             e['powerupPrimaryIndex']=p;e['powerupSecondaryIndices']=order
             e['variantId']=base['variantId']+'-powerup-p'+str(p)+'-s'+'-'.join(map(str,order))
             e['id']=stable_id('recipe',canonical([base['id'],p,order]))
-            e['label']=base['label']+' — '+outcome['label']
+            e['label']=base['label']+' - '+outcome['label']
             entries[e['id']]=e
             powerup_replacements.setdefault(base['id'],e['id'])
             powerup_outcome_count+=1
@@ -722,7 +722,7 @@ def build_catalog(root):
             e=dict(base,reviveProfile=profile)
             e['id']=stable_id('recipe',canonical([base['id'],'revive',profile]))
             e['variantId']=base['variantId']+'-revive-'+profile
-            e['label']=base['label']+' — '+('Healing maximum' if profile=='healing-max' else 'Wounds maximum')
+            e['label']=base['label']+' - '+('Healing maximum' if profile=='healing-max' else 'Wounds maximum')
             e['provenance']=dict(base['provenance'])
             e['provenance']['sources']=base['provenance']['sources']+inventory.evidence(REVIVE_FORMULA)
             e['provenance']['reviveOutcome']='ordinary power-derived action/mind fixed-sum split at legal RNG endpoint; health formula unchanged'

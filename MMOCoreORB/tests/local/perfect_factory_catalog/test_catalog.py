@@ -55,6 +55,12 @@ class PerfectFactoryCatalogTests(unittest.TestCase):
             self.assertEqual(self.generator.stable_id('recipe', 'a|b'), 'r_' + __import__('hashlib').sha256(b'recipe\0a|b').hexdigest()[:32])
             self.assertRegex(entry['qualitySignature'], r'^[0-9a-f]{64}$')
 
+    def test_all_catalog_display_labels_are_ascii_for_sui(self):
+        # SUI widens each String byte independently; UTF-8 punctuation becomes
+        # several unsupported glyphs in both menu rows and created item names.
+        for entry in self.catalog['entries']:
+            self.assertTrue(entry['label'].isascii(), entry['id'] + ': ' + entry['label'])
+
     def test_real_bake_master_label_matches_lua_value(self):
         entry = next(e for e in self.entries.values() if e['draftPath'].endswith('/clothing_hat_chef_02.iff') and e['variantId']=='standard')
         self.assertEqual(entry['label'], "Bake Master's Cap")

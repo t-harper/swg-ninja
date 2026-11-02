@@ -24,6 +24,7 @@ local function scan(menu, counts)
  for i=1,#menu,2 do
   assert(not previous or previous<=menu[i]:lower(),"final menu sort missing"); previous=menu[i]:lower()
   assert(type(menu[i])=="string" and not names[menu[i]],"duplicate sibling: "..tostring(menu[i])); names[menu[i]]=true
+  assert(not menu[i]:find("[\128-\255]"),"non-ASCII SUI display label: "..menu[i])
   local value=menu[i+1]
   if type(value)=="table" then scan(value,counts) else
    leaves=leaves+1
@@ -78,9 +79,24 @@ PerfectFactoryCatalog={schemaVersion=9, entries={product("r_1234","Bad schema",{
 invalid={}; scan(t.itemList,invalid); assert(next(invalid)==nil,"unsupported catalog schema exposed")
 print("perfect factory menu: behavior, aliases, pages, reload, invalid input PASS")
 
+local function checkPageLabels(menu)
+ local pages=0
+ for i=1,#menu,2 do
+  if type(menu[i+1])=="table" then
+   if menu[i]:match("^%d%d%d%-%d%d%d:") then
+    assert(not menu[i]:find("[\128-\255]"),"non-ASCII paginated SUI label: "..menu[i])
+    pages=pages+1
+   end
+   pages=pages+checkPageLabels(menu[i+1])
+  end
+ end
+ return pages
+end
+
 if arg[2] then
  local actual=setup({})
  dofile(arg[2]); loadMenu()
+ assert(checkPageLabels(actual.itemList)>0,"complete catalog did not exercise page labels")
  local fullCounts={}; scan(actual.itemList,fullCounts)
  for _,entry in ipairs(PerfectFactoryCatalog.entries) do assert(fullCounts["perfectcrate:"..entry.id],"unreachable product: "..entry.id) end
  local fullCrates=sub(sub(actual.itemList,"Items"),"Factory Crates")

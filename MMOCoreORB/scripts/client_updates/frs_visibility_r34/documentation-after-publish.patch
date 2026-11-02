@@ -1,0 +1,62 @@
+--- a/docs/content/jedi/force-ranking-system.md
++++ b/docs/content/jedi/force-ranking-system.md
+@@ -5,6 +5,10 @@
+ > Availability: SWG Ninja Fun and SWG Ninja Dev.
+ >
+ > Status: Live and active.
++
++## Seeing your council ranks
++
++The skill window shows the Light or Dark Force Ranking tree for eligible Jedi. If your council tree is missing, close the game, let the SWG Ninja launcher finish updating, then launch the game again. Your council membership, rank and experience are preserved.
+ 
+ ## Joining a council
+ 
+--- a/release-notes.md
++++ b/release-notes.md
+@@ -17,6 +17,8 @@
+   updated alongside the game as changes arrive.
+ 
+ ## Jedi — a profession like any other
++
++- **Force Ranking trees are visible again** for eligible Light and Dark Jedi. Close the game and let the launcher update before relaunching. This display fix preserves your council membership, rank and experience.
+ 
+ - **A new Padawan's first lightsaber journey** begins automatically when a
+   character learns Novice Jedi Padawan. Follow three short steps around Mos
+--- a/changes-from-live.md
++++ b/changes-from-live.md
+@@ -17,6 +17,12 @@
+ 
+ ---
+ 
++## FRS skill-window visibility restored (R34, 2026-11-01 — LIVE)
++
++Supersedes the FRS visibility portion of §1: Knight Trials and council ranks were already active, but R33 still hid their skill-tree rows. R34 restores all 27 `force_rank` rows to their exact stock visibility flags. The root remains GOD_ONLY=1/IS_HIDDEN=0; the 26 Light/Dark rows use 0/0. Jedi-state requirements 4/8 and every gameplay field remain unchanged. Retired force-sensitive, discipline and title trees stay hidden.
++
++The shipped archive changes only 53 visibility cells in `datatables/skill/skills.iff`; all other payloads match R33 byte-for-byte. SHA256: `5627e6145cd25b7d97290ad1bc8c2755c803d189c55ddd015c3524a11a0e072d`. Players must exit the game, run launcher sync and relaunch. Council membership, rank and XP are preserved.
++
+ ## 1. Pre-Publish-9 Jedi system (deployed 2026-07-03 — LIVE)
+ 
+ Replaces the 14.1 village/five-discipline/FRS Jedi with the original
+@@ -28,7 +34,7 @@
+   continuation trees — all 96 legacy rows un-hidden (GOD_ONLY/IS_HIDDEN
+   flipped in the custom tre). The 14.1 `force_sensitive_* /
+   force_discipline_* / force_title_* / force_rank_*` trees (208 rows)
+-  are hidden client-side and unlearnable server-side.
++  were initially hidden client-side and unlearnable server-side. **Superseded:** §16 enabled council ranks; R34 restores FRS skill-window visibility.
+ - **Novice Jedi Padawan costs all 250 skill points** (stock legacy data
+   — a Jedi can hold no other profession). All deeper boxes are 0-point,
+   XP-gated (saber lines on weapon-specialize XP; the rest on
+--- a/client-handout/README.txt
++++ b/client-handout/README.txt
+@@ -24,7 +24,10 @@
+ - Skill window: the "Jedi Padawan" profession with four branches
+   (Lightsaber / Healing / Force Powers / Force Manipulation), plus the
+   light/dark Journeyman and Master continuation trees. The 14.1
+-  Force-sensitive / discipline / FRS trees are gone from the window.
++  Force-sensitive / discipline trees remain hidden. With the current launcher
++  update (R34 or later), eligible Jedi can see their Light or Dark Force
++  Ranking tree. The R3 instructions above are historical; use the branded
++  SWG Ninja launcher to update, then relaunch the game.
+ - A Jedi trainer named Vokara stands in Mos Eisley near the artisan
+   trainer row (outside, ~3508 5 -4806).
+ - Novice Jedi Padawan costs 250 skill points — a fresh character only.

@@ -1,0 +1,10 @@
+{
+  "baseline_reconstruction": "R33 source reconstructed by reversing only the five exact edits made in this task; no pre-edit whole-file hash was captured. Not an independent historical source snapshot.",
+  "reconstructed_r33_builder_sha256": "b052944af3f9294a13b8cf1a91c1f6201a81a06539d1e411279e730c14e60c22",
+  "r34_builder_sha256": "210dc5f406a9efbc4934be00b1ec27332bc7a7a9925804755e09554d36aa8664",
+  "builder_patch_sha256": "1f42435ff1227fd7dd330850767d478b89e6ee20abfee8414650c5a6ecc4434e",
+  "regression_sha256": "f8549ce0fc568f2eafb1729880e2647eef398757fd4c117f45eec6db67ce6c45",
+  "r33_archive_sha256": "b1794156ea9ee90cbd3305c772e5b0431977dba8a9962690ffe16ce49deed8a9",
+  "r34_archive_sha256": "5627e6145cd25b7d97290ad1bc8c2755c803d189c55ddd015c3524a11a0e072d",
+  "scope": "27 FRS rows; 53 visibility cells only; all 34 other payloads in the 35-entry archive unchanged"
+}

@@ -1,0 +1,47 @@
+--- a/build_tre.py
++++ b/build_tre.py
+@@ -4,7 +4,7 @@
+ 
+ Mechanical derivations (no hand-typed row lists):
+ - visibility: un-hide `jedi`/`jedi_*` rows (GOD_ONLY=0, IS_HIDDEN=0),
+-  hide retired 14.1 force trees (GOD_ONLY=1, IS_HIDDEN=1)
++  hide retired 14.1 sensitive/discipline/title trees; retain stock FRS visibility
+ - certs: novice boxes get gen1 certs matching their granted
+   craftSaber<Fam>1 schematic group (+ training cert on the padawan
+   novice); each saber-XP chain's first three boxes get gen2/3/4 certs
+@@ -24,7 +24,7 @@
+ 
+ TIER = "full"          # P2 knob: "padawan" | "full"
+ HIDE_RETIRED = True
+-REV = 33
++REV = 34
+ PLANET_REV = 4         # pre9_planets: custom travel routes + the ticket-window
+                        # client contract (CodeData planet rows). DEV-server-only
+                        # on the server side; the CLIENT loads it everywhere.
+@@ -203,9 +203,11 @@
+ rows["jedi"][HID] = 0  # root was already IS_HIDDEN=0 in stock; keep it so
+ report.append("un-hid %d jedi rows (TIER=%s)" % (len(selected), TIER))
+ 
++# FRS councils remain active: preserve all 27 force_rank rows exactly as stock,
++# including the GOD_ONLY root and visible Light/Dark branches (Jedi states 4/8).
+ if HIDE_RETIRED:
+     retired = [r for r in skills["rows"]
+-               if re.match(r"force_(sensitive|discipline|title|rank)", r[NAME])]
++               if re.match(r"force_(sensitive|discipline|title)", r[NAME])]
+     for r in retired:
+         r[GOD], r[HID] = 1, 1
+     report.append("hid %d retired force_* rows" % len(retired))
+@@ -1606,6 +1608,13 @@
+     assert "craftSaberTraining" in nov[SCHEM]
+     assert prow["jedi_padawan_saber_03"][CMDS].endswith("cert_onehandlightsaber_gen4")
+     assert prow["force_title_jedi_rank_01"][GOD] == (1 if HIDE_RETIRED else 0)
++    _stock_frs = swg.dt_read((W / "stock_skills.iff").read_bytes())
++    _stock_frs_rows = [r for r in _stock_frs["rows"]
++                       if r[NAME] == "force_rank" or r[NAME].startswith("force_rank_")]
++    assert len(_stock_frs_rows) == 27
++    for _frs_row in _stock_frs_rows:
++        assert prow[_frs_row[NAME]] == _frs_row, "FRS stock row changed: " + _frs_row[NAME]
++    print("PACKED OK: all 27 FRS rows retain stock visibility, state gates and gameplay")
+     if TIER == "full":
+         assert "cert_polearmlightsaber_gen1" in prow["jedi_dark_side_master_novice"][CMDS]
+     pg = swg.dt_read(ar.read("datatables/crafting/schematic_group.iff"))

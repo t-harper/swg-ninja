@@ -4,6 +4,7 @@
 
 #include "ServerCore.h"
 #include "FifoConsoleReader.h"
+#include "NinjaMaintenanceGate.h"
 
 #include <type_traits>
 #include <sys/stat.h>
@@ -110,6 +111,9 @@ namespace coredetail {
 
 ServerCore::ServerCore(bool truncateDatabases, const SortedVector<String>& args) :
 		Core("log/core3.log", coredetail::EngineConfigName, LogLevel::LOG), Logger("Core") {
+	// Load the shared boot marker before initializing any game/listener context.
+	NinjaMaintenanceGate::instance();
+
 	orb = nullptr;
 
 	loginServer = nullptr;
@@ -152,6 +156,17 @@ void ServerCore::registerConsoleCommmands() {
 	const auto addCommand = [this](auto name, auto lambda) {
 		consoleCommands.put(name, lambda);
 	};
+
+	addCommand("maintenance", [this](const String& arguments) -> CommandResult {
+		auto response = NinjaMaintenanceGate::instance().command(arguments.toCharArray(), []() {
+			auto zoneServer = ServerCore::getZoneServer();
+			return zoneServer != nullptr ? zoneServer->getConnectionCount() : -1;
+		});
+		// info(true) writes the same single-line protocol payload to core3.log
+		// and stdout; updater acknowledgments must be tied to fresh log bytes.
+		info(true) << response.c_str();
+		return SUCCESS;
+	});
 
 	addCommand("exit", [this](const String& arguments) -> CommandResult {
 		ZoneServer* zoneServer = zoneServerRef.getForUpdate();

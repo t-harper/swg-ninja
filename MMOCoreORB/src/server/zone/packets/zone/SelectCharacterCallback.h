@@ -9,6 +9,7 @@
 #define SELECTCHARACTERCALLBACK_H_
 
 #include "server/zone/packets/MessageCallback.h"
+#include "server/NinjaMaintenanceGate.h"
 #include "server/zone/ZoneServer.h"
 #include "server/zone/Zone.h"
 #include "server/zone/SpaceZone.h"
@@ -41,6 +42,14 @@ public:
 	}
 
 	static void connectPlayer(SceneObject* obj, uint64_t characterID, CreatureObject* player, ZoneClientSession* client, ZoneServer* zoneServer) {
+		// This entry is also used by ordered reconnect callbacks. Administrators
+		// obey maintenance, unlike the normal server lock/cap exemptions below.
+		auto admission = NinjaMaintenanceGate::instance().tryAdmit();
+		if (!admission) {
+			client->sendMessage(new ErrorMessage("Login Error", "Server is undergoing maintenance, please try again later", 0));
+			return;
+		}
+
 		auto ghost = player->getPlayerObject();
 
 		if (ghost == nullptr) {
@@ -93,6 +102,14 @@ public:
 	};
 
 	static void connectApprovedPlayer(SceneObject* obj, uint64_t characterID, CreatureObject* player, ZoneClientSession* client, ZoneServer* zoneServer) {
+		// Remote approval may arrive after connectPlayer returned and maintenance
+		// acquired the gate. Recheck and count the complete world-insertion path.
+		auto admission = NinjaMaintenanceGate::instance().tryAdmit();
+		if (!admission) {
+			client->sendMessage(new ErrorMessage("Login Error", "Server is undergoing maintenance, please try again later", 0));
+			return;
+		}
+
 		PlayerObject* ghost = player->getPlayerObject();
 
 		if (ghost == nullptr) {
